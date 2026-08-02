@@ -129,7 +129,7 @@ const html = `<!DOCTYPE html>
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans SC",sans-serif;background:var(--bg);color:var(--text);line-height:1.7;display:flex;min-height:100vh}
 .sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--sw);background:var(--sidebar-bg);color:var(--sidebar-text);padding:28px 20px;overflow-y:auto;z-index:10;user-select:none}
 .sidebar h2{color:#fff;font-size:1rem;margin-bottom:6px;border:none;padding:0}
-.sidebar .sub{font-size:.72rem;color:#6b7280;margin-bottom:16px}
+.sidebar .sub{font-size:.72rem;color:#6b7280;margin-bottom:12px}
 .jump{display:flex;gap:6px;margin:0 0 16px}.jump input{flex:1;min-width:0;background:#111318;border:1px solid #2b2f3a;color:#e0e3eb;border-radius:6px;padding:7px 10px;font-size:.8rem;outline:none}.jump input::placeholder{color:#6b7280}.jump input:focus{border-color:#60a5fa}.jump button{flex-shrink:0;background:#1e3a5f;color:#60a5fa;border:none;border-radius:6px;padding:0 12px;font-size:.78rem;cursor:pointer}.jump button:hover{background:#274b78}
 .menu-toggle{display:none}
 .sidebar .roadmap{font-size:.7rem;line-height:1.6;color:#6b7280;background:#111318;border-radius:6px;padding:10px 12px;margin-bottom:20px;white-space:pre-wrap}
@@ -212,7 +212,7 @@ document.onkeydown=function(e){if(document.activeElement===j)return;if(e.key==="
 </body>
 </html>`;
 
-fs.writeFileSync(__dirname + '/index.html', html, 'utf-8');
+fs.writeFileSync(__dirname + '/index.html', html.replace(/^[ \t]+$/gm, ''), 'utf-8');
 console.log(`Generated: Day ${completedDayCount}/${totalDays} (${progressPct}%), foundation ${foundation.length}/${foundation.length}`);
 
 
