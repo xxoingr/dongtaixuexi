@@ -65,14 +65,16 @@ status: in-progress
 
 ## Current Status  
 
-进度: 15/30 (50%) — 第一阶段
+进度: 16/30 (53%) — 第一阶段
 路线: Day 8-60 主路线保持不变；DS 负责日常全流程（教学、实操引导、日常实验工程、复盘与网站闭环）；Sol 负责学习计划大方向、高难救场和每 3-5 课定期抽查
 教学阶段: DS 理论前置
 实操模型: DS 负责引导用户逐步实操并核对可见证据及日常闭环；Sol 只在大方向、救场和抽查时介入
-正在: Day 16 调试器原理 — 尚未开始。Day 15 硬件断点（HWBP）已由 DS 完成理论前置、实操引导（执行/写入/软件断点三连验证）、实操后复盘与理解确认，证据齐全并正式验收。
-下一步: 由 DS 开始 Day 16 调试器原理（断点触发/异常分发/DebugPort）的理论前置。
+正在: Day 17 反调试基础 — 尚未开始。Day 16 调试器原理已由 DS 完成理论前置、实操引导（独立运行 + 中途 attach 验证 DebugPort NULL→非空、0xE1234001 异常分发顺序、放行后 VEH 处理）、实操后复盘与理解确认，证据齐全并正式验收。
+下一步: 由 DS 开始 Day 17 反调试基础（PEB.BeingDebugged/NtGlobalFlag/IsDebuggerPresent）的理论前置。
 
 ## Decisions  
+
+- <!-- at:2026-08-09T23:45:00+08:00 --> Day 16 调试器原理正式完成：DS 理论前置（断点触发→内核→异常分发顺序调试器最优先→DebugPort 双向专线→调试事件循环→反调试检查点）全部通过理解确认；实操证据齐全——独立运行 DebugPort=NULL + VEH 接住 0xE1234001 退出 0；x64dbg 中途 attach 后程序自查 DebugPort 变 0xFFFFFFFFFFFFFFFF（NULL→非空实时对比）；抛 0xE1234001 被 x64dbg 先停住（first-chance），Shift+F9 放行后 VEH 打印并 done；后台标准 Win32 调试 API 验证器（DebuggerLab\verify\dbg16_check.py、attach16_check.py）复现同一顺序、退出码 0。环境事实修正：x64dbg 创建进程模式在本机 ntdll 初始化期（LoadLibraryW 线程，ntdll+0x1C286 附近）必现 C0000005 噪音，Shift+F9→第二次异常（进程将终止）、F9→原地再停；Day 15 记录的"headless 特有、不影响 GUI"结论不成立；绕法=独立运行+中途 attach（attach 本身也是"调试器可以中途挂上"理论的实战验证）。Day16DebuggerLab（DebuggerLab 项目，含 verify 验证脚本）已入学习.sln。
 
 - <!-- at:2026-08-09T01:50:00+08:00 --> Day 15 硬件断点（HWBP）正式完成：DS 理论前置（软件断点 vs 硬件断点、DR0-DR7 分工、触发条件、one-shot、反检测闭环）全部通过理解确认；实操证据齐全——普通 x64dbg 中 DR0-DR7 初始全 0、硬件执行断点（DR0=GameTick 地址、DR7=1）命中 RIP=GameTick、硬件写入断点（DR0=g_hp、DR7=0xD0001）命中 RIP=TakeDamage 写血量指令、软件断点 bp 同址命中；后台 Win32 调试 API 验证器复测执行/写入断点（DR6 bit0=1）全部成功。环境事实：x64dbg headless 有 ntdll C0000005 噪音（LoadLibraryW 线程，标准调试 API 下程序无异常），已定位为 headless 特有缺陷，不影响普通 GUI 实操。
 
@@ -153,6 +155,8 @@ status: in-progress
 - <!-- id:f_day12_headless_entry task:t_hook_inline --> 初始 x64dbg headless `-c` 路线被默认 `EntryBreakpoint=1` 和启动时序截停在 system/mainCRTStartup；改用 `-cf` 脚本清除 `mainCRTStartup` 后才稳定命中 `HookAdd`，因此前面的 system/entry breakpoint 输出不算 Day 12 调试证据。
 
 ## Completed Work
+
+- <!-- ref:t_debugger at:2026-08-09T23:45:00+08:00 --> Day 16 正式完成：DebuggerLab 工程（`学习\Dll1\DebuggerLab`）接入 `学习.sln`，Debug/Release 编译与独立运行通过；普通 x64dbg 中途 attach 实操证据齐全（DebugPort NULL→非空、0xE1234001 先到调试器 first-chance、Shift+F9 放行后 VEH 处理、done 退出）；用户理解确认与复盘通过；创建期 ntdll C0000005 噪音的绕法（独立运行+attach）已记录，Day 15"headless 特有"结论作废。
 
 - <!-- ref:t_hook_hwbp at:2026-08-09T01:50:00+08:00 --> Day 15 正式完成：HWBPLab 工程（`学习\Dll1\HWBPLab`）接入 `学习.sln`，Debug/Release 编译与独立运行通过；普通 x64dbg 实操三连（执行断点/写入断点/软件断点对比）证据齐全，用户理解确认与复盘通过，反作弊检测原理（查 CC 防软件断点、读 DR 防硬件断点）复述正确。
 
