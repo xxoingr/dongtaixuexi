@@ -65,14 +65,16 @@ status: in-progress
 
 ## Current Status  
 
-进度: 16/30 (53%) — 第一阶段
+进度: 17/30 (57%) — 第一阶段
 路线: Day 8-60 主路线保持不变；DS 负责日常全流程（教学、实操引导、日常实验工程、复盘与网站闭环）；Sol 负责学习计划大方向、高难救场和每 3-5 课定期抽查
 教学阶段: DS 理论前置
 实操模型: DS 负责引导用户逐步实操并核对可见证据及日常闭环；Sol 只在大方向、救场和抽查时介入
-正在: Day 17 反调试基础 — 尚未开始。Day 16 调试器原理已由 DS 完成理论前置、实操引导（独立运行 + 中途 attach 验证 DebugPort NULL→非空、0xE1234001 异常分发顺序、放行后 VEH 处理）、实操后复盘与理解确认，证据齐全并正式验收。
-下一步: 由 DS 开始 Day 17 反调试基础（PEB.BeingDebugged/NtGlobalFlag/IsDebuggerPresent）的理论前置。
+正在: Day 18 高级反调试 — 尚未开始。Day 17 反调试基础已由 DS 完成理论前置、实操引导（独立运行 + 中途 attach 验证三检查点触发差异）、实操后复盘与理解确认，证据齐全并正式验收。
+下一步: 由 DS 开始 Day 18 高级反调试（RDTSC 计时检测/TLS 回调/NtQueryInformationProcess）的理论前置。
 
 ## Decisions  
+
+- <!-- at:2026-08-09T23:59:00+08:00 --> Day 17 反调试基础正式完成：DS 理论前置（PEB 档案袋/BeingDebugged/IsDebuggerPresent 导入表痕迹/堆标志概念）全部通过理解确认；实操证据齐全——独立运行三检查点 0/0/0x00000000 退出 0；x64dbg 中途 attach 后 [复查] 1/1/0x00000000（堆标志不触发）；后台 DEBUG_PROCESS 创建 1/1/0x40000060（堆标志触发），三检查点各管一段实测成立。技术修正：网上常见的 NtGlobalFlag 读法（堆+0x68、KUSER_SHARED_DATA+0x320）在本机实测不可靠，跨进程读 PEB/堆 hexdump 核对后确定用堆头 +0x74 ForceFlags（x64）；AntiDebugLab 项目（含 verify/peb_probe.py 探针）已入学习.sln。
 
 - <!-- at:2026-08-09T23:45:00+08:00 --> Day 16 调试器原理正式完成：DS 理论前置（断点触发→内核→异常分发顺序调试器最优先→DebugPort 双向专线→调试事件循环→反调试检查点）全部通过理解确认；实操证据齐全——独立运行 DebugPort=NULL + VEH 接住 0xE1234001 退出 0；x64dbg 中途 attach 后程序自查 DebugPort 变 0xFFFFFFFFFFFFFFFF（NULL→非空实时对比）；抛 0xE1234001 被 x64dbg 先停住（first-chance），Shift+F9 放行后 VEH 打印并 done；后台标准 Win32 调试 API 验证器（DebuggerLab\verify\dbg16_check.py、attach16_check.py）复现同一顺序、退出码 0。环境事实修正：x64dbg 创建进程模式在本机 ntdll 初始化期（LoadLibraryW 线程，ntdll+0x1C286 附近）必现 C0000005 噪音，Shift+F9→第二次异常（进程将终止）、F9→原地再停；Day 15 记录的"headless 特有、不影响 GUI"结论不成立；绕法=独立运行+中途 attach（attach 本身也是"调试器可以中途挂上"理论的实战验证）。Day16DebuggerLab（DebuggerLab 项目，含 verify 验证脚本）已入学习.sln。
 
@@ -155,6 +157,8 @@ status: in-progress
 - <!-- id:f_day12_headless_entry task:t_hook_inline --> 初始 x64dbg headless `-c` 路线被默认 `EntryBreakpoint=1` 和启动时序截停在 system/mainCRTStartup；改用 `-cf` 脚本清除 `mainCRTStartup` 后才稳定命中 `HookAdd`，因此前面的 system/entry breakpoint 输出不算 Day 12 调试证据。
 
 ## Completed Work
+
+- <!-- ref:t_anti_debug_peb at:2026-08-09T23:59:00+08:00 --> Day 17 正式完成：AntiDebugLab 工程（`学习\Dll1\AntiDebugLab`）接入 `学习.sln`，Debug/Release 编译与独立运行通过；普通 x64dbg 中途 attach 实操证据齐全（[复查] 1/1/0x00000000，堆标志不触发）；后台 DEBUG_PROCESS 创建验证 1/1/0x40000060；用户理解确认与复盘通过；NtGlobalFlag 偏移实测修正（用堆头 +0x74 ForceFlags）已记录。
 
 - <!-- ref:t_debugger at:2026-08-09T23:45:00+08:00 --> Day 16 正式完成：DebuggerLab 工程（`学习\Dll1\DebuggerLab`）接入 `学习.sln`，Debug/Release 编译与独立运行通过；普通 x64dbg 中途 attach 实操证据齐全（DebugPort NULL→非空、0xE1234001 先到调试器 first-chance、Shift+F9 放行后 VEH 处理、done 退出）；用户理解确认与复盘通过；创建期 ntdll C0000005 噪音的绕法（独立运行+attach）已记录，Day 15"headless 特有"结论作废。
 
