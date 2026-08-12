@@ -211,8 +211,13 @@
   "18": {
     "title": "高级反调试",
     "video": "",
-    "html": "<div class=\"planned-box\"><h3>学习预告</h3><p>RDTSC 计时、TLS 回调、NtQueryInformationProcess、异常差异</p><p>这一课还没正式开始，学完后会补充完整原理、实验记录、调试证据和失败踩坑。</p></div>",
-    "status": "planned"
+    "html": "<h3>本课要解决什么</h3><p>Day 17 的三个检查点都在 main 函数里\"翻记录\"，而记录（PEB 公告栏）可以被破解者撕掉。本课讲三种更隐蔽的查岗方式：<b>RDTSC 掐秒表（量执行时间）、TLS 回调（抢在 main 之前查）、NtQueryInformationProcess（绕开传话员直接查内核深层的 DebugPort 专线）</b>。一句话核心结论：<b>标记可以伪装，时间没法伪装；浅层档案能撕，内核金库的登记簿撕不到——三种方式各靠一个\"伪装不了\"的点识破调试器。</b></p><h3>三个检查点</h3><table><tr><th>检查点</th><th>问谁 / 靠什么</th><th>独立运行</th><th>中途 attach</th><th>怕什么</th></tr><tr><td>RDTSC</td><td>CPU 硬件时钟（指令直读，无中间人）</td><td>基线 55~210 万 cycles</td><td>attach 不停顿不暴涨</td><td>断点/单步停顿必暴涨，无法伪装</td></tr><tr><td>TLS 回调</td><td>PE 文件 .CRT$XLB 名单，加载器在 main 前点名</td><td>回调先查（0/0）</td><td>—</td><td>名单可被改（Day 19）</td></tr><tr><td>NTQ → DebugPort</td><td>内核深层的调试专线（用户态改不了）</td><td>0（邮路未建）</td><td>0xFFFFFFFFFFFFFFFF（attach 也亮！）</td><td>被 hook 掉 NTQ 本身（Day 19）</td></tr></table><p>为什么 RDTSC 骗不了：系统时间 API（GetTickCount 等）是\"大厅墙上的挂钟\"，有报时员（函数调用）可以拦；RDTSC 是 CPU 硬件指令，程序自己低头看手腕上的秒表，不经过任何函数，没有\"回答者\"可替换。为什么 DebugPort 撕不掉：传话员（IsDebuggerPresent）看的是用户态公告栏（PEB），破解者伸手能撕；NTQ 查的邮路登记簿在内核金库里，用户态的手伸不下去——而 attach 时系统会立刻建好邮路，所以中途挂上也亮，这一点和 Day 17 的堆标志（attach 不亮）正好相反。</p><h3>执行链</h3><ol><li><b>RDTSC</b>：t0=读一次时钟 → 执行被测代码 → t1=再读一次 → 耗时=t1−t0。调试器只要在中间停下（断点/单步），耗时就从\"微秒级\"暴涨到\"秒级\"（几十亿 cycles），一次停顿就露馅</li><li><b>TLS 回调</b>：程序文件里登记一张\"入场名单\"（.CRT$XLB 段），系统加载器在 main 之前先点名，名单上的回调先跑——检测代码放进回调里，就抢在\"调试者在入口点下断\"之前先看了一遍</li><li><b>NTQ → DebugPort</b>：程序调 NtQueryInformationProcess(ProcessDebugPort=7) 问内核\"我的调试邮路建了吗\"——没建（0）= 没调试；建了（非 0）= 有调试器正在跟我通信</li></ol><h3>实操证据（2026-08-12 实测）</h3><p>实验程序 Day18AdvancedAntiDebugLab（AdvancedAntiDebugLab 项目，学习.sln，x64 Debug，输出 学习/Dll1/x64/Debug/）：TLS 回调先查 → 3 轮基线 → 15 轮循环（每轮 RDTSC+DebugPort+PEB 自查打印）→ 等待回车复查。</p><ul><li>独立运行：<b>[TLS] 0/0</b>（回调确实抢在 main 前查过）；RDTSC 基线 55~210 万 cycles；DebugPort=0、PEB=0；done 退出码 0</li><li>x64dbg 中途 attach：<b>[7] 行起 DebugPort 变 0xFFFFFFFFFFFFFFFF、PEB=1</b>——attach 也亮，深层档案抓中途挂载</li><li>断点下在两次 rdtsc 之间（0x118D，循环顶）：撞断点停留约数十秒后放行，<b>[复查] RDTSC=59074751553（约 590 亿 cycles），是正常值的约 1000 倍</b></li><li>后台验证器（verify/day18_check.py，标准 Win32 调试 API）：独立创建 DebugPort=0/PEB=0；DEBUG_PROCESS 创建 DebugPort=0xFFFFFFFFFFFFFFFF/PEB=1，跨进程读数与程序自查完全一致</li><li>x64dbg 自带\"TLS 回调断点\"功能：attach 时自动在 DLL 的 TLS 回调处下断点并停在 int 3——印证\"回调是调试器已知的岗哨位置，赢的是时间差不是调试器本身\"</li></ul><h3>失败实验与坑（重要）</h3><ul><li><b>软件断点反复命中，看着像\"F9 没反应\"</b>：断点下在循环顶（118D），程序每转一圈都经过它；按 F9 后跑一小段又撞上，反复暂停。真相不是运行按钮坏了，是断点把自己反复拦下。解法：点断点行按 F2 取消，再 F9 放行</li><li><b>双击运行的控制台窗口会随 done 自动关闭</b>：复查输出一闪而过。想看完整输出，可在程序运行中（循环轮次内）下断点，或从命令行启动（窗口保留）</li><li><b>x64dbg attach 后目标会先暂停一下</b>：这是正常的（挂载后需要 F9 继续），不是卡死；日志出现\"INT3 断点于 ...118D\"说明断点命中而非故障</li></ul><h3>逆向者/防御视角</h3><p>分析者视角：RDTSC 检测的特征是代码里出现两次 rdtsc（反汇编可见 0F 31），可先搜特征码再决定绕法；TLS 回调在 PE 的 TLS 目录可见，x64dbg 甚至专门有\"TLS 回调断点\"；查 DebugPort 的特征是导入 ntdll 的 NtQueryInformationProcess + 类别号 7。防御者视角：三种方式必须叠用——PEB 可改、RDTSC 段可 NOP、TLS 名单可改、NTQ 可 hook，每种都有专属死穴，叠用才逼破解者每个坑都填上，漏一个就被抓；检测间还能互相对答案（你改平了时间，反而暴露在动手脚）。</p><h3>与前后课程关联</h3><p>建立在 Day 16（DebugPort 邮路：异常分发时调试器最优先，信走这条邮路）和 Day 17（PEB 档案袋/堆标志/attach 差异）之上：本课的 DebugPort 就是 Day 16 那条邮路的\"检查点版\"，attach 与创建差异与 Day 17 的堆标志形成对照（堆标志 attach 不亮、DebugPort attach 亮）。为 Day 19（绕过反调试：手动 Patch/ScyllaHide 原理/反反调试思维）埋下伏笔——知道了每种检测的死穴，才知道怎么绕。</p>",
+    "status": "done",
+    "practice": {
+      "tools": "Visual Studio 18/MSBuild v145、普通 x64dbg x64、Python ctypes 标准 Win32 调试 API 验证器（day18_check.py）",
+      "target": "Day18AdvancedAntiDebugLab.exe（Debug x64，AdvancedAntiDebugLab 项目，学习.sln；输出 学习/Dll1/x64/Debug/）",
+      "result": "独立运行 TLS 0/0、RDTSC 基线 55~210 万 cycles、DebugPort=0、PEB=0；x64dbg attach 后 DebugPort 变 0xFFFFFFFFFFFFFFFF、PEB=1（[7] 行起）；断点卡在两次 rdtsc 之间后复查 RDTSC=59074751553（约 1000 倍暴涨）；后台 DEBUG_PROCESS 验证跨进程 DebugPort/PEB 与程序自查一致"
+    }
   },
   "19": {
     "title": "绕过反调试",
@@ -381,6 +386,15 @@
         "Day 14: VEH Hook + SEH 对比 — DS 前置与实操后复盘、Sol 工程/调试证据验收全部完成",
         "证据：Debug/Release Rebuild 与独立运行退出码 0；E0421401 由 VEH 处理返回 108，E0421402 按 VEH → SehFilter 顺序返回 200；Debug RVA 0x1240/0x1400 与 x64 .pdata/unwind 元数据已核对",
         "失败边界：普通 x64dbg GUI 在嵌套异常处理者软件断点人工续跑时出现非目标 C0000005，精确内部根因未验证；稳定路线改为新进程一次性检查点"
+      ]
+    },
+    {
+      "date": "2026-08-12",
+      "items": [
+        "Day 18: 高级反调试 — RDTSC 计时/TLS 回调/NtQueryInformationProcess(DebugPort) 理论+实操验收完成",
+        "证据：独立运行 TLS 0/0 + RDTSC 基线 55~210 万 + DebugPort=0；attach 后 DebugPort=0xFFFFFFFFFFFFFFFF、PEB=1（attach 也亮，与 Day 17 堆标志对照）；断点卡在两次 rdtsc 之间复查 RDTSC 590 亿（约 1000 倍）；后台 DEBUG_PROCESS 验证器跨进程复核一致",
+        "坑：软件断点下在循环顶会反复命中（看着像 F9 没反应）；双击运行的控制台窗口随 done 自动关闭；x64dbg attach 后目标先暂停属正常",
+        "新增 AdvancedAntiDebugLab 项目（含 verify/day18_check.py）入学习.sln"
       ]
     }
   ]

@@ -65,14 +65,16 @@ status: in-progress
 
 ## Current Status  
 
-进度: 17/30 (57%) — 第一阶段
+进度: 18/30 (60%) — 第一阶段
 路线: Day 8-60 主路线保持不变；DS 负责日常全流程（教学、实操引导、日常实验工程、复盘与网站闭环）；Sol 负责学习计划大方向、高难救场和每 3-5 课定期抽查
 教学阶段: DS 理论前置
 实操模型: DS 负责引导用户逐步实操并核对可见证据及日常闭环；Sol 只在大方向、救场和抽查时介入
-正在: Day 18 高级反调试 — 尚未开始。Day 17 反调试基础已由 DS 完成理论前置、实操引导（独立运行 + 中途 attach 验证三检查点触发差异）、实操后复盘与理解确认，证据齐全并正式验收。
-下一步: 由 DS 开始 Day 18 高级反调试（RDTSC 计时检测/TLS 回调/NtQueryInformationProcess）的理论前置。
+正在: Day 18 高级反调试 — 已完成。DS 理论前置（RDTSC 掐秒表/TLS 回调门槛岗哨/NtQueryInformationProcess 深层档案）全部通过理解确认；实操证据齐全——独立运行 TLS 0/0、RDTSC 基线 55~210 万 cycles、DebugPort=0；x64dbg 中途 attach 后 [7] 行起 DebugPort 变 0xFFFFFFFFFFFFFFFF、PEB=1（attach 也亮，与 Day 17 堆标志对照）；断点卡在两次 rdtsc 之间（0x118D）后复查 RDTSC=59074751553（约 1000 倍暴涨）；后台 DEBUG_PROCESS 验证器跨进程复核一致。实操中顺带验证了"软件断点下在循环顶会反复命中"（看着像 F9 没反应）与 x64dbg 自动 TLS 回调断点功能。
+下一步: 由 DS 开始 Day 19 绕过反调试（手动 Patch/ScyllaHide 原理/反反调试思维）的理论前置。
 
 ## Decisions  
+
+- <!-- at:2026-08-12T19:30:00+08:00 --> Day 18 高级反调试正式完成：DS 理论前置（RDTSC 掐秒表/TLS 回调门槛岗哨/NtQueryInformationProcess 深层档案、挂钟 vs 手腕秒表、公告栏 vs 金库登记簿类比）全部通过理解确认；实操证据齐全——独立运行 [TLS] 0/0 + RDTSC 基线 55~210 万 cycles + DebugPort=0/PEB=0 退出 0；x64dbg 中途 attach 后 [7] 行起 DebugPort=0xFFFFFFFFFFFFFFFF、PEB=1（中途 attach 也亮，与 Day 17 堆标志 attach 不亮形成对照）；断点下在两次 rdtsc 之间（MeasureCycles 0x118D 循环顶）停留数十秒后复查 RDTSC=59074751553（约 1000 倍暴涨）；后台 DEBUG_PROCESS 验证器（day18_check.py）跨进程复核 DebugPort/PEB 与程序自查一致。实操坑记录：软件断点下循环顶反复命中（像 F9 没反应，需 F2 取消再放行）；双击运行控制台随 done 自动关闭；x64dbg attach 后先暂停属正常；x64dbg 自动 TLS 回调断点功能实测存在（停在 gpp64.dll 的 int 3）。AdvancedAntiDebugLab 项目（含 verify/day18_check.py）已入学习.sln。
 
 - <!-- at:2026-08-09T23:59:00+08:00 --> Day 17 反调试基础正式完成：DS 理论前置（PEB 档案袋/BeingDebugged/IsDebuggerPresent 导入表痕迹/堆标志概念）全部通过理解确认；实操证据齐全——独立运行三检查点 0/0/0x00000000 退出 0；x64dbg 中途 attach 后 [复查] 1/1/0x00000000（堆标志不触发）；后台 DEBUG_PROCESS 创建 1/1/0x40000060（堆标志触发），三检查点各管一段实测成立。技术修正：网上常见的 NtGlobalFlag 读法（堆+0x68、KUSER_SHARED_DATA+0x320）在本机实测不可靠，跨进程读 PEB/堆 hexdump 核对后确定用堆头 +0x74 ForceFlags（x64）；AntiDebugLab 项目（含 verify/peb_probe.py 探针）已入学习.sln。
 
