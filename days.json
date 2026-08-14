@@ -333,6 +333,15 @@
   ],
   "log": [
     {
+      "date": "2026-08-14",
+      "items": [
+        "Day 19: 绕过反调试 — 手动 Patch/ScyllaHide 原理/反反调试思维 理论+实操验收完成。Patch 改的是检测结果的使用处（出口）不是检测本身：nop 抹掉逃跑动作（检测照跑）、jmp 无视检测结果；反调试像打地鼠（分层+接力），正确姿势=先摸清检测点全图一次堵全",
+        "证据：x64dbg 三处 Patch 逐处核对（1225 jne→90 90、122E je→EB 18 jmp 1248、1297 jbe→EB 18 jmp 12B1）；F9 后控制台 15 轮全部通过没有逃跑 done；DebugPort=0xFFFFFFFFFFFFFFFF/PEB=1 照查不逃；FatalExit 断点命中时调用栈为 CRT 正常收尾（exit→_wassert→FatalExit）无逃跑帧",
+        "坑：nop 只写 1 字节会挤乱下一条指令（75 09 是 2 字节，CPU 按字节流读指令），用 Ctrl+E 二进制编辑写满字节；x64dbg TLS 回调自动断点与 GamePP 注入 GPP64.dll 交互致 ntdll C0000005 噪音（Sol 救场关闭 TLS Callback 自动断点后消失，正式 x64dbg.ini 已修复并留备份）",
+        "工程：AntiAntiDebugLab 项目（Day19AntiAntiDebugLab.exe，10 秒 attach 窗口）Sol 后台预制验收三检查点通过"
+      ]
+    },
+    {
       "date": "2026-08-09",
       "items": [
         "Day 15: 硬件断点 (HWBP) — DR0-DR7 调试寄存器、执行/写入断点、反检测。软件断点=改代码字节(CC)，硬件断点=改 CPU 记事本(DR 寄存器)不改代码；写入断点抓到'改血量那条指令'(CE Find what writes 原理)；反作弊查 CC 防软件断点、读 DR 防硬件断点",
