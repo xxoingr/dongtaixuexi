@@ -3,7 +3,7 @@ schema: cc-dash/session@1
 project: windows-reverse-learning  
 session_id: s_2026-07-30_day8-apc  
 started: 2026-07-30T00:00:00+08:00  
-last_updated: 2026-08-09T01:50:00+08:00
+last_updated: 2026-08-14T19:20:08+08:00
 status: in-progress
 ---  
 
@@ -35,7 +35,7 @@ status: in-progress
 - [ ] <!-- id:t_debugger dep:t_hook_hwbp --> Day 16: 调试器原理 — 断点触发/异常分发/DebugPort  
 - [ ] <!-- id:t_anti_debug_peb dep:t_debugger --> Day 17: 反调试基础 — PEB.BeingDebugged/NtGlobalFlag/IsDebuggerPresent  
 - [ ] <!-- id:t_anti_debug_time dep:t_anti_debug_peb --> Day 18: 高级反调试 — RDTSC计时/TLS回调/NtQueryInformationProcess  
-- [ ] <!-- id:t_anti_anti_debug dep:t_anti_debug_time --> Day 19: 绕过反调试 — 手动Patch/ScyllaHide原理/反反调试思维  
+- [x] <!-- id:t_anti_anti_debug dep:t_anti_debug_time --> Day 19: 绕过反调试 — 手动Patch/ScyllaHide原理/反反调试思维
 - [ ] <!-- id:t_protection dep:t_anti_anti_debug --> Day 20: 软件保护综述 — 加壳/混淆/自修改/反篡改/VM保护概念  
 
 **阶段四：内核基础 (21-26)**  
@@ -65,14 +65,24 @@ status: in-progress
 
 ## Current Status  
 
-进度: 18/30 (60%) — 第一阶段
-路线: Day 8-60 主路线保持不变；DS 负责日常全流程（教学、实操引导、日常实验工程、复盘与网站闭环）；Sol 负责学习计划大方向、高难救场和每 3-5 课定期抽查
+进度: 19/30 (63%) — 第一阶段
+路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
 教学阶段: DS 理论前置
-实操模型: DS 负责引导用户逐步实操并核对可见证据及日常闭环；Sol 只在大方向、救场和抽查时介入
-正在: Day 18 高级反调试 — 已完成。DS 理论前置（RDTSC 掐秒表/TLS 回调门槛岗哨/NtQueryInformationProcess 深层档案）全部通过理解确认；实操证据齐全——独立运行 TLS 0/0、RDTSC 基线 55~210 万 cycles、DebugPort=0；x64dbg 中途 attach 后 [7] 行起 DebugPort 变 0xFFFFFFFFFFFFFFFF、PEB=1（attach 也亮，与 Day 17 堆标志对照）；断点卡在两次 rdtsc 之间（0x118D）后复查 RDTSC=59074751553（约 1000 倍暴涨）；后台 DEBUG_PROCESS 验证器跨进程复核一致。实操中顺带验证了"软件断点下在循环顶会反复命中"（看着像 F9 没反应）与 x64dbg 自动 TLS 回调断点功能。
-下一步: 由 DS 开始 Day 19 绕过反调试（手动 Patch/ScyllaHide 原理/反反调试思维）的理论前置。
+实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
+正在: Day 20 软件保护综述 — 理论前置待开始（加壳/混淆/自修改/反篡改/VM保护概念）。
+下一步: DS 开始 Day 20 理论前置；Sol 按链路准备工程。
 
 ## Decisions  
+
+- <!-- at:2026-08-14T20:00:00+08:00 --> Day 19 绕过反调试正式完成：救场后干净 x64dbg 会话重走完整实操——attach（无 C0000005 噪音）→ bp GuardDebugPort 命中 → 三处 Patch 逐处核对（1225 75 09→90 90、122E 74 18→EB 18 jmp 1248、1297 76 18→EB 18 jmp 12B1）→ F9 后控制台"15 轮全部通过，没有逃跑"+done；FatalExit 断点命中时调用栈为 CRT 正常收尾（exit→_wassert→FatalExit，无 day19 帧），警报器抓到的不是逃跑。复盘三问全部通过（Patch 改出口不改检测、打地鼠=分层接力检测需一次堵全、1 字节挤乱=CPU 按字节流读指令）。days.json 已写入正式文章并 build 发布，进度 19/30。
+
+- <!-- at:2026-08-14T19:20:08+08:00 --> v5.3 协作基础设施已同步完成：长期规则、SESSION、`learning-closeout` skill、上下文助手源码/README/契约测试统一为 `DS 理论前置 -> Sol 工程准备 -> DS 实操教学 -> DS 实操后复盘 -> DS 闭环维护`；契约测试 8/8 通过。桌面正式入口 `学习上下文助手.exe` 已重建为 `2026-08-14-v5.3`，与构建产物 SHA-256 一致，实际启动标题和关闭清理验证通过；旧 v5.2 EXE 已保存在源码目录 backup 文件夹。本次协议与工具更新不构成 Day 19 学习证据，不改变 18/30 进度。
+
+- <!-- at:2026-08-14T19:12:02+08:00 --> 用户确认协议升级为 v5.3“Sol 工程预制 -> DS 教学闭环”：DS 完成基础理论后主动输出 `【给 Sol 的实操工程请求】`；Sol 按既定课程内容制作/修改实验工程并后台完成构建、独立运行和调试检查点验收，随后输出 `【给 DS 的实操教学交回卡】`；DS 使用已验收工程完成用户微步实操教学、截图证据核对、复盘和网站日常闭环。工程或交回卡与可见证据冲突时再由 Sol 救场。课程内容与 Day 8-60 路线不变；Day 19 现有工程与救场结果不重做，当前直接交回 DS 实操教学。
+
+- <!-- at:2026-08-14T19:06:46+08:00 --> Day 19 Sol 救场完成：`ntdll+0x1C286` 是 `RtlInitUnicodeStringEx` 的宽字符串扫描指令，异常线程实际为 GamePP 覆盖层的 `LoadLibraryW(GPP64.dll)` 注入线程；x64dbg 目录根部的 `Scylla.dll` 是自带导入表组件，plugins 目录为空，不存在 ScyllaHide 自动注入。隔离对照确认 `TlsCallbacks=0` 后仍加载 GPP64.dll、无 C0000005、程序正常以退出码1结束，因此故障分类为 x64dbg TLS 自动断点与 GamePP 注入初始化交互，而非 Day 19 代码、Patch、构建产物或 Windows 标准调试 API。已备份 `x64dbg.ini.day19-before-tls-fix.bak`，并将正式/隔离配置的用户及系统 TLS Callback 自动断点关闭；Day 保持 in-progress，交回 DS 继续实操与闭环。
+
+- <!-- at:2026-08-14T18:55:00+08:00 --> Day 19 实操触发 Sol 救场：x64dbg 环境 C0000005@ntdll+0x1C286（LoadLibraryW 线程）噪音阻塞实操。"文件→打开"与"中途 attach"两种模式均复现，Shift+F9 放行两次失败（第一次/第二次异常来回跳）。已确认事实：①程序与三处 Patch 字节均正确（1225→90 90、122E→EB 18 jmp 1248、1297→EB 18 jmp 12B1），且第一轮实测门卫1 双红灯未逃跑、门卫2 RDTSC=40329279 超阈值接棒逃跑（打地鼠已取证）；②python 标准调试 API attach 全程零异常、DEBUG_PROCESS 与独立运行均正常——问题特定于 x64dbg 环境；③x64dbg 位于 C:\Users\Administrator\Desktop\x64dbug\release\x64\，目录含 Scylla.dll，attach 后 F9 即停在 ntdll+0x1C286 C0000005 且程序窗口存活（主线程被挂起）。失败方法：Shift+F9 放行（两次）、重开会话（无效）。唯一缺口：x64dbg 环境在该机的 C0000005@ntdll+0x1C286 噪音的绕过/关闭方法（候选：x64dbg 异常过滤设置忽略 C0000005、关闭 TLS 回调自动断点、ScyllaHide 注入相关设置）。救场状态：待 Sol。
 
 - <!-- at:2026-08-12T19:30:00+08:00 --> Day 18 高级反调试正式完成：DS 理论前置（RDTSC 掐秒表/TLS 回调门槛岗哨/NtQueryInformationProcess 深层档案、挂钟 vs 手腕秒表、公告栏 vs 金库登记簿类比）全部通过理解确认；实操证据齐全——独立运行 [TLS] 0/0 + RDTSC 基线 55~210 万 cycles + DebugPort=0/PEB=0 退出 0；x64dbg 中途 attach 后 [7] 行起 DebugPort=0xFFFFFFFFFFFFFFFF、PEB=1（中途 attach 也亮，与 Day 17 堆标志 attach 不亮形成对照）；断点下在两次 rdtsc 之间（MeasureCycles 0x118D 循环顶）停留数十秒后复查 RDTSC=59074751553（约 1000 倍暴涨）；后台 DEBUG_PROCESS 验证器（day18_check.py）跨进程复核 DebugPort/PEB 与程序自查一致。实操坑记录：软件断点下循环顶反复命中（像 F9 没反应，需 F2 取消再放行）；双击运行控制台随 done 自动关闭；x64dbg attach 后先暂停属正常；x64dbg 自动 TLS 回调断点功能实测存在（停在 gpp64.dll 的 int 3）。AdvancedAntiDebugLab 项目（含 verify/day18_check.py）已入学习.sln。
 
@@ -160,6 +170,8 @@ status: in-progress
 
 ## Completed Work
 
+- <!-- ref:t_anti_anti_debug at:2026-08-14T20:00:00+08:00 --> Day 19 正式完成：AntiAntiDebugLab 工程（`学习\Dll1\AntiAntiDebugLab`）接入 `学习.sln`，Debug/Release 编译与独立运行通过；普通 x64dbg 三处 Patch 实操证据齐全（1225→90 90、122E→EB 18、1297→EB 18），15 轮全部通过无逃跑 done；打地鼠现象（只堵门卫1 时门卫2 RDTSC=40329279 接棒逃跑）与 1 字节挤乱坑均实测取证；用户理解确认与复盘通过；Sol 救场（x64dbg TLS 自动断点与 GamePP 注入交互致 C0000005，已关闭并备份）记录在案。
+
 - <!-- ref:t_anti_debug_peb at:2026-08-09T23:59:00+08:00 --> Day 17 正式完成：AntiDebugLab 工程（`学习\Dll1\AntiDebugLab`）接入 `学习.sln`，Debug/Release 编译与独立运行通过；普通 x64dbg 中途 attach 实操证据齐全（[复查] 1/1/0x00000000，堆标志不触发）；后台 DEBUG_PROCESS 创建验证 1/1/0x40000060；用户理解确认与复盘通过；NtGlobalFlag 偏移实测修正（用堆头 +0x74 ForceFlags）已记录。
 
 - <!-- ref:t_debugger at:2026-08-09T23:45:00+08:00 --> Day 16 正式完成：DebuggerLab 工程（`学习\Dll1\DebuggerLab`）接入 `学习.sln`，Debug/Release 编译与独立运行通过；普通 x64dbg 中途 attach 实操证据齐全（DebugPort NULL→非空、0xE1234001 先到调试器 first-chance、Shift+F9 放行后 VEH 处理、done 退出）；用户理解确认与复盘通过；创建期 ntdll C0000005 噪音的绕法（独立运行+attach）已记录，Day 15"headless 特有"结论作废。
@@ -219,7 +231,7 @@ status: in-progress
 ### 用户偏好  
 中文沟通，英文术语加括号解释。新手需详细引导，不要甩大纲。  
 学习方式：B站视频 + AI辅助 + 动手验证。每天投入时间多。  
-固定双 AI 模式：DS(V4flash max)负责日常全流程；Sol(5.6sol max)负责学习计划大方向、高难救场和定期抽查。
+固定双 AI 模式：DS(V4 Pro)负责日常全流程；Sol(5.6sol max)负责学习计划大方向、高难救场和定期抽查。
 模型切换由 Codex 自动判断并写入“实操模型”；用户只描述现象和理解，不负责判断技术难度。
 
 ### 每天教学结构 (GPT-5.5 制定)  
