@@ -216,7 +216,7 @@ status: in-progress
 - Day 14 Release: `C:\Users\Administrator\Desktop\学习\Dll1\x64\Release\Day14VEHHook.exe`
 - x64dbg 配置: `C:\Users\Administrator\Desktop\x64dbug\release\x64\x64dbg.ini`
 - 网站仓库: `C:\Users\Administrator\Desktop\dongtaixuexi\`  
-- 网站在线: https://xiaojia-afk.github.io/dongtaixuexi/  
+- 网站在线: https://xxoingr.github.io/dongtaixuexi/  
 - 新会话提示词工具: `C:\Users\Administrator\Desktop\学习上下文助手.exe`
 - 提示词助手源码: `C:\Users\Administrator\Documents\Codex\2026-07-31\ds-codex-4\outputs\learning-context-assistant\learning_context_assistant.py`
 - 学习数据: `C:\Users\Administrator\Desktop\dongtaixuexi\days.json`  
