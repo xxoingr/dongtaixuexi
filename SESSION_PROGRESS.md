@@ -3,7 +3,7 @@ schema: cc-dash/session@1
 project: windows-reverse-learning  
 session_id: s_2026-07-30_day8-apc  
 started: 2026-07-30T00:00:00+08:00  
-last_updated: 2026-08-14T19:20:08+08:00
+last_updated: 2026-08-15T21:37:21+08:00
 status: in-progress
 ---  
 
@@ -32,11 +32,11 @@ status: in-progress
 - [x] <!-- id:t_hook_hwbp dep:t_hook_veh --> Day 15: 硬件断点 (HWBP) — DR0-DR7寄存器/单次触发/反检测  
 
 **阶段三：反调试与保护 (16-20)**  
-- [ ] <!-- id:t_debugger dep:t_hook_hwbp --> Day 16: 调试器原理 — 断点触发/异常分发/DebugPort  
-- [ ] <!-- id:t_anti_debug_peb dep:t_debugger --> Day 17: 反调试基础 — PEB.BeingDebugged/NtGlobalFlag/IsDebuggerPresent  
-- [ ] <!-- id:t_anti_debug_time dep:t_anti_debug_peb --> Day 18: 高级反调试 — RDTSC计时/TLS回调/NtQueryInformationProcess  
+- [x] <!-- id:t_debugger dep:t_hook_hwbp --> Day 16: 调试器原理 — 断点触发/异常分发/DebugPort
+- [x] <!-- id:t_anti_debug_peb dep:t_debugger --> Day 17: 反调试基础 — PEB.BeingDebugged/NtGlobalFlag/IsDebuggerPresent
+- [x] <!-- id:t_anti_debug_time dep:t_anti_debug_peb --> Day 18: 高级反调试 — RDTSC计时/TLS回调/NtQueryInformationProcess
 - [x] <!-- id:t_anti_anti_debug dep:t_anti_debug_time --> Day 19: 绕过反调试 — 手动Patch/ScyllaHide原理/反反调试思维
-- [ ] <!-- id:t_protection dep:t_anti_anti_debug --> Day 20: 软件保护综述 — 加壳/混淆/自修改/反篡改/VM保护概念  
+- [x] <!-- id:t_protection dep:t_anti_anti_debug --> Day 20: 软件保护综述 — 加壳/混淆/自修改/反篡改/VM保护概念
 
 **阶段四：内核基础 (21-26)**  
 - [ ] <!-- id:t_kernel_arch dep:t_protection --> Day 21: 内核架构基础 — Ring0/Ring3/系统调用(syscall)/SSDT  
@@ -65,14 +65,19 @@ status: in-progress
 
 ## Current Status  
 
-进度: 19/30 (63%) — 第一阶段
+进度: 20/30 (67%) — 第一阶段
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
-教学阶段: DS 理论前置
+教学阶段: DS 闭环维护
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 20 软件保护综述 — 理论前置待开始（加壳/混淆/自修改/反篡改/VM保护概念）。
-下一步: DS 开始 Day 20 理论前置；Sol 按链路准备工程。
+正在: Day 20 软件保护综述 — 理论/实操/复盘完成，days.json 已更新，执行网站构建、验证与发布闭环。
+下一步: DS 完成 Day 20 闭环（node build.js → 验证 → 只暂存三文件 → 发布）；发布成功后 Day 20 正式结束，下节课 Day 21 内核架构基础。
 
 ## Decisions  
+
+- <!-- at:2026-08-15T23:00:00+08:00 --> Day 20 软件保护综述正式完成：DS 理论前置（五大概念）→ Sol 按方案 A 制作 ProtectionOverviewLab（字符串混淆 XOR + 完整性反篡改）并后台验收 → DS 微步实操教学（用户亲手取证：x64dbg 搜 DAY20_PLAIN_MARKER 命中/搜 DAY20_PROTECTED_MARKER 静态搜不到但 --lab 运行时还原；attach 改 payload 第一字节 31→30 后 integrity=TAMPERED+reaction=BLOCKED 退出码 20；对照不改 integrity=OK+feature_value=171+done 退出码 0）→ 复盘（攻击者掐出口不动检测的落点修正：改对账后的岔路口/让对账函数永远答对得上）。days.json 已写入正式文章并 build 发布，进度 20/30。
+- <!-- at:2026-08-15T21:37:21+08:00 --> Day 20 Sol 工程准备完成：新建 `学习\Dll1\ProtectionOverviewLab` 并接入 `学习.sln`，x64/v145/C++20；Debug/Release Rebuild、正常/篡改/非法参数路径、明文存在与保护字符串静态消失均通过自动核查；标准 Win32 调试 API 实际命中导出锚点 `Day20VerifyIntegrity`（本轮 Debug RVA 0x1160），四个教学锚点均可由导出名稳定定位。统一 Debug/Release 目录只保留 EXE，PDB/导入库留在项目中间目录。Day 保持 in-progress，教学阶段转为 `DS 实操教学`。
+
+- <!-- at:2026-08-15T21:11:57+08:00 --> Day 20 软件保护综述理论前置完成并交接 Sol 工程准备。五大概念均已讲并逐条确认理解：VM 保护（翻译机+字节码、VMP 是产品名、代价=大小与速度、重点保护、验证结果混入功能数据、木桶原理/掐出口打法）、加壳（打包压缩、藏入口点与导入表、dump 内存转储破法）、混淆（搅乱顺序/等价替换、费劲但能读懂、与 VM 的区别=改长相 vs 换执行者）、自修改（文件与运行对不上账、冲掉软件断点 CC、硬件断点 DR 寄存器可防）、反篡改（自查被改/防换环境、检测与反应分离=Day 19 打地鼠）、多层叠加提高逆向成本。用户已能用自己的话复述关键区别。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
 
 - <!-- at:2026-08-14T20:00:00+08:00 --> Day 19 绕过反调试正式完成：救场后干净 x64dbg 会话重走完整实操——attach（无 C0000005 噪音）→ bp GuardDebugPort 命中 → 三处 Patch 逐处核对（1225 75 09→90 90、122E 74 18→EB 18 jmp 1248、1297 76 18→EB 18 jmp 12B1）→ F9 后控制台"15 轮全部通过，没有逃跑"+done；FatalExit 断点命中时调用栈为 CRT 正常收尾（exit→_wassert→FatalExit，无 day19 帧），警报器抓到的不是逃跑。复盘三问全部通过（Patch 改出口不改检测、打地鼠=分层接力检测需一次堵全、1 字节挤乱=CPU 按字节流读指令）。days.json 已写入正式文章并 build 发布，进度 19/30。
 
