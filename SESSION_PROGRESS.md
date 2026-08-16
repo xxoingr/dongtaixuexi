@@ -3,7 +3,7 @@ schema: cc-dash/session@1
 project: windows-reverse-learning  
 session_id: s_2026-07-30_day8-apc  
 started: 2026-07-30T00:00:00+08:00  
-last_updated: 2026-08-15T21:37:21+08:00
+last_updated: 2026-08-16T22:32:34+08:00
 status: in-progress
 ---  
 
@@ -39,7 +39,7 @@ status: in-progress
 - [x] <!-- id:t_protection dep:t_anti_anti_debug --> Day 20: 软件保护综述 — 加壳/混淆/自修改/反篡改/VM保护概念
 
 **阶段四：内核基础 (21-26)**  
-- [ ] <!-- id:t_kernel_arch dep:t_protection --> Day 21: 内核架构基础 — Ring0/Ring3/系统调用(syscall)/SSDT  
+- [x] <!-- id:t_kernel_arch dep:t_protection --> Day 21: 内核架构基础 — Ring0/Ring3/系统调用(syscall)/SSDT
 - [ ] <!-- id:t_kernel_callback dep:t_kernel_arch --> Day 22: 内核回调机制 — PsSetCreateProcessNotifyRoutine + 驱动入口  
 - [ ] <!-- id:t_kernel_ssdt dep:t_kernel_callback --> Day 23: SSDT Hook原理 — 内核级Hook/KD调试/VTL0/VTL1概念  
 - [ ] <!-- id:t_kernel_comm dep:t_kernel_ssdt --> Day 24: 驱动通信 + 对象生命周期 — IOCTL/共享内存/引用计数/IRQL与锁  
@@ -65,15 +65,18 @@ status: in-progress
 
 ## Current Status  
 
-进度: 20/30 (67%) — 第一阶段
+进度: 21/30 (70%) — 第一阶段
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
 教学阶段: DS 闭环维护
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 20 软件保护综述 — 理论/实操/复盘完成，days.json 已更新，执行网站构建、验证与发布闭环。
-下一步: DS 完成 Day 20 闭环（node build.js → 验证 → 只暂存三文件 → 发布）；发布成功后 Day 20 正式结束，下节课 Day 21 内核架构基础。
+正在: Day 21 内核架构基础 — 理论/实操/复盘完成，days.json 待更新，执行网站构建、验证与发布闭环。
+下一步: DS 完成 Day 21 闭环（node build.js → 验证 → 只暂存三文件 → 发布）；发布成功后 Day 21 正式结束，下节课 Day 22 内核回调机制。
 
 ## Decisions  
 
+- <!-- at:2026-08-16T23:10:00+08:00 --> Day 21 内核架构基础正式完成：DS 理论前置（Ring0/Ring3/syscall/SSDT + 查表找地址与 IAT 对照）→ Sol 制作 KernelArchitectureLab（纯用户态，不写驱动不改 SSDT）并后台验收 → DS 微步实操（用户亲手取证：--lab 打印 mode=Ring3(USER)/api=ntdll!NtQuerySystemInformation/syscall_opcode=0F 05；attach 后 Ctrl+G 到入口见 mov r10,rcx/mov eax,0x36/syscall/ret；F2 断点命中 INT3@DC62=入口+0x12 即 syscall 处；--no-wait 输出 ntstatus=0x00000000+transition=Ring3->syscall->Ring0->Ring3+done）→ 复盘两问通过（哪段是用户态/内核、为什么不能翻墙=权限隔离）。days.json 待写入正式文章并 build 发布，进度 21/30。
+- <!-- at:2026-08-16T22:32:34+08:00 --> Day 21 Sol 工程准备完成：新建 `学习\Dll1\KernelArchitectureLab` 并接入 `学习.sln`，仅含 x64 用户态程序；Debug/Release 解决方案级构建、独立运行、正常/lab/非法参数路径均通过。标准 Win32 调试 API 在 Debug/Release 中都实际命中 `ntdll!NtQuerySystemInformation`；当前系统导出 RVA `0x9DC50`，入口 `+0x12` 为 `0F 05 syscall`，但 RVA、服务号和绝对地址均按 Windows 版本/ASLR 变化，教学必须优先用导出名定位。教学阶段转为 `DS 实操教学`，Day 保持 in-progress。
+- <!-- at:2026-08-16T22:20:54+08:00 --> Day 21 内核架构基础理论前置完成并交接 Sol 工程准备。已讲并逐条确认理解：Ring3（用户态，权限低，崩了只影响自己）/Ring0（内核态，权限最高，碰一切）；权限隔离价值=防止单程序被入侵/有 bug 拖垮全系统；syscall=用户态向内核递申请单的唯一固定门（跨圈 Ring3→Ring0→Ring3，翻墙不行）；SSDT=内核的"服务号→代码地址"对照表，程序只报服务号不报人话；查表找地址与导入表（IAT）同类——IAT 是每家店门口路牌（只影响单程序）、SSDT 是全市地图（全系统共享），改 SSDT 即 SSDT Hook（Day 23 主角），与 Day 11/12 IAT/Inline Hook 同思路更高权限。用户能复述完整执行链：用户态 API → syscall 跨圈 → 查 SSDT → 执行 → 返回。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
 - <!-- at:2026-08-15T23:00:00+08:00 --> Day 20 软件保护综述正式完成：DS 理论前置（五大概念）→ Sol 按方案 A 制作 ProtectionOverviewLab（字符串混淆 XOR + 完整性反篡改）并后台验收 → DS 微步实操教学（用户亲手取证：x64dbg 搜 DAY20_PLAIN_MARKER 命中/搜 DAY20_PROTECTED_MARKER 静态搜不到但 --lab 运行时还原；attach 改 payload 第一字节 31→30 后 integrity=TAMPERED+reaction=BLOCKED 退出码 20；对照不改 integrity=OK+feature_value=171+done 退出码 0）→ 复盘（攻击者掐出口不动检测的落点修正：改对账后的岔路口/让对账函数永远答对得上）。days.json 已写入正式文章并 build 发布，进度 20/30。
 - <!-- at:2026-08-15T21:37:21+08:00 --> Day 20 Sol 工程准备完成：新建 `学习\Dll1\ProtectionOverviewLab` 并接入 `学习.sln`，x64/v145/C++20；Debug/Release Rebuild、正常/篡改/非法参数路径、明文存在与保护字符串静态消失均通过自动核查；标准 Win32 调试 API 实际命中导出锚点 `Day20VerifyIntegrity`（本轮 Debug RVA 0x1160），四个教学锚点均可由导出名稳定定位。统一 Debug/Release 目录只保留 EXE，PDB/导入库留在项目中间目录。Day 保持 in-progress，教学阶段转为 `DS 实操教学`。
 

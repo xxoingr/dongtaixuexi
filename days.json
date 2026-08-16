@@ -244,8 +244,13 @@
   "21": {
     "title": "内核架构基础",
     "video": "",
-    "html": "<div class=\"planned-box\"><h3>学习预告</h3><p>Ring0/Ring3、系统调用、SSDT、用户态与内核态边界</p><p>这一课还没正式开始，学完后会补充完整原理、实验记录、调试证据和失败踩坑。</p></div>",
-    "status": "planned"
+    "html": "<h3>本课要解决什么</h3><p>前面 20 天都在用户态（Ring3）打转，本课第一次看清 Windows 的分层结构：程序住在哪、高危操作谁来做、跨层走哪扇门。一句话核心结论：<b>用户态程序（Ring3）权限最低，任何碰硬件/碰别的进程的高危操作，都必须通过 syscall 这扇固定门递申请单，由内核（Ring0）代劳再返回结果。</b></p><h3>两个圈子对比表</h3><table><tr><th></th><th>Ring3（用户态）</th><th>Ring0（内核态）</th></tr><tr><td>谁住这</td><td>你的 exe、游戏、浏览器</td><td>Windows 核心、驱动</td></tr><tr><td>权限</td><td>最低，处处受管</td><td>最高，碰一切（内存/硬件/别的进程）</td></tr><tr><td>出错后果</td><td>只崩自己一个</td><td>整个系统蓝屏</td></tr><tr><td>类比</td><td>小区住户</td><td>物业总控室</td></tr></table><h3>系统调用（syscall）执行链</h3><p>程序要读文件，文件在硬盘、硬盘只有内核能碰，程序不能自己伸手，只能打报告。完整链：</p><pre><code>用户态程序调用 ReadFile（用户态窗口函数）\n  → ReadFile 内部执行 syscall 指令（跨圈的门，机器码 0F 05）\n  → CPU 身份 Ring3 切到 Ring0\n  → 内核按服务号查 SSDT 找代码地址\n  → 内核执行、返回结果、切回 Ring3</code></pre><p>关键点：跨圈只有这一扇固定门，翻墙行不通——CPU 只认 syscall 这条正式通道，别处想直接碰内核会被当场拦下。这也是保护体系能成立的原因。</p><h3>SSDT（系统服务描述符表）</h3><p>内核提供很多服务（读文件/开进程/分配内存），每项对应一段代码。程序递单子不报人话、只报<b>服务号（Service Number）</b>；内核拿号去 SSDT 查“号 → 代码地址”。</p><p><b>SSDT 与导入表（IAT）是同一类东西：都是“查表找地址”。</b>区别：IAT 在每个程序自己肚子里（改它只影响单程序，像改一家店门口路牌）；SSDT 在内核里、全系统共享（改它影响所有程序，像改全市地图）。改 SSDT 就是 SSDT Hook——与 Day 11/12 IAT/Inline Hook 同思路，只是换了张更高权限的表（Day 23 主角）。</p><h3>实操证据链（2026-08-16）</h3><p>KernelArchitectureLab（纯用户态，不写驱动、不改 SSDT）动态定位 <code>ntdll!NtQuerySystemInformation</code>。执行链：<code>--lab</code> 打印 <code>mode=Ring3(USER)</code>、<code>syscall_opcode=0F 05</code>、<code>syscall_offset=0x12</code>；attach 后 Ctrl+G 跳入口，看到 <code>mov r10,rcx</code>（搬参数）→ <code>mov eax,0x36</code>（写服务号）→ <code>syscall</code>（跨圈门）→ <code>ret</code>；F2 断点命中 <code>INT3@入口+0x12</code>（正好是 syscall）；<code>--no-wait</code> 输出 <code>ntstatus=0x00000000</code>（成功）+ <code>transition=Ring3-&gt;syscall-&gt;Ring0-&gt;Ring3</code> + <code>done</code>。</p><h3>失败实验与坑</h3><ul><li><b>不带 --lab 程序结束太快</b>，来不及 attach；要留窗口用 <code>--lab</code>（打印锚点后等 Enter）。</li><li><b>不能硬记地址/服务号</b>：ASLR 变绝对地址，Windows 版本变 RVA 和服务号（0x36 只是当前系统实测值）。教学优先用导出名 <code>ntdll.NtQuerySystemInformation</code> 或控制台打印的 api_address。</li><li><b>用户态调试器看不到 Ring0 内核代码</b>：执行 syscall 后用户态调试器直接回到 syscall 后面的用户态指令，这是正常权限隔离，不是实验失败。</li><li><b>只停在程序自己的包装层不够</b>：必须继续进到 ntdll 里、看到 syscall，才算拿到核心证据。</li></ul><h3>逆向者/防御视角</h3><p>分析者：用户态逆向的尽头就是 syscall——API 一层层往下追，最终都落到 <code>0F 05</code> 这道门；再往下（Ring0 内部）用户态工具就看不到了，需要内核调试（KD/WinDbg 双机）。防御者：权限隔离本身就是第一道防线（程序越不了权）；内核回调、SSDT Hook 这些高级防御/观测手段都建立在“先过内核这道门”之上，是后面 Day 22/23 的根基。</p><h3>与前后课程关联</h3><p>兑现 Day 20 伏笔：内核层是五大保护之外更深的防御层。为 Day 22（内核回调，驱动入口/进程线程回调）和 Day 23（SSDT Hook 原理）铺路——本课的“查表找地址 + syscall 跨圈门”就是后两课的地基。</p>",
+    "status": "done",
+    "practice": {
+      "tools": "普通 x64dbg x64（C:\\Users\\Administrator\\Desktop\\x64dbug\\release\\x64，attach 模式）、cmd 命令行、KernelArchitectureLab 项目（Day21KernelArchitectureLab.exe，Debug x64）",
+      "target": "Day21KernelArchitectureLab.exe（Debug x64，KernelArchitectureLab 项目，学习.sln；输出 学习/Dll1/x64/Debug/；--lab 模式打印 PID 和锚点后等 Enter）",
+      "result": "--lab 打印 mode=Ring3(USER)/api=ntdll!NtQuerySystemInformation/syscall_opcode=0F 05/syscall_offset=0x12；attach 后 Ctrl+G 到入口见 mov r10,rcx/mov eax,0x36/syscall/ret；F2 断点命中 INT3@入口+0x12（即 syscall）；--no-wait 输出 ntstatus=0x00000000 + transition=Ring3->syscall->Ring0->Ring3 + done"
+    }
   },
   "22": {
     "title": "内核回调机制",
@@ -337,6 +342,15 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-08-16",
+      "items": [
+        "Day 21: 内核架构基础 — Ring0/Ring3/系统调用 syscall/SSDT 理论+实操验收完成。核心结论：用户态(Ring3)权限最低，高危操作必须走 syscall 固定门递申请单由内核(Ring0)代劳；SSDT=内核的服务号→代码地址对照表，与 IAT 同类（IAT 改单程序、SSDT 改全系统=SSDT Hook 种子）",
+        "证据：--lab 打印 mode=Ring3(USER)/api=ntdll!NtQuerySystemInformation/syscall_opcode=0F 05；attach 后 Ctrl+G 到入口见 mov r10,rcx/mov eax,0x36(服务号)/syscall/ret；F2 断点命中 INT3@DC62=入口+0x12 即 syscall 处；--no-wait 输出 ntstatus=0x00000000 + transition=Ring3->syscall->Ring0->Ring3 + done",
+        "坑：不带 --lab 程序结束太快来不及 attach；不能硬记地址/服务号（ASLR+Windows 版本变化，0x36 只是当前系统实测值，优先用导出名定位）；用户态调试器看不到 Ring0 内核代码（syscall 后直接回到用户态指令，是正常权限隔离）；只停在程序包装层不够，必须进 ntdll 看到 syscall",
+        "工程：KernelArchitectureLab 项目（Day21KernelArchitectureLab.exe，纯用户态，不写驱动不改 SSDT）Sol 后台验收（Debug/Release 构建+运行、标准 Win32 调试 API 命中 ntdll!NtQuerySystemInformation、入口+0x12=0F 05 syscall）"
+      ]
+    },
     {
       "date": "2026-08-15",
       "items": [
