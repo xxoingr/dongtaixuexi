@@ -255,8 +255,13 @@
   "22": {
     "title": "内核回调机制",
     "video": "",
-    "html": "<div class=\"planned-box\"><h3>学习预告</h3><p>驱动入口、进程/线程/镜像加载回调、反外挂观测点</p><p>这一课还没正式开始，学完后会补充完整原理、实验记录、调试证据和失败踩坑。</p></div>",
-    "status": "planned"
+    "html": "<h3>本课要解决什么</h3>\n<p>Day 21 看清了 syscall 这扇跨圈的门。本课第一次走到门的另一侧，认识两个新角色：<b>驱动（.sys）</b>和<b>内核回调</b>。核心问题：杀软、EDR 是怎么在某个程序刚被启动的<b>第一时间</b>就知道的？一句话核心结论：<b>回调 = 先把\"联系方式\"登记给对方，事件发生时对方反过来调用你——方向与普通调用相反。</b>杀软靠 <code>PsSetCreateProcessNotifyRoutine</code> 把回调登记给内核，于是每次有进程创建/退出，内核都会反过来叫它。</p>\n<h3>一条链：从报到到被叫</h3>\n<pre><code>驱动被加载进内核圈\n  → 内核调用 DriverEntry（报到窗口，只被调用这一次）\n  → DriverEntry 里调用 PsSetCreateProcessNotifyRoutine，把回调函数地址交给内核（留电话）\n  → 以后每有进程创建/退出，内核按地址反过来调用这个回调（被叫，方向相反）\n  → 回调快速返回，内核才让进程继续跑\n  → 卸载时 DriverUnload 注销回调（别留空号，否则蓝屏）</code></pre>\n<p>关键点：回调被叫的时候，进程创建<b>才进行到一半</b>、还没真正跑起来，所以回调不只能\"看\"、还能\"拦\"；也因此回调必须<b>快速返回</b>，否则全系统的进程创建都会被拖慢。</p>\n<h3>回调 vs 普通调用</h3>\n<table><tr><th></th><th>普通调用</th><th>回调（callback）</th></tr><tr><td>方向</td><td>你主动去调别人</td><td>别人在事件发生时反过来调你</td></tr><tr><td>类比</td><td>你打电话叫外卖</td><td>你留电话，快递到了快递员打给你</td></tr><tr><td>谁先动</td><td>调用方</td><td>被调用方先登记，事件驱动</td></tr></table>\n<h3>本课实验：Ring3 等价演示（WMI 订阅）</h3>\n<p>因为本机开启 UEFI Secure Boot，无法加载测试签名驱动，本课实操改为<b>纯用户态等价演示</b>：程序向 WMI 订阅\"进程创建/删除\"事件，由 <code>IWbemObjectSink::Indicate</code> 接收回调。它演示的是同一个核心：<b>先登记，事件发生后被动收到通知，全程不主动扫描。</b></p>\n<h3>Ring3 订阅 vs Ring0 真驱动回调（对比表）</h3>\n<table><tr><th></th><th>本课实验（WMI 订阅）</th><th>真驱动回调</th></tr><tr><td>跑在哪</td><td>Ring3（用户态）</td><td>Ring0（内核态）</td></tr><tr><td>登记给谁</td><td>WMI</td><td>内核</td></tr><tr><td>谁调用你</td><td>WMI 经代理异步调用</td><td>内核直接调用</td></tr><tr><td>权限</td><td>低，只能看</td><td>高，可观察可拦截</td></tr><tr><td>能证明</td><td>回调方向成立</td><td>DriverEntry/回调/卸载真实执行</td></tr></table>\n<h3>实操证据链（2026-08-17）</h3>\n<p>Day22KernelProcessEventLab（Release x64，纯用户态）先打印 <code>state=WAITING source=WMI mode=ASYNC_CALLBACK</code>（登记完成、阻塞等待）。随后在另一窗口运行 <code>cmd /d /c \"ping -n 3 127.0.0.1 &gt;nul\"</code>，订阅窗口<b>被动</b>冒出 <code>event=ProcessStart name=cmd.exe pid=26688 parent=15144</code> 与 <code>event=ProcessStart name=PING.EXE pid=17456 parent=26688</code>（父生子的 pid 链对上）；各进程消失时又被动收到 <code>event=ProcessStop</code>。全程程序没有主动枚举进程列表。后台自动验证 <code>day22_user_check.py</code> 输出 <code>PASS</code>（同一 cmd.exe PID 的 ProcessStart/ProcessStop 均真实触发）。</p>\n<h3>失败实验与坑</h3>\n<ul><li><b>靶子退出太快会漏事件</b>：WMI 用 <code>WITHIN 1</code> 约每秒观察一次，进程若在一次观察周期内创建又消失就会漏掉。必须用 <code>cmd + ping -n 3</code> 让靶子活约 2 秒。</li><li><b>pid 会被复用</b>：进程一退，号码就空出来给下一个进程（实测 pid=26688 从 cmd.exe 变成 git.exe）。所以\"记住 pid\"不等于\"记住进程\"。</li><li><b>其他进程事件会穿插</b>：满屏 powershell/git/conhost 事件属正常，只核对 name=cmd.exe 且 Start/Stop 同 pid 的两行。</li><li><b>Win32_ProcessStartTrace 需要管理员</b>：非提升令牌下返回 WBEM_E_ACCESS_DENIED 0x80041003，本工程已改用不需管理员的 WMI intrinsic event。</li><li><b>双击运行看不到 STOPPED 行</b>：Ctrl+C 后窗口随程序退出立刻关闭，<code>state=STOPPED subscriptions_cancelled</code> 只闪一帧看不到；它不是必需证据。</li></ul>\n<h3>逆向者/防御视角</h3>\n<p>防御者：进程创建回调是杀软/EDR 的第一道岗哨——恶意程序只要被启动，\"创建\"事件就必然发生，躲不掉（除非用更底层的技巧规避常规创建通知）。逆向者：理解回调方向后，就知道\"静态找入口 → 找注册回调的 API → 追回调函数体\"是分析驱动监控行为的固定路线；同时 pid 复用、事件采样间隔这些坑，是排查漏报/误报时必须知道的边界。</p>\n<h3>与前后课程关联</h3>\n<p>兑现 Day 21 伏笔：跨过 syscall 门后，第一个看到的就是\"驱动在门内登记回调\"。为 Day 23（SSDT Hook：改内核共享表影响全系统）和 Day 24（驱动通信 + 对象生命周期）铺路——本课的 DriverEntry/回调/卸载，是后面所有内核工程的骨架。</p>",
+    "status": "done",
+    "practice": {
+      "tools": "WMI 事件订阅程序 Day22KernelProcessEventLab.exe（Release x64，C:\\Users\\Administrator\\Desktop\\学习\\x64\\Release\\）、cmd 命令行靶子、day22_user_check.py 后台自动验证脚本",
+      "target": "Day22KernelProcessEventLab.exe（KernelProcessEventLab 项目，学习.sln；先运行订阅程序看到 state=WAITING，再在另一窗口运行 cmd /d /c \"ping -n 3 127.0.0.1 >nul\" 作为约 2 秒的稳定靶子）",
+      "result": "先打印 mode=USER source=WMI subscriptions=ProcessStart,ProcessStop + state=WAITING source=WMI mode=ASYNC_CALLBACK（登记完成、阻塞等待）；另窗口起 cmd.exe 后被动收到 event=ProcessStart name=cmd.exe pid=26688 parent=15144 + PING.EXE pid=17456 parent=26688（父生子 pid 链）；进程消失被动收到 event=ProcessStop；全程未主动扫描；day22_user_check.py 输出 PASS"
+    }
   },
   "23": {
     "title": "SSDT Hook 原理",
@@ -342,6 +347,15 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-08-17",
+      "items": [
+        "Day 22: 内核回调机制 — PsSetCreateProcessNotifyRoutine + 驱动入口 理论+实操验收完成。核心结论：回调=先登记联系方式、事件发生时对方反过来调用你（方向与普通调用相反）；杀软靠它第一时间知道进程创建。链：DriverEntry(报到)→PsSetCreateProcessNotifyRoutine(注册回调/留电话)→内核按地址反过来调回调(进程创建进行到一半被叫、须快速返回)→DriverUnload(注销别留空号否则蓝屏)",
+        "证据：真驱动被 UEFI Secure Boot 阻止无法加载，改纯用户态等价演示——WMI 订阅程序先打印 state=WAITING，另窗口起 cmd.exe 后被动收到 ProcessStart name=cmd.exe pid=26688 parent=15144 与 PING.EXE pid=17456 parent=26688（父生子 pid 链），进程消失被动收到 ProcessStop；day22_user_check.py 输出 PASS",
+        "坑：靶子退出太快会漏事件（WMI WITHIN 1 每秒采样，须用 cmd+ping 让靶子活约 2 秒）；pid 会被复用（26688 从 cmd.exe 变 git.exe，记 pid≠记进程）；其他进程事件穿插属正常；Win32_ProcessStartTrace 需管理员（0x80041003），改用不需管理员的 WMI intrinsic event；双击运行 Ctrl+C 后 STOPPED 行闪一帧看不到（非必需证据）",
+        "工程：KernelProcessEventLab 项目（Day22KernelProcessEventLab.exe，纯用户态 WMI 异步订阅，IWbemObjectSink::Indicate 接收回调）Sol 后台验收；真驱动源码归档于 KernelCallbackLab，从 学习.sln 移除、Secure Boot 保持开启"
+      ]
+    },
     {
       "date": "2026-08-16",
       "items": [
