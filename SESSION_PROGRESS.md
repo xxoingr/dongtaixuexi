@@ -3,7 +3,7 @@ schema: cc-dash/session@1
 project: windows-reverse-learning  
 session_id: s_2026-07-30_day8-apc  
 started: 2026-07-30T00:00:00+08:00  
-last_updated: 2026-08-16T23:50:37+08:00
+last_updated: 2026-08-17T22:00:00+08:00
 status: in-progress
 ---  
 
@@ -65,15 +65,20 @@ status: in-progress
 
 ## Current Status  
 
-进度: 21/30 (70%) — 第一阶段
+进度: 22/30 (73%) — 第一阶段
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
 教学阶段: DS 理论前置
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 21 内核架构基础 — 理论/实操/复盘/网站发布全部完成，Day 21 正式结束，即将进入 Day 22。
-下一步: 开始 Day 22 内核回调机制（PsSetCreateProcessNotifyRoutine + 驱动入口）— DS 理论前置。
+正在: Day 22 内核回调机制 — 理论/实操/复盘/网站发布全部完成，Day 22 正式结束，即将进入 Day 23。
+下一步: 开始 Day 23 SSDT Hook 原理（内核级 Hook/KD 调试/VTL0/VTL1 概念）— DS 理论前置。
 
 ## Decisions  
 
+- <!-- at:2026-08-17T22:00:00+08:00 --> Day 22 内核回调机制正式完成：DS 理论前置（DriverEntry 报到/回调方向/PsSetCreateProcessNotifyRoutine/进程创建进行到一半被叫/DriverUnload 注销）→ Sol 制作纯用户态 KernelProcessEventLab（WMI 异步订阅 + IWbemObjectSink::Indicate 接收，真驱动因 Secure Boot 放弃）并后台验收 → DS 微步实操（用户亲手取证：先见 state=WAITING 后另窗起 cmd.exe，被动收到 ProcessStart name=cmd.exe pid=26688 parent=15144 与 PING.EXE pid=17456 parent=26688 父生子链，进程消失被动收到 ProcessStop）→ 复盘两问通过（WMI 订阅在 Ring3、真驱动回调在 Ring0；共同点=回调/先登记后被动通知）。days.json 已写入正式文章并 build 发布，进度 22/30。
+- <!-- at:2026-08-17T21:06:05+08:00 --> Day 22 纯用户态实操采用 WMI intrinsic process events：`__InstanceCreationEvent/__InstanceDeletionEvent WITHIN 1` + `IWbemObjectSink::Indicate` 异步回调。直接 `Win32_ProcessStartTrace/StopTrace` 在本机非提升令牌下稳定返回 `WBEM_E_ACCESS_DENIED (0x80041003)`，加入 UnsecuredApartment 回调代理后仍相同，证明限制在事件结果集权限；不要求管理员的 intrinsic 方案由 WMI 内部 1 秒采样，用户程序自身不轮询、只被动阻塞等待。真驱动源码保留在 `KernelCallbackLab`，但已移出活动解决方案并清理生成的 `.sys`，Secure Boot 保持开启。
+- <!-- at:2026-08-17T20:50:00+08:00 --> Day 22 路线变更：用户放弃真内核驱动路线（真驱动很麻烦）。Sol 已完成的真驱动工程（x64 Debug/Release、静态回调契约、嵌入签名）保留在案，但被 UEFI Secure Boot 阻止无法真实加载验收；用户不再走"关 Secure Boot / 暂停 BitLocker"这条路。改为纯用户态演示路线（不写驱动、不加载 .sys、零蓝屏风险），用 ETW 订阅内核进程事件（Microsoft-Windows-Kernel-Process 的 ProcessStart/ProcessStop）或 WMI Win32_ProcessStartTrace 演示"进程创建→被动收到通知"的回调/事件通知模式。理论边界不变：PsSetCreateProcessNotifyRoutine / DriverEntry / DriverUnload 仍为理论教学内容，实操以用户态订阅事件作为等价演示。教学阶段保持 Sol 工程准备，重新交接工程请求。
+- <!-- at:2026-08-17T20:44:16+08:00 --> Day 22 保持课程指定的旧版 `PsSetCreateProcessNotifyRoutine`；其回调只直接给父 PID、PID 和 Create 布尔值，进程名由 PID 经 `PsLookupProcessByProcessId` + `PsGetProcessImageFileName` 补查。后者是可链接导出但非正式文档 API，教学证据只用于本机演示，不扩展为生产驱动方案。
+- <!-- at:2026-08-17T20:31:03+08:00 --> Day 22 内核回调机制理论前置完成并交接 Sol 工程准备（用户已拍板走真内核驱动路线）。已讲并逐条确认理解：DriverEntry=驱动被加载进内核圈后的报到窗口（区别于 syscall 跨圈的门，别混）；回调 callback=把函数地址交给内核、事件发生时内核反过来调用你（方向与普通调用相反）；PsSetCreateProcessNotifyRoutine=在"进程 Ps"部门登记"进程创建/退出时通知我"；回调被叫时进程创建只进行到一半、手里拿到"是谁/从哪来/创建还是退出"的小档案，办完须快速返回否则拖慢全系统；回调盯的是"进程创建事件"本身、与恶意进程有没有登记无关（所以恶意进程躲不掉）；DriverUnload=卸载入口负责注销回调、不留空号否则蓝屏。用户能用自己的话串完整链并答对"回调在进程创建进行到一半被叫"这一关键点。实操形态经 ask 确认：真内核驱动（装 WDK + 测试签名），非纯用户态演示。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
 - <!-- at:2026-08-16T23:10:00+08:00 --> Day 21 内核架构基础正式完成：DS 理论前置（Ring0/Ring3/syscall/SSDT + 查表找地址与 IAT 对照）→ Sol 制作 KernelArchitectureLab（纯用户态，不写驱动不改 SSDT）并后台验收 → DS 微步实操（用户亲手取证：--lab 打印 mode=Ring3(USER)/api=ntdll!NtQuerySystemInformation/syscall_opcode=0F 05；attach 后 Ctrl+G 到入口见 mov r10,rcx/mov eax,0x36/syscall/ret；F2 断点命中 INT3@DC62=入口+0x12 即 syscall 处；--no-wait 输出 ntstatus=0x00000000+transition=Ring3->syscall->Ring0->Ring3+done）→ 复盘两问通过（哪段是用户态/内核、为什么不能翻墙=权限隔离）。days.json 已写入正式文章并 build 发布（提交 a51416e），进度 21/30。
 - <!-- at:2026-08-16T22:32:34+08:00 --> Day 21 Sol 工程准备完成：新建 `学习\Dll1\KernelArchitectureLab` 并接入 `学习.sln`，仅含 x64 用户态程序；Debug/Release 解决方案级构建、独立运行、正常/lab/非法参数路径均通过。标准 Win32 调试 API 在 Debug/Release 中都实际命中 `ntdll!NtQuerySystemInformation`；当前系统导出 RVA `0x9DC50`，入口 `+0x12` 为 `0F 05 syscall`，但 RVA、服务号和绝对地址均按 Windows 版本/ASLR 变化，教学必须优先用导出名定位。教学阶段转为 `DS 实操教学`，Day 保持 in-progress。
 - <!-- at:2026-08-16T22:20:54+08:00 --> Day 21 内核架构基础理论前置完成并交接 Sol 工程准备。已讲并逐条确认理解：Ring3（用户态，权限低，崩了只影响自己）/Ring0（内核态，权限最高，碰一切）；权限隔离价值=防止单程序被入侵/有 bug 拖垮全系统；syscall=用户态向内核递申请单的唯一固定门（跨圈 Ring3→Ring0→Ring3，翻墙不行）；SSDT=内核的"服务号→代码地址"对照表，程序只报服务号不报人话；查表找地址与导入表（IAT）同类——IAT 是每家店门口路牌（只影响单程序）、SSDT 是全市地图（全系统共享），改 SSDT 即 SSDT Hook（Day 23 主角），与 Day 11/12 IAT/Inline Hook 同思路更高权限。用户能复述完整执行链：用户态 API → syscall 跨圈 → 查 SSDT → 执行 → 返回。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
@@ -158,6 +163,8 @@ status: in-progress
 
 ## Failed Attempts
 
+- <!-- id:f_day22_elevation task:t_kernel_callback --> Day 22 真实加载验收：第一次因 Codex 非管理员不能改 BCD；用户随后在管理员 PowerShell 运行脚本，证书导入步骤执行后 `bcdedit /set testsigning on` 明确返回“该值受安全引导策略保护”，确认根因是 UEFI Secure Boot，不是命令、驱动或签名失败。脚本已改为先检查 Secure Boot、BCD 成功后再导入证书；真实内核加载仍未执行。
+
 - <!-- id:f_day14_gui_resume_from_veh task:t_hook_veh --> Sol 用隔离用户目录启动干净普通 x64dbg，已成功命中 `Day14VehHandler` 并由用户读出 `E0421401`；但随后人工 F9 仍在 `ntdll!00007FFE7336C286` 触发 `C0000005`。因此“只清旧 GUI 会话后继续手动运行”不足以修复，禁止第三次重复；后续改为新进程的一次性脚本检查点。
 
 - <!-- id:f_day14_symbol_bp task:t_hook_veh --> 直接用 `bp day14vehhook.Day14VehHandler` 设置符号断点返回“无效地址”；改用当前进程模块基址加已核对的 handler RVA 设置 `00007FF7530A1240`，断点被 x64dbg 接受，但尚未命中。
@@ -177,6 +184,8 @@ status: in-progress
 - <!-- id:f_day12_headless_entry task:t_hook_inline --> 初始 x64dbg headless `-c` 路线被默认 `EntryBreakpoint=1` 和启动时序截停在 system/mainCRTStartup；改用 `-cf` 脚本清除 `mainCRTStartup` 后才稳定命中 `HookAdd`，因此前面的 system/entry breakpoint 输出不算 Day 12 调试证据。
 
 ## Completed Work
+
+- <!-- ref:t_kernel_callback at:2026-08-17T21:06:05+08:00 --> Day 22 Sol 纯用户态工程准备完成：新建 `学习\Dll1\KernelProcessEventLab` 并接入 `学习.sln`；x64/v145/C++20 Debug/Release Rebuild 无警告，验证脚本实际先见 WAITING、再以稳定 cmd.exe 靶子捕获同 PID 的 ProcessStart/ProcessStop，非法参数退出码 2 也通过；Release 运行包只含必要 EXE。真驱动源码归档、项目移出活动解决方案、生成 `.sys` 已清理。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 
 - <!-- ref:t_anti_anti_debug at:2026-08-14T20:00:00+08:00 --> Day 19 正式完成：AntiAntiDebugLab 工程（`学习\Dll1\AntiAntiDebugLab`）接入 `学习.sln`，Debug/Release 编译与独立运行通过；普通 x64dbg 三处 Patch 实操证据齐全（1225→90 90、122E→EB 18、1297→EB 18），15 轮全部通过无逃跑 done；打地鼠现象（只堵门卫1 时门卫2 RDTSC=40329279 接棒逃跑）与 1 字节挤乱坑均实测取证；用户理解确认与复盘通过；Sol 救场（x64dbg TLS 自动断点与 GamePP 注入交互致 C0000005，已关闭并备份）记录在案。
 
