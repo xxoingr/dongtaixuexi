@@ -266,8 +266,13 @@
   "23": {
     "title": "SSDT Hook 原理",
     "video": "",
-    "html": "<div class=\"planned-box\"><h3>学习预告</h3><p>内核级 Hook、KD 调试、现代 Windows 保护边界</p><p>这一课还没正式开始，学完后会补充完整原理、实验记录、调试证据和失败踩坑。</p></div>",
-    "status": "planned"
+    "html": "<h3>本课要解决什么</h3>\n<p>Day 21 认识了 SSDT 这张\"服务号→代码地址\"的表，Day 22 学会了回调。本课回答一个问题：<b>如果有人把这张表里的地址偷偷改掉，会发生什么？</b>一句话核心结论：<b>SSDT Hook = 把内核\"全市共享总电话簿\"里某个服务号指向的地址，换成自己的地址；改的是表里的\"地址箭头\"，不是函数本身；因为表是全市共享的，所以一次改动影响全系统所有用该服务号的程序。</b></p>\n<h3>IAT vs SSDT（必须先分清）</h3>\n<table><tr><th></th><th>IAT（导入表）</th><th>SSDT</th></tr><tr><td>位置</td><td>每个程序自己肚子里</td><td>内核里，全系统共享</td></tr><tr><td>类比</td><td>自家抄的小电话簿</td><td>全市唯一总电话簿</td></tr><tr><td>改它影响</td><td>只影响这一个程序</td><td>影响全系统所有用该服务号的程序</td></tr></table>\n<h3>SSDT Hook 三步：偷看 / 拦截 / 伪造</h3>\n<p>改表之后，所有打这个服务号的人都会先到你的函数。你的函数可以选择：照常转给真函数（<b>偷看/监控</b>）、直接掐掉（<b>拦截</b>）、假装自己是真函数回话（<b>伪造</b>）。</p>\n<h3>前提与门槛</h3>\n<p>SSDT 住在内核，想改它必须先在 Ring0。拿到 Ring0 的常见方式是加载驱动（或漏洞提权）——<b>驱动是\"进内核圈的门票\"，不是作弊手法本身</b>；SSDT Hook 是进内核后能用的\"众多武器之一\"。这也是为什么很多外挂要求\"装驱动\"：外挂装驱动=拿门票，进 Ring0 后才能读游戏内存、隐藏自己、做 SSDT Hook。</p>\n<h3>内核调试 KD / WinDbg</h3>\n<p>SSDT 在内核里，普通 Ring3 调试器（x64dbg）被权限墙挡住看不见。要看内核得用内核调试器（KD，即 Kernel Debugger），标准工具是 WinDbg，通常两台电脑连接（目标机 + 主机）。<b>墙外的工具看不到墙内的表。</b></p>\n<h3>VTL0 / VTL1（比 Ring0 更高的隔离）</h3>\n<p>VTL（Virtual Trust Level）和 Ring 是两套不同的分层标准：Ring 管\"这段代码能碰什么\"，VTL 把整台电脑切成互相隔离的\"虚拟房间\"，每个房间里都能有自己的 Ring0/Ring3。正常系统和所有驱动跑在 VTL0；VTL1 是更安全的房间，放最敏感的东西（内核保护、防作弊核心、密钥）。<b>VTL0 里即使拿到 Ring0，也看不到 VTL1 里的东西——不是权限不够，是你在错误的那栋楼里。</b>所以现在\"进 Ring0\"不再等于\"通关\"。</p>\n<h3>实操证据链（2026-08-20）</h3>\n<p>Day23SSDTHookSimulationLab（纯用户态，不写驱动、不改真 SSDT）在 Ring3 内存里建一张\"服务号→函数指针\"表模拟 SSDT。改表前 <code>dispatch service=0x23 target=0x7FF690EC1780</code> → <code>handler=ORIGINAL result=123</code>（23+100）；改表 <code>hook_action old=0x7FF690EC1780 new=0x7FF690EC1720</code>；改表后同样 <code>service=0x23</code> 查到新地址 → <code>handler=HOOKED result=-23</code>。自检 <code>same_service=true target_changed=true original_unchanged=true</code>：同一个服务号、表地址被换、原始函数本身没动。后台 day23_check.py 输出 PASS。</p>\n<h3>失败实验与坑</h3>\n<ul><li><b>不要比较不同运行的绝对地址</b>：ASLR 让 EXE 每次运行基址变化，本次 1780/1720 只在本进程有效。</li><li><b>打印的地址不是真 SSDT 地址</b>：只是本进程用户态函数地址，本实验不碰 Windows 真实 SSDT。</li><li><b>别把本实验说成\"完成了真实 SSDT Hook\"</b>：准确说法是在 Ring3 复现了查表和改表机制。</li><li><b>双击普通模式窗口会很快关闭</b>：取证统一用 PowerShell 加 <code>--lab</code>，程序停在 <code>state=EVIDENCE_READY</code>。</li></ul>\n<h3>逆向者/防御视角</h3>\n<p>逆向者：SSDT Hook 分析思路是\"定位驱动 → 找它有没有改 SSDT → 对照表项地址是否指向非系统模块\"。防御者：SSDT Hook 是杀软和恶意软件都抢的高地，但也因此被重点盯防——现代 Windows 有 PatchGuard（内核补丁保护）检测 SSDT 被改、以及 VTL1 把关键保护藏进更高隔离层，让\"改表\"越来越难。</p>\n<h3>与前后课程关联</h3>\n<p>兑现 Day 21 伏笔（\"改 SSDT 影响所有程序=SSDT Hook，Day 23 主角\"）。本课的\"查表找地址\"是 Day 11/12/13 Hook 思想在内核层的延伸；为 Day 24（驱动通信 + 对象生命周期）铺路——要稳定做内核 Hook，后面还得解决驱动怎么和用户态通信、怎么管对象生命周期。</p>",
+    "status": "done",
+    "practice": {
+      "tools": "Day23SSDTHookSimulationLab.exe（Release x64，C:\\Users\\Administrator\\Desktop\\学习\\x64\\Release\\，--lab 模式）、PowerShell、day23_check.py 后台自动验证脚本",
+      "target": "Day23SSDTHookSimulationLab.exe（SSDTHookSimulationLab 项目，学习.sln；纯用户态模拟 SSDT 函数指针表，改服务号 0x23 的表项地址演示 Hook）",
+      "result": "改表前 dispatch service=0x23 target=0x7FF690EC1780 → handler=ORIGINAL result=123；hook_action old=0x7FF690EC1780 new=0x7FF690EC1720；改表后同样 service=0x23 → handler=HOOKED result=-23；same_service=true target_changed=true original_unchanged=true；停在 state=EVIDENCE_READY。day23_check.py 输出 PASS"
+    }
   },
   "24": {
     "title": "驱动通信 + 对象生命周期",
@@ -347,6 +352,16 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-08-20",
+      "items": [
+        "Day 23: SSDT Hook 原理 — 内核级 Hook/KD 调试/VTL0/VTL1 理论+实操验收完成。核心结论：SSDT Hook=把内核'全市共享总电话簿'里某服务号指向的地址换成自己的地址；改的是表里的'地址箭头'不是函数本身；因表全系统共享，一次改动影响全系统所有用该服务号的程序（对比 IAT 只影响单程序）",
+        "证据：Day23SSDTHookSimulationLab（纯用户态模拟 SSDT 函数指针表）改表前 dispatch service=0x23 target=0x7FF690EC1780→handler=ORIGINAL result=123；hook_action old=0x7FF690EC1780 new=0x7FF690EC1720；改表后同样 service=0x23→handler=HOOKED result=-23；same_service=true target_changed=true original_unchanged=true；day23_check.py 输出 PASS",
+        "坑：不比较不同运行绝对地址（ASLR 基址变化）；打印地址非真 SSDT 地址（只是本进程用户态函数地址）；本实验是 Ring3 复现查表改表机制、非真实 SSDT Hook；双击普通模式窗口秒关、取证用 --lab 停在 EVIDENCE_READY",
+        "理论边界：改 SSDT 得先站 Ring0（驱动=门票非作弊手法）；SSDT 在内核、普通 Ring3 调试器被权限墙挡住、须 KD/WinDbg；VTL0/VTL1=比 Ring0 更高的隔离房间，VTL0 的 Ring0 也看不到 VTL1",
+        "工程：SSDTHookSimulationLab 项目（Day23SSDTHookSimulationLab.exe，纯用户态，不写驱动不改真 SSDT）Sol 后台验收（Debug/Release 构建+运行、改表前后对比、非法参数路径、三个导出锚点）"
+      ]
+    },
     {
       "date": "2026-08-17",
       "items": [
