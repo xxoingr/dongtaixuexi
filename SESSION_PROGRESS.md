@@ -3,7 +3,7 @@ schema: cc-dash/session@1
 project: windows-reverse-learning  
 session_id: s_2026-07-30_day8-apc  
 started: 2026-07-30T00:00:00+08:00  
-last_updated: 2026-08-17T22:00:00+08:00
+last_updated: 2026-08-20T20:00:00+08:00
 status: in-progress
 ---  
 
@@ -65,15 +65,18 @@ status: in-progress
 
 ## Current Status  
 
-进度: 22/30 (73%) — 第一阶段
+进度: 23/30 (77%) — 第一阶段
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
 教学阶段: DS 理论前置
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 22 内核回调机制 — 理论/实操/复盘/网站发布全部完成，Day 22 正式结束，即将进入 Day 23。
-下一步: 开始 Day 23 SSDT Hook 原理（内核级 Hook/KD 调试/VTL0/VTL1 概念）— DS 理论前置。
+正在: Day 23 SSDT Hook 原理 — 理论/实操/复盘/网站发布全部完成，Day 23 正式结束，即将进入 Day 24。
+下一步: 开始 Day 24 驱动通信 + 对象生命周期（IOCTL/共享内存/引用计数/IRQL与锁）— DS 理论前置。
 
 ## Decisions  
 
+- <!-- at:2026-08-20T20:00:00+08:00 --> Day 23 SSDT Hook 原理正式完成：DS 理论前置（SSDT 全市总电话簿/SSDT Hook 改地址箭头/IAT 单程序 vs SSDT 全系统/驱动=门票/KD 调试/VTL0-VTL1 隔离）→ Sol 制作纯用户态 SSDTHookSimulationLab（函数指针表模拟 SSDT，只改服务号 0x23 表项）并后台验收 → DS 微步实操（用户亲手取证：改表前 dispatch service=0x23 target=0x7FF690EC1780→handler=ORIGINAL result=123；hook_action old=0x7FF690EC1780 new=0x7FF690EC1720；改表后同样 service=0x23→handler=HOOKED result=-23；same_service=true target_changed=true original_unchanged=true）→ 复盘两问通过（改的是表里的地址箭头不是函数本身；真 SSDT 影响全系统）。days.json 已写入正式文章并 build 发布，进度 23/30。
+- <!-- at:2026-08-20T19:41:42+08:00 --> Day 23 Sol 工程准备完成：新建纯用户态 `SSDTHookSimulationLab` 并接入 `学习.sln`，用真实 C++ 函数指针表复现“服务号→地址→间接调用”，再只替换服务号 `0x23` 的表项以模拟 Hook；没有驱动、内核 API、真实 SSDT 写入或管理员依赖。Debug/Release、正常/`--lab`/非法参数路径和导出调试锚点均已后台验收。Day 保持 in-progress，教学阶段转为 DS 实操教学。
+- <!-- at:2026-08-17T22:40:00+08:00 --> Day 23 SSDT Hook 原理理论前置完成并交接 Sol 工程准备（用户已拍板走纯用户态等价演示）。已讲并逐条确认理解：SSDT=内核"服务号→代码地址"的全市共享总电话簿；SSDT Hook=把表里某服务号指向的地址改成自己的地址（偷看/拦截/伪造，影响全系统，对比 IAT 只影响单程序）；改 SSDT 得先站 Ring0（驱动/提权=门票，非作弊手法本身）；SSDT 在内核、普通 Ring3 调试器被权限墙挡住，须用内核调试 KD/WinDbg；VTL0/VTL1=比 Ring0 更高一层的隔离房间，VTL0 的 Ring0 也看不到 VTL1。用户能答对 IAT vs SSDT 对比、驱动=门票、VTL 隔离边界。实操形态经 ask 确认：纯用户态等价演示。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
 - <!-- at:2026-08-17T22:00:00+08:00 --> Day 22 内核回调机制正式完成：DS 理论前置（DriverEntry 报到/回调方向/PsSetCreateProcessNotifyRoutine/进程创建进行到一半被叫/DriverUnload 注销）→ Sol 制作纯用户态 KernelProcessEventLab（WMI 异步订阅 + IWbemObjectSink::Indicate 接收，真驱动因 Secure Boot 放弃）并后台验收 → DS 微步实操（用户亲手取证：先见 state=WAITING 后另窗起 cmd.exe，被动收到 ProcessStart name=cmd.exe pid=26688 parent=15144 与 PING.EXE pid=17456 parent=26688 父生子链，进程消失被动收到 ProcessStop）→ 复盘两问通过（WMI 订阅在 Ring3、真驱动回调在 Ring0；共同点=回调/先登记后被动通知）。days.json 已写入正式文章并 build 发布，进度 22/30。
 - <!-- at:2026-08-17T21:06:05+08:00 --> Day 22 纯用户态实操采用 WMI intrinsic process events：`__InstanceCreationEvent/__InstanceDeletionEvent WITHIN 1` + `IWbemObjectSink::Indicate` 异步回调。直接 `Win32_ProcessStartTrace/StopTrace` 在本机非提升令牌下稳定返回 `WBEM_E_ACCESS_DENIED (0x80041003)`，加入 UnsecuredApartment 回调代理后仍相同，证明限制在事件结果集权限；不要求管理员的 intrinsic 方案由 WMI 内部 1 秒采样，用户程序自身不轮询、只被动阻塞等待。真驱动源码保留在 `KernelCallbackLab`，但已移出活动解决方案并清理生成的 `.sys`，Secure Boot 保持开启。
 - <!-- at:2026-08-17T20:50:00+08:00 --> Day 22 路线变更：用户放弃真内核驱动路线（真驱动很麻烦）。Sol 已完成的真驱动工程（x64 Debug/Release、静态回调契约、嵌入签名）保留在案，但被 UEFI Secure Boot 阻止无法真实加载验收；用户不再走"关 Secure Boot / 暂停 BitLocker"这条路。改为纯用户态演示路线（不写驱动、不加载 .sys、零蓝屏风险），用 ETW 订阅内核进程事件（Microsoft-Windows-Kernel-Process 的 ProcessStart/ProcessStop）或 WMI Win32_ProcessStartTrace 演示"进程创建→被动收到通知"的回调/事件通知模式。理论边界不变：PsSetCreateProcessNotifyRoutine / DriverEntry / DriverUnload 仍为理论教学内容，实操以用户态订阅事件作为等价演示。教学阶段保持 Sol 工程准备，重新交接工程请求。
@@ -184,6 +187,8 @@ status: in-progress
 - <!-- id:f_day12_headless_entry task:t_hook_inline --> 初始 x64dbg headless `-c` 路线被默认 `EntryBreakpoint=1` 和启动时序截停在 system/mainCRTStartup；改用 `-cf` 脚本清除 `mainCRTStartup` 后才稳定命中 `HookAdd`，因此前面的 system/entry breakpoint 输出不算 Day 12 调试证据。
 
 ## Completed Work
+
+- <!-- ref:t_kernel_ssdt at:2026-08-20T19:41:42+08:00 --> Day 23 Sol 工程准备完成：`学习\Dll1\SSDTHookSimulationLab` 已接入 `学习.sln`；x64/v145/C++20 Debug/Release 从解决方案定向 Rebuild 成功。自动验收确认同一服务号 `0x23` 改表前命中 `Day23OriginalService`（结果 123）、改表后命中 `Day23HookedService`（结果 -23），old/new/after 地址关系一致，非法参数退出码 2；`--lab` 可稳定停在 `state=EVIDENCE_READY`，三个导出名可作调试定位锚点。Release 运行包仅含 EXE。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 
 - <!-- ref:t_kernel_callback at:2026-08-17T21:06:05+08:00 --> Day 22 Sol 纯用户态工程准备完成：新建 `学习\Dll1\KernelProcessEventLab` 并接入 `学习.sln`；x64/v145/C++20 Debug/Release Rebuild 无警告，验证脚本实际先见 WAITING、再以稳定 cmd.exe 靶子捕获同 PID 的 ProcessStart/ProcessStop，非法参数退出码 2 也通过；Release 运行包只含必要 EXE。真驱动源码归档、项目移出活动解决方案、生成 `.sys` 已清理。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 
