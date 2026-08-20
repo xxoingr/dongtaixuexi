@@ -277,8 +277,13 @@
   "24": {
     "title": "驱动通信 + 对象生命周期",
     "video": "",
-    "html": "<div class=\"planned-box\"><h3>学习预告</h3><p>IOCTL、共享内存、引用计数、IRQL、锁和并发安全</p><p>这一课还没正式开始，学完后会补充完整原理、实验记录、调试证据和失败踩坑。</p></div>",
-    "status": "planned"
+    "html": "<h3>本课要解决什么</h3>\n<p>Day 22 学了驱动入口，Day 23 学了改内核表。本课回答两个更实际的问题：<b>用户态程序怎么和内核圈里的驱动\"递话\"？内核里的对象怎么知道\"什么时候能安全销毁\"？</b>一句话核心结论：<b>驱动通信 = 驱动开一个\"接待窗口\"，用户程序递\"指令单\"（控制码 + 输入/输出缓冲区）；对象生命周期靠\"引用计数\"记账，借了 +1、还了 -1、降到 0 才回收。</b></p>\n<h3>驱动通信（IOCTL）</h3>\n<p>用户态程序够不到内核圈的驱动，得走驱动主动开出来的通道。用户程序递一张<b>指令单</b>（IOCTL，即 I/O Control），单子上有三样：<b>控制码</b>（编号，告诉驱动办哪件事）、<b>输入缓冲区</b>（递进去的材料）、<b>输出缓冲区</b>（递回来的结果）。驱动一看控制码，就知道跑哪段代码。这跟 Day 21 服务号、Day 23 服务号 0x23 是同一套路：<b>不报人话，只报编号，接收方查号办事。</b></p>\n<h3>共享内存</h3>\n<p>一次递一张单子适合偶尔说几句话；频繁传大量数据时，改让两边<b>共用一块内存</b>，直接读写，不用一次次递单子。关键理解：一块共享内存可以有<b>多个不同的虚拟地址（视图）</b>，它们都映射到同一块底层内存——就像一栋房有两扇门、两个门牌，推门进去是同一间房。</p>\n<h3>引用计数</h3>\n<table><tr><th>动作</th><th>计数变化</th><th>说明</th></tr><tr><td>有人借用</td><td>+1</td><td>像借书登记</td></tr><tr><td>有人归还</td><td>-1</td><td>像还书销账</td></tr><tr><td>降到 0</td><td>回收</td><td>没人用了，才销毁</td></tr></table>\n<p>两个反向错误都很致命：<b>该减没减 → 内存泄漏</b>（对象永远不回收，占内存）；<b>减多了 → 蓝屏</b>（对象被提前销毁，还有人用）。铁规矩：<b>借了必须还，成对操作，配平。</b>这与 Day 22\"注册回调必须注销、别留空号\"是同一个道理。</p>\n<h3>IRQL 与锁</h3>\n<p>内核是很多人同时干活的地方，需要两样东西维持秩序：<b>锁</b>管\"谁先进、别人在外面等\"（像公共厕所\"有人/无人\"），防止并发读写冲突导致系统崩溃；<b>IRQL</b>（Interrupt Request Level）管\"谁的优先级更高、高优先级能不能停顿\"。本课只建立概念，具体用法留后面实战。</p>\n<h3>实操证据链（2026-08-20）</h3>\n<p>Day24DriverCommunicationLifecycleLab（纯用户态，不写驱动、不调真实 DeviceIoControl）演示三条链：(1) 指令分发 <code>ioctl_request code=0x800 input_a=7 input_b=5</code> → <code>ioctl_response status=SUCCESS output_sum=12</code>；(2) 共享内存 <code>shared_views writer=0x24c29f80000 reader=0x24c29f90000</code>（两个不同门牌）→ 一处写 DAY24_SHARED_MESSAGE、另一处读到相同内容 <code>match=true</code>；(3) 引用计数 <code>1→2→1→0</code>，归零时 <code>reclaimed=true</code>。结尾 <code>irql_lock=THEORY_ONLY not_simulated</code> 主动声明边界。后台 day24_check.py 输出 PASS。</p>\n<h3>失败实验与坑</h3>\n<ul><li><b>writer 和 reader 地址不同是正常现象</b>：不同虚拟地址可映射到同一块内存，判断共享成功看内容是否一致（match=true），不看地址是否相同。</li><li><b>不要把 0x800 当成真实 IOCTL 编号</b>：它只是本实验自定义的模拟控制码。</li><li><b>不要把\"内存泄漏\"说成\"数据泄露\"</b>：忘减引用计数导致的是对象不回收、占内存（内存泄漏），不是敏感数据外泄（数据泄露）。</li><li><b>reclaimed=true 是模拟回收标志</b>：不是 Windows 对象管理器真实销毁对象的证据。</li><li><b>irql_lock=THEORY_ONLY 不代表模拟了 IRQL</b>：这行是主动声明\"没模拟\"，避免误导。</li></ul>\n<h3>逆向者/防御视角</h3>\n<p>逆向者：分析驱动功能，第一步先看它注册的<b>设备对象和 IOCTL 控制码</b>——控制码是用户态和驱动约定的\"暗号\"，逆向出控制码就能理解驱动暴露了哪些能力。防御者：驱动通信是外挂把用户态和内核态串起来的桥梁，反作弊会重点查\"谁在给驱动发指令\"；引用计数/锁用错是驱动蓝屏的头号原因，稳定驱动必须把\"借还配平\"做扎实。</p>\n<h3>与前后课程关联</h3>\n<p>兑现 Day 22 伏笔（驱动做完\"登记\"后，还得解决怎么通信、怎么管对象）。本课是 Day 25（过滤器驱动 Minifilter/NDIS/WFP）的底座——过滤器驱动本质也是驱动，它同样靠这套通信和生命周期规则稳定运行。</p>",
+    "status": "done",
+    "practice": {
+      "tools": "Day24DriverCommunicationLifecycleLab.exe（Release x64，C:\\Users\\Administrator\\Desktop\\学习\\x64\\Release\\，--lab 模式）、PowerShell、day24_check.py 后台自动验证脚本",
+      "target": "Day24DriverCommunicationLifecycleLab.exe（DriverCommunicationLifecycleLab 项目，学习.sln；纯用户态演示指令分发/共享内存/引用计数三条链）",
+      "result": "ioctl_request code=0x800 input_a=7 input_b=5 → ioctl_response status=SUCCESS output_sum=12；shared_views writer=0x24c29f80000 reader=0x24c29f90000，shared_write/read 均为 DAY24_SHARED_MESSAGE match=true；引用计数 1→2→1→0，归零 reclaimed=true；irql_lock=THEORY_ONLY；停在 state=EVIDENCE_READY。day24_check.py 输出 PASS"
+    }
   },
   "25": {
     "title": "过滤器驱动概念",
@@ -352,6 +357,16 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-08-20",
+      "items": [
+        "Day 24: 驱动通信 + 对象生命周期 — IOCTL/共享内存/引用计数/IRQL与锁 理论+实操验收完成。核心结论：驱动通信=驱动开接待窗口、用户程序递指令单(控制码+输入/输出缓冲区)；对象生命周期靠引用计数记账(借+1还-1降到0才回收)",
+        "证据：Day24DriverCommunicationLifecycleLab(纯用户态)三条链——ioctl code=0x800 input 7,5→output 12；shared_views writer/reader 两个不同地址读到同一内容 match=true；引用计数 1→2→1→0 归零 reclaimed=true；irql_lock=THEORY_ONLY；day24_check.py 输出 PASS",
+        "坑：writer/reader 地址不同是正常(不同虚拟地址映射同一块内存，看内容 match=true 不看地址)；0x800 是自定义模拟控制码非真实 IOCTL；'内存泄漏'≠'数据泄露'(忘减引用=对象不回收占内存)；reclaimed=true 是模拟标志非内核对象真实销毁；irql_lock=THEORY_ONLY 是主动声明没模拟",
+        "理论边界：IRQL 和内核锁不能用普通用户态变量真实复现，本实验只演示通信/共享区域/引用记账",
+        "工程：DriverCommunicationLifecycleLab 项目(Day24DriverCommunicationLifecycleLab.exe，纯用户态，不写驱动不调真实 DeviceIoControl)Sol 后台验收(Debug/Release 构建+运行、未知控制码/非法参数路径、四个导出锚点)"
+      ]
+    },
     {
       "date": "2026-08-20",
       "items": [
