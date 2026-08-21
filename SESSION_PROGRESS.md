@@ -3,7 +3,7 @@ schema: cc-dash/session@1
 project: windows-reverse-learning  
 session_id: s_2026-07-30_day8-apc  
 started: 2026-07-30T00:00:00+08:00  
-last_updated: 2026-08-20T21:20:00+08:00
+last_updated: 2026-08-21T19:00:00+08:00
 status: in-progress
 ---  
 
@@ -65,15 +65,18 @@ status: in-progress
 
 ## Current Status  
 
-进度: 24/30 (80%) — 第一阶段
+进度: 25/30 (83%) — 第一阶段
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
 教学阶段: DS 理论前置
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 24 驱动通信 + 对象生命周期 — 理论/实操/复盘/网站发布全部完成，Day 24 正式结束，即将进入 Day 25。
-下一步: 开始 Day 25 过滤器驱动（Minifilter(文件)/NDIS/WFP(网络)概念）— DS 理论前置。
+正在: Day 25 过滤器驱动 — 理论/实操/复盘/网站发布全部完成，Day 25 正式结束，即将进入 Day 26。
+下一步: 开始 Day 26 内核对象管理（ObRegisterCallbacks/进程线程保护）— DS 理论前置。
 
 ## Decisions  
 
+- <!-- at:2026-08-21T19:00:00+08:00 --> Day 25 过滤器驱动正式完成：DS 理论前置（过滤器=中性检查站/机制中性善恶在人/Minifilter 卡文件/NDIS 卡底层数据包/WFP 卡上层程序+地址+端口）→ Sol 制作纯用户态 FilterCheckpointLab（3 请求先过检查站再 PASS/BLOCK/MODIFY）并后台验收 → DS 微步实操（用户亲手取证：notes.txt PASS 原样到达、malware.exe BLOCK 不达终点只有 destination_blocked、draft.tmp MODIFY 改写 draft.safe 终点收到 draft.safe；summary pass=1 block=1 modify=1 delivered=2）→ 复盘两问通过（BLOCK 关键证据是没有 destination_received；MODIFY 关键证据是终点收到改写后的 payload）。days.json 已写入正式文章并 build 发布，进度 25/30。
+- <!-- at:2026-08-21T18:40:55+08:00 --> Day 25 Sol 工程准备完成：新建纯用户态 `FilterCheckpointLab` 并接入 `学习.sln`；三个固定请求都先进入同一个检查函数，再分别 PASS、BLOCK、MODIFY，其中 MODIFY 将 `draft.tmp` 改为 `draft.safe` 后才送达终点。工程不监控真实文件或网络，不调用 Minifilter/NDIS/WFP；理论映射和模拟边界均在输出中明确。Debug/Release、正常/`--lab`/未知请求/非法参数路径及两个导出锚点均已验收。Day 保持 in-progress，教学阶段转为 DS 实操教学。
+- <!-- at:2026-08-20T21:40:00+08:00 --> Day 25 过滤器驱动理论前置完成并交接 Sol 工程准备（用户已拍板走纯用户态等价演示）。已讲并逐条确认理解：过滤器驱动=卡在必经之路、先过目再放行的"检查站"，本身中性（用户曾误以为"天生保护/被 Hook 才变恶意"，已纠正为"善恶取决于写驱动的人想让它干什么"）；Minifilter=卡文件读写路的检查站（实时防护/加密/监控）；NDIS=卡最底层网卡旁看原始数据包（不认识上层应用）；WFP=卡更上层应用与网络之间，能按程序+地址+端口拦；核心认知=机制中性善恶在人，杀软和外挂都在抢这些必经之路的关卡。用户曾把"过滤器驱动"误说成"保护机制"，已纠正为"过滤器/检查站机制"。实操形态经 ask 确认：纯用户态等价演示。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
 - <!-- at:2026-08-20T21:20:00+08:00 --> Day 24 驱动通信 + 对象生命周期正式完成：DS 理论前置（驱动通信接待窗口/IOCTL 控制码+输入输出缓冲/共享内存/引用计数借还配平/IRQL与锁）→ Sol 制作纯用户态 DriverCommunicationLifecycleLab（指令分发 0x800 + 共享映射双视图 + 引用计数 1→2→1→0）并后台验收 → DS 微步实操（用户亲手取证：ioctl code=0x800 input 7,5→output 12；shared writer/reader 两地址读同一内容 match=true；引用计数归零 reclaimed=true；irql_lock=THEORY_ONLY）→ 复盘三问通过（两个门牌同一间房、共享内存无单独地址靠视图证明、计数归零才回收）。days.json 已写入正式文章并 build 发布，进度 24/30。
 - <!-- at:2026-08-20T21:05:00+08:00 --> Day 24 Sol 工程准备完成：新建纯用户态 `DriverCommunicationLifecycleLab` 并接入 `学习.sln`。控制码 `0x800` 通过独立分发函数处理输入/输出缓冲区；共享内存使用 Windows 匿名文件映射并建立两个不同虚拟地址视图；引用计数按 1→2→1→0 演示归零回收。IRQL 与锁明确保持理论边界，不伪造用户态等价证据。Debug/Release、正常/`--lab`/未知控制码/非法参数路径和导出锚点均已验收。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 - <!-- at:2026-08-20T21:00:00+08:00 --> Day 24 驱动通信 + 对象生命周期理论前置完成并交接 Sol 工程准备（用户已拍板走纯用户态等价演示）。已讲并逐条确认理解：驱动通信=驱动开"接待窗口"、用户程序递单子不是闯进内核圈；IOCTL=递的"指令单"，核心是控制码（编号）+输入缓冲区（递进去的材料）+输出缓冲区（递回来的结果）；共享内存=两边共用一块内存直接读写，频繁大量传数据比一张张递单子快；引用计数=对象"还有谁在用"的记账本，降到 0 才回收，忘了减=内存泄漏、减多了=蓝屏（用户曾把"内存泄漏"误说成"数据泄露"已纠正）；IRQL 与锁=内核"别打架"的规矩，锁管"谁先进"、IRQL 管"谁优先/能不能停顿"。实操形态经 ask 确认：纯用户态等价演示。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
@@ -190,6 +193,8 @@ status: in-progress
 - <!-- id:f_day12_headless_entry task:t_hook_inline --> 初始 x64dbg headless `-c` 路线被默认 `EntryBreakpoint=1` 和启动时序截停在 system/mainCRTStartup；改用 `-cf` 脚本清除 `mainCRTStartup` 后才稳定命中 `HookAdd`，因此前面的 system/entry breakpoint 输出不算 Day 12 调试证据。
 
 ## Completed Work
+
+- <!-- ref:t_kernel_filter at:2026-08-21T18:40:55+08:00 --> Day 25 Sol 工程准备完成：`学习\Dll1\FilterCheckpointLab` 已接入 `学习.sln`；x64/v145/C++20 Debug/Release 从解决方案定向 Rebuild 成功。自动验收确认请求 1/2/3 均先打印 `checkpoint_seen`，随后分别 PASS 并原样送达、BLOCK 并不送达、MODIFY 后以新内容送达；汇总为 pass=1/block=1/modify=1/delivered=2。未知请求退出 3、非法参数退出 2；`--lab` 稳定停在 `state=EVIDENCE_READY`，两个导出函数可按名称定位，Release 运行包仅含 EXE。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 
 - <!-- ref:t_kernel_comm at:2026-08-20T21:05:00+08:00 --> Day 24 Sol 工程准备完成：`学习\Dll1\DriverCommunicationLifecycleLab` 已接入 `学习.sln`；x64/v145/C++20 Debug/Release 从解决方案定向 Rebuild 成功。自动验收确认控制码 `0x800` 将输入 7/5 写回结果 12、两个不同映射视图共享 `DAY24_SHARED_MESSAGE`、引用计数 1→2→1→0 后 `reclaimed=true`；未知控制码退出 3、非法参数退出 2。`--lab` 稳定停在 `state=EVIDENCE_READY`，四个导出函数可按名称定位，Release 运行包仅含 EXE。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 

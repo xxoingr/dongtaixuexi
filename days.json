@@ -288,8 +288,13 @@
   "25": {
     "title": "过滤器驱动概念",
     "video": "",
-    "html": "<div class=\"planned-box\"><h3>学习预告</h3><p>Minifilter、NDIS/WFP、文件与网络观测框架</p><p>这一课还没正式开始，学完后会补充完整原理、实验记录、调试证据和失败踩坑。</p></div>",
-    "status": "planned"
+    "html": "<h3>本课要解决什么</h3>\n<p>前面几课学了驱动入口、回调、改内核表、驱动通信。本课回答一个更\"实用\"的问题：<b>杀软是怎么做到\"文件刚想写盘就被拦\"\"某个程序刚想联网就被挡\"的？</b>一句话核心结论：<b>过滤器驱动 = 卡在\"必经之路\"上、先过目再放行的\"检查站\"；它本身是中性的，是保护还是作恶取决于写驱动的人想让它干什么。</b></p>\n<h3>核心认知：机制中性，善恶在人</h3>\n<p>过滤器驱动不是\"天生保护用\"的，也不是\"被 Hook 才变坏\"的。它只是一个能插在必经之路上的位置：好人写它（杀软/EDR）→ 拦病毒、加密文件；坏人写它（恶意软件/外挂）→ 偷看文件、改网络数据、藏痕迹。<b>决定善恶的是写驱动的人，不是机制本身。</b>这与 Day 23 的 SSDT Hook 同理：技术中性，看谁用。</p>\n<h3>三种过滤器：站在不同卡口</h3>\n<table><tr><th></th><th>Minifilter</th><th>NDIS</th><th>WFP</th></tr><tr><td>卡在哪</td><td>文件读写必经之路</td><td>最底层（网卡旁）</td><td>更上层（应用和网络之间）</td></tr><tr><td>看到什么</td><td>打开/读/写哪个文件</td><td>原始数据包（不认识上层应用）</td><td>哪个程序连哪个地址+端口</td></tr><tr><td>类比</td><td>借书柜台的检查员</td><td>大门口保安（看每个包裹）</td><td>楼里前台（看谁寄给谁）</td></tr><tr><td>典型用途</td><td>实时防护/文件加密/审计</td><td>抓包/底层流量监控</td><td>按程序+地址+端口拦连接</td></tr></table>\n<h3>检查站的三种处置</h3>\n<p>过滤器看过后有三种选择：<b>PASS</b>（放行，原样通过）、<b>BLOCK</b>（拦截，不达终点）、<b>MODIFY</b>（改写后再放行）。这是所有过滤器共有的核心行为。</p>\n<h3>实操证据链（2026-08-21）</h3>\n<p>Day25FilterCheckpointLab（纯用户态，不写驱动、不碰真实文件/网络）演示\"检查站\"：3 个请求都先被 <code>checkpoint_seen</code> 过目，再分别处置——请求 1 notes.txt 走 <code>PASS</code> 原样 <code>destination_received</code>；请求 2 malware.exe 走 <code>BLOCK</code>，只有 <code>destination_blocked</code>、没有到达终点；请求 3 draft.tmp 走 <code>MODIFY</code> 改写成 draft.safe，终点收到 <code>payload=draft.safe</code>。汇总 <code>pass=1 block=1 modify=1 delivered=2</code>。后台 day25_check.py 输出 PASS。</p>\n<h3>失败实验与坑</h3>\n<ul><li><b>BLOCK 的关键证据不只 decision=BLOCK</b>：还要看到 destination_blocked，并确认没有 destination_received（终点确实没收到）。</li><li><b>MODIFY 的关键证据看终点收到什么</b>：只看到 before/after 文字不够，要看终点 payload 是改写后的内容（draft.safe 而非 draft.tmp）。</li><li><b>malware.exe / draft.tmp 只是教学字符串</b>：程序不创建、不改名、不删除真实文件。</li><li><b>本实验不是真 Minifilter/NDIS/WFP</b>：没注册文件系统回调、没接触网卡、没注册 WFP Callout。</li></ul>\n<h3>逆向者/防御视角</h3>\n<p>防御者：过滤器驱动是杀软/EDR 观测和拦截文件、网络行为的主力工具，Minifilter 做文件实时防护、WFP 做网络访问控制。逆向者：分析可疑驱动时，看它注册了哪类过滤器（文件/网络）、处置逻辑里有没有\"偷看/改写/放行\"的痕迹，就能判断它是监控还是作恶。攻击者视角：恶意驱动也会抢占这些必经之路的关卡，所以\"卡口位置\"是攻防双方争夺的高地。</p>\n<h3>与前后课程关联</h3>\n<p>建立在 Day 22（驱动入口）和 Day 24（驱动通信/对象生命周期）之上——过滤器驱动本质还是驱动，同样靠入口注册、靠通信、靠引用计数稳定运行。为 Day 26（内核对象管理 ObRegisterCallbacks）铺路：对象管理回调是另一种\"必经之路的检查站\"，只是卡在\"进程/线程句柄\"这条路上。</p>",
+    "status": "done",
+    "practice": {
+      "tools": "Day25FilterCheckpointLab.exe（Release x64，C:\\Users\\Administrator\\Desktop\\学习\\x64\\Release\\，--lab 模式）、PowerShell、day25_check.py 后台自动验证脚本",
+      "target": "Day25FilterCheckpointLab.exe（FilterCheckpointLab 项目，学习.sln；纯用户态演示过滤器检查站的 PASS/BLOCK/MODIFY 三种处置）",
+      "result": "3 个请求都先 checkpoint_seen 再处置：id=1 notes.txt PASS 原样 destination_received；id=2 malware.exe BLOCK 只有 destination_blocked 无 received；id=3 draft.tmp MODIFY 改 draft.safe 后 destination_received payload=draft.safe；summary pass=1 block=1 modify=1 delivered=2；停在 state=EVIDENCE_READY。day25_check.py 输出 PASS"
+    }
   },
   "26": {
     "title": "内核对象管理",
@@ -357,6 +362,16 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-08-21",
+      "items": [
+        "Day 25: 过滤器驱动概念 — Minifilter/NDIS/WFP 理论+实操验收完成。核心结论：过滤器驱动=卡必经之路、先过目再放行的'检查站'，机制中性、善恶取决于写驱动的人（不是天生保护、也不是被 Hook 才变坏）",
+        "证据：Day25FilterCheckpointLab(纯用户态)3 请求都先 checkpoint_seen 再处置——notes.txt PASS 原样到达、malware.exe BLOCK 不达终点(只有 destination_blocked)、draft.tmp MODIFY 改写 draft.safe 后终点收到 draft.safe；summary pass=1 block=1 modify=1 delivered=2；day25_check.py 输出 PASS",
+        "坑：BLOCK 关键证据是'没有 destination_received'(终点没收到)不只 decision=BLOCK；MODIFY 关键证据是'终点收到的 payload 是改写后的 draft.safe'不只 before/after 文字；malware.exe/draft.tmp 是教学字符串非真实文件；本实验非真 Minifilter/NDIS/WFP(没注册文件系统回调/没碰网卡/没注册 WFP Callout)",
+        "理论映射：Minifilter=卡文件读写必经之路；NDIS=卡网卡旁底层原始数据包(不认识上层应用)；WFP=卡更上层可按程序+地址+端口拦；三者的共同核心=请求先过检查站再决定放行/拦截/改写",
+        "工程：FilterCheckpointLab 项目(Day25FilterCheckpointLab.exe，纯用户态，不写驱动)Sol 后台验收(Debug/Release 构建+运行、未知请求/非法参数路径、两个导出锚点)"
+      ]
+    },
     {
       "date": "2026-08-20",
       "items": [
