@@ -3,7 +3,7 @@ schema: cc-dash/session@1
 project: windows-reverse-learning  
 session_id: s_2026-07-30_day8-apc  
 started: 2026-07-30T00:00:00+08:00  
-last_updated: 2026-08-21T19:00:00+08:00
+last_updated: 2026-08-22T23:50:00+08:00
 status: in-progress
 ---  
 
@@ -65,15 +65,19 @@ status: in-progress
 
 ## Current Status  
 
-进度: 25/30 (83%) — 第一阶段
+进度: 26/30 (87%) — 第一阶段
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
 教学阶段: DS 理论前置
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 25 过滤器驱动 — 理论/实操/复盘/网站发布全部完成，Day 25 正式结束，即将进入 Day 26。
-下一步: 开始 Day 26 内核对象管理（ObRegisterCallbacks/进程线程保护）— DS 理论前置。
+正在: Day 26 内核对象管理 — 理论/实操/复盘/网站发布全部完成，Day 26 正式结束，即将进入 Day 27。
+下一步: 开始 Day 27 游戏逆向实战（Unity/UE基础 + STL容器识别(vector/string) + 对象结构恢复）— DS 理论前置。
 
 ## Decisions  
 
+- <!-- at:2026-08-22T23:50:00+08:00 --> Day 26 内核对象管理正式完成：DS 理论前置（内核对象/句柄号码牌/ObRegisterCallbacks 句柄门前检查站/进程保护=在句柄门提前挡）→ Sol 制作纯用户态 ObjectHandleProtectionLab（两访问者先过句柄门前检查站，trusted_monitor 放行发句柄 0xD260 访问成功、untrusted_tool 拒绝不发句柄 NO_HANDLE 失败）并后台验收 → DS 微步实操（用户亲手取证：trusted_monitor checkpoint_seen→ALLOW→handle_issued→SUCCESS；untrusted_tool checkpoint_seen→DENY→handle_not_issued→FAILED reason=NO_HANDLE）→ 复盘两问通过（失败根因是没拿到句柄、reason=NO_HANDLE 为证；0xD260 是句柄号码牌不是对象）。days.json 已写入正式文章并 build 发布，进度 26/30。内核基础阶段（Day 21-26）收口。
+- <!-- at:2026-08-22T23:38:11+08:00 --> Day 26 Sol 工程准备完成：新建纯用户态 `ObjectHandleProtectionLab` 并接入 `学习.sln`；固定两个访问者在发放模拟句柄前进入同一检查函数，`trusted_monitor` 被放行并取得 `0xD260` 后访问成功，`untrusted_tool` 与未知访问者均在句柄门前被拒绝、没有句柄且访问失败。工程明确标注不含驱动、ObRegisterCallbacks 或真实内核句柄过滤。Debug/Release、正常/`--lab`/未知访问者/非法参数路径、x64 PE、Release 产物边界及两个导出调试锚点均已验收。Day 保持 in-progress，教学阶段转为 DS 实操教学。
+
+- <!-- at:2026-08-21T19:20:00+08:00 --> Day 26 内核对象管理理论前置完成并交接 Sol 工程准备（用户已拍板走纯用户态等价演示）。已讲并逐条确认理解：内核对象=内核统一管理的"东西"（进程/线程/文件，不是程序局部变量）；句柄 Handle=用户态访问内核对象的"号码牌"，凭号访问不碰真身（不同程序拿各自不同的句柄）；ObRegisterCallbacks=卡在"打开进程/线程句柄"这条必经之路上的检查站（回调），有人要打开进程就得先拿句柄、就在这步被回调检测；进程/线程保护=在句柄这道门提前设卡、把想动进程的人挡在拿到句柄之前（不是等它拿到句柄读内存才拦）；与 Day 25 过滤器同思路（检查站），只是 Day 25 卡文件/网络、Day 26 卡进程/线程句柄。实操形态经 ask 确认：纯用户态等价演示。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
 - <!-- at:2026-08-21T19:00:00+08:00 --> Day 25 过滤器驱动正式完成：DS 理论前置（过滤器=中性检查站/机制中性善恶在人/Minifilter 卡文件/NDIS 卡底层数据包/WFP 卡上层程序+地址+端口）→ Sol 制作纯用户态 FilterCheckpointLab（3 请求先过检查站再 PASS/BLOCK/MODIFY）并后台验收 → DS 微步实操（用户亲手取证：notes.txt PASS 原样到达、malware.exe BLOCK 不达终点只有 destination_blocked、draft.tmp MODIFY 改写 draft.safe 终点收到 draft.safe；summary pass=1 block=1 modify=1 delivered=2）→ 复盘两问通过（BLOCK 关键证据是没有 destination_received；MODIFY 关键证据是终点收到改写后的 payload）。days.json 已写入正式文章并 build 发布，进度 25/30。
 - <!-- at:2026-08-21T18:40:55+08:00 --> Day 25 Sol 工程准备完成：新建纯用户态 `FilterCheckpointLab` 并接入 `学习.sln`；三个固定请求都先进入同一个检查函数，再分别 PASS、BLOCK、MODIFY，其中 MODIFY 将 `draft.tmp` 改为 `draft.safe` 后才送达终点。工程不监控真实文件或网络，不调用 Minifilter/NDIS/WFP；理论映射和模拟边界均在输出中明确。Debug/Release、正常/`--lab`/未知请求/非法参数路径及两个导出锚点均已验收。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 - <!-- at:2026-08-20T21:40:00+08:00 --> Day 25 过滤器驱动理论前置完成并交接 Sol 工程准备（用户已拍板走纯用户态等价演示）。已讲并逐条确认理解：过滤器驱动=卡在必经之路、先过目再放行的"检查站"，本身中性（用户曾误以为"天生保护/被 Hook 才变恶意"，已纠正为"善恶取决于写驱动的人想让它干什么"）；Minifilter=卡文件读写路的检查站（实时防护/加密/监控）；NDIS=卡最底层网卡旁看原始数据包（不认识上层应用）；WFP=卡更上层应用与网络之间，能按程序+地址+端口拦；核心认知=机制中性善恶在人，杀软和外挂都在抢这些必经之路的关卡。用户曾把"过滤器驱动"误说成"保护机制"，已纠正为"过滤器/检查站机制"。实操形态经 ask 确认：纯用户态等价演示。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
@@ -193,6 +197,8 @@ status: in-progress
 - <!-- id:f_day12_headless_entry task:t_hook_inline --> 初始 x64dbg headless `-c` 路线被默认 `EntryBreakpoint=1` 和启动时序截停在 system/mainCRTStartup；改用 `-cf` 脚本清除 `mainCRTStartup` 后才稳定命中 `HookAdd`，因此前面的 system/entry breakpoint 输出不算 Day 12 调试证据。
 
 ## Completed Work
+
+- <!-- ref:t_kernel_ob at:2026-08-22T23:38:11+08:00 --> Day 26 Sol 工程准备完成：`学习\Dll1\ObjectHandleProtectionLab` 已接入 `学习.sln`；x64/v145/C++20 Debug/Release 从解决方案定向 Rebuild 成功。自动验收确认两个访问者都先经过 `BEFORE_HANDLE_ISSUE` 检查点：允许者获得 `0xD260` 并凭句柄访问成功，被拒绝者和未知访问者均不获得句柄且以 `NO_HANDLE` 失败；非法参数退出 2、未知访问者退出 3。`--lab` 稳定停在 `state=EVIDENCE_READY`，`Day26CheckHandleRequest` 与 `Day26UseIssuedHandle` 可按导出名定位，Release 运行包仅新增必要 EXE。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 
 - <!-- ref:t_kernel_filter at:2026-08-21T18:40:55+08:00 --> Day 25 Sol 工程准备完成：`学习\Dll1\FilterCheckpointLab` 已接入 `学习.sln`；x64/v145/C++20 Debug/Release 从解决方案定向 Rebuild 成功。自动验收确认请求 1/2/3 均先打印 `checkpoint_seen`，随后分别 PASS 并原样送达、BLOCK 并不送达、MODIFY 后以新内容送达；汇总为 pass=1/block=1/modify=1/delivered=2。未知请求退出 3、非法参数退出 2；`--lab` 稳定停在 `state=EVIDENCE_READY`，两个导出函数可按名称定位，Release 运行包仅含 EXE。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 

@@ -299,8 +299,13 @@
   "26": {
     "title": "内核对象管理",
     "video": "",
-    "html": "<div class=\"planned-box\"><h3>学习预告</h3><p>ObRegisterCallbacks、进程/线程句柄保护与检测边界</p><p>这一课还没正式开始，学完后会补充完整原理、实验记录、调试证据和失败踩坑。</p></div>",
-    "status": "planned"
+    "html": "<h3>本课要解决什么</h3>\n<p>内核基础阶段的收官一课。前面学了驱动、回调、改表、通信、过滤器，本课把这些收口到一个核心问题：<b>内核怎么把\"进程、线程\"这些当作\"对象\"统一管理，又怎么保护它们不被别人乱碰？</b>一句话核心结论：<b>用户态程序访问内核对象拿到的永远是\"句柄\"（号码牌）而不是对象本身；ObRegisterCallbacks 就是卡在\"打开进程/线程句柄\"这道门前的检查站，在别人拿到句柄之前就把它挡住。</b></p>\n<h3>内核对象与句柄</h3>\n<p><b>内核对象</b> = 内核统一管理的\"东西\"的统称：进程、线程、文件、注册表项、事件都是；你程序里的普通局部变量不是。用户态够不到内核，所以内核不给程序对象真身，而是发一个<b>句柄（Handle）</b>——一个\"号码牌\"，程序凭号访问。同一个对象，不同程序拿到各自不同的句柄。</p>\n<h3>ObRegisterCallbacks：又一个检查站</h3>\n<p><code>Ob</code>=Object（对象），<code>RegisterCallbacks</code>=注册回调。驱动调用它，就是告诉内核：\"以后每当有进程/线程的句柄要被打开、复制、使用时，先叫我。\"于是谁想打开某进程，第一步先要\"拿句柄\"，就在这一步被回调检测。</p>\n<table><tr><th></th><th>Day 25 过滤器</th><th>Day 26 ObRegisterCallbacks</th></tr><tr><td>卡在哪条路</td><td>文件读写 / 网络数据</td><td>打开进程/线程句柄</td></tr><tr><td>检查什么</td><td>文件、数据包</td><td>谁想拿谁进程的句柄</td></tr><tr><td>典型用途</td><td>拦文件、监控网络</td><td>保护进程不被别人动</td></tr></table>\n<h3>进程保护的本质</h3>\n<p>游戏反作弊、杀软\"保护自己进程\"的核心思路：在<b>句柄这道门提前设卡</b>。外挂想读游戏内存，第一步必须先\"打开游戏进程的句柄\"；ObRegisterCallbacks 在这第一步就拦住，让外挂连句柄都拿不到（或拿到降权句柄），就更别提读内存、改数据了。<b>保护在前、不是补救在后。</b></p>\n<h3>实操证据链（2026-08-21）</h3>\n<p>Day26ObjectHandleProtectionLab（纯用户态，不写驱动、不注册真实 ObRegisterCallbacks）演示\"句柄门前检查站\"：两个访问者都要打开受保护对象 ProtectedGame.exe，且都先进入 <code>stage=BEFORE_HANDLE_ISSUE</code> 检查站。trusted_monitor 被 <code>decision=ALLOW</code> → <code>handle_issued handle=0xD260</code> → <code>object_access result=SUCCESS</code>；untrusted_tool 被 <code>decision=DENY</code> → <code>handle_not_issued</code> → <code>object_access result=FAILED reason=NO_HANDLE</code>。汇总 <code>allowed=1 denied=1 handles_issued=1 successful_access=1</code>。后台 day26_check.py 输出 PASS。</p>\n<h3>失败实验与坑</h3>\n<ul><li><b>拒绝的关键证据是 handle_not_issued + reason=NO_HANDLE</b>：失败发生在\"没拿到句柄\"，不是\"拿到句柄后访问被拦\"。输出顺序证明 DENY 在 handle_issued 之前。</li><li><b>0xD260 是教学用的模拟号码牌</b>：不是真实 Windows HANDLE，也不是对象地址。</li><li><b>ProtectedGame.exe / trusted_monitor / untrusted_tool 是实验内固定身份</b>：程序没打开或扫描真实进程。</li><li><b>本实验不是真实 ObRegisterCallbacks</b>：没由驱动注册、没过滤真实内核句柄。</li></ul>\n<h3>逆向者/防御视角</h3>\n<p>防御者：ObRegisterCallbacks 是\"进程保护/句柄保护\"的底层武器，游戏反作弊和杀软都用它在句柄层挡住外挂与恶意软件的探测、注入、读写。逆向者：分析保护类驱动时，重点看它有没有注册 ObRegisterCallbacks、回调里对\"哪些进程+哪些访问权限\"做了拦截——这决定了保护的范围和强度。攻击者视角：绕句柄保护是内核攻防的难点，常需更底层的技巧，这也推动了后续更高级保护（如 VTL1）的出现。</p>\n<h3>与前后课程关联</h3>\n<p>本课是内核基础阶段（Day 21-26）的收口：驱动入口（22）→ 改表（23）→ 通信与生命周期（24）→ 过滤器（25）→ 对象管理（26），串成一条\"驱动能干什么\"的完整图景。为 Day 27 起进入游戏逆向实战（综合运用前面所有知识）铺路。</p>",
+    "status": "done",
+    "practice": {
+      "tools": "Day26ObjectHandleProtectionLab.exe（Release x64，C:\\Users\\Administrator\\Desktop\\学习\\x64\\Release\\，--lab 模式）、PowerShell、day26_check.py 后台自动验证脚本",
+      "target": "Day26ObjectHandleProtectionLab.exe（ObjectHandleProtectionLab 项目，学习.sln；纯用户态演示句柄门前检查站的放行/拒绝两条路径）",
+      "result": "trusted_monitor：checkpoint_seen(BEFORE_HANDLE_ISSUE)→decision=ALLOW→handle_issued handle=0xD260→object_access result=SUCCESS；untrusted_tool：checkpoint_seen→decision=DENY→handle_not_issued→object_access result=FAILED reason=NO_HANDLE；summary allowed=1 denied=1 handles_issued=1 successful_access=1；停在 state=EVIDENCE_READY。day26_check.py 输出 PASS"
+    }
   },
   "27": {
     "title": "游戏逆向实战",
@@ -362,6 +367,16 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-08-21",
+      "items": [
+        "Day 26: 内核对象管理 — ObRegisterCallbacks/进程线程保护 理论+实操验收完成。核心结论：用户态访问内核对象拿到的永远是句柄(号码牌)不是对象本身；ObRegisterCallbacks=卡在'打开进程/线程句柄'门前的检查站，进程保护=在句柄这道门提前设卡、把想动进程的人挡在拿到句柄之前",
+        "证据：Day26ObjectHandleProtectionLab(纯用户态)两条路径——trusted_monitor 先 checkpoint_seen(BEFORE_HANDLE_ISSUE)→decision=ALLOW→handle_issued handle=0xD260→object_access SUCCESS；untrusted_tool 同 checkpoint_seen→decision=DENY→handle_not_issued→object_access FAILED reason=NO_HANDLE；summary allowed=1 denied=1 handles_issued=1 successful_access=1；day26_check.py 输出 PASS",
+        "坑：拒绝的关键证据是 handle_not_issued + reason=NO_HANDLE(失败在'没拿到句柄'不是'拿到后访问被拦'，DENY 在 handle_issued 之前)；0xD260 是教学模拟号码牌非真实 HANDLE；ProtectedGame.exe/trusted_monitor/untrusted_tool 是实验固定身份非真实进程；本实验非真实 ObRegisterCallbacks(没驱动注册、没过滤真实内核句柄)",
+        "理论关联：与 Day 25 过滤器同思路(检查站)，Day 25 卡文件/网络、Day 26 卡进程/线程句柄；本课收口内核基础阶段 Day 21-26",
+        "工程：ObjectHandleProtectionLab 项目(Day26ObjectHandleProtectionLab.exe，纯用户态，不写驱动)Sol 后台验收(Debug/Release 构建+运行、允许/拒绝/未知访问者/非法参数路径、两个导出锚点)"
+      ]
+    },
     {
       "date": "2026-08-21",
       "items": [
