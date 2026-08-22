@@ -69,11 +69,13 @@ status: in-progress
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
 教学阶段: DS 理论前置
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 27 游戏逆向实战 — 理论/实操/复盘/网站发布全部完成，Day 27 正式结束，即将进入 Day 28。
+正在: Day 27 游戏逆向实战 — 状态门补做的第二题用户已亲自答对（end 指向最后一个元素的下一格），Day 27 恢复正式完成，即将进入 Day 28。
 下一步: 开始 Day 28 游戏数据分析（存档格式/网络协议/资源文件分析 + 静态分析工具 IDA/Ghidra）— DS 理论前置。
 
 ## Decisions  
 
+- <!-- at:2026-08-23T00:30:00+08:00 --> 状态门闭环：用户已亲自回答 Day 27 第二题并答对（end 指向最后一个元素的下一格）。Day 27 恢复正式完成、进度 27/30、教学阶段回 DS 理论前置，下一步 Day 28。正式文章内容无变化，不重复发布网站（网站已发布版本 58d4194 保持）。
+- <!-- at:2026-08-23T00:20:00+08:00 --> 触发"全阶段问题状态门"（更新笔记助手.txt 新增规则）：Day 27 第二题（end 指向最后一个元素本身还是下一格）DS 曾擅自代答并计为用户通过，用户指出其后两次回复仍在补充第一题、并未亲自回答第二题。按规则纠正：Day 27 暂回 in-progress、进度回 26/30、教学阶段改 DS 实操后复盘，暂停 Day 28；网站已发布不删不滚。现只重问第二题、不加答案不附带其他问题，等用户亲自回答。答对→恢复 Day 27 正式完成并继续 Day 28（文章内容无变化则不重复发布）；答不完整→老师式小步只纠一个关键点再问一个最小确认问题，等亲自回答后才闭环。
 - <!-- at:2026-08-23T00:15:00+08:00 --> Day 27 游戏逆向实战正式完成：DS 理论前置（引擎=内存地图/STL 容器/vector 3 指针/string SSO/对象结构偏移）→ Sol 制作自建迷你 Demo GameMemoryLayoutLab（vector/短串/长串/PlayerRecord）并后台验收 → DS 微步实操（用户亲手取证：vector object_size=24 三指针 bytes_used=20=5×4；短串 Mage INLINE_SSO 就地存、长串 Legendary EXTERNAL_HEAP 外存；PlayerRecord 字段偏移 0/4/8/16）→ 复盘通过（vector 数字在体外靠 begin≠object 地址证明；end=最后一元素下一格；短串就地长串外存）。days.json 已写入正式文章并 build 发布，进度 27/30。
 - <!-- at:2026-08-23T00:08:54+08:00 --> Day 27 Sol 工程准备完成：新建纯用户态 `GameMemoryLayoutLab` 并接入 `学习.sln`；使用本机真实 MSVC x64 `std::vector<int>` 与 `std::string`，通过 `_ITERATOR_DEBUG_LEVEL=0` 让 Debug/Release 都保持可教学布局。vector 固定 5 个 int、预留 8 格并输出对象中的 begin/end/capacity；短串 `Mage` 的 data 位于 string 对象内部且偏移 0，长串 `Legendary_Player_From_Day27` 的对象首指针与外部 data 地址一致；`PlayerRecord` 输出 id/health/score/team 的偏移与实际字段地址。工程明确不含真实游戏、内存扫描或 Unity/UE 运行时。Debug/Release、正常/`--lab`/非法参数路径、x64 PE、布局数学、Release 产物边界及三个导出调试锚点均已验收。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 
