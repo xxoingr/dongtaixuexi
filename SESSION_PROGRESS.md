@@ -3,7 +3,7 @@ schema: cc-dash/session@1
 project: windows-reverse-learning  
 session_id: s_2026-07-30_day8-apc  
 started: 2026-07-30T00:00:00+08:00  
-last_updated: 2026-08-22T23:50:00+08:00
+last_updated: 2026-08-23T00:15:00+08:00
 status: in-progress
 ---  
 
@@ -65,15 +65,19 @@ status: in-progress
 
 ## Current Status  
 
-进度: 26/30 (87%) — 第一阶段
+进度: 27/30 (90%) — 第一阶段
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
 教学阶段: DS 理论前置
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 26 内核对象管理 — 理论/实操/复盘/网站发布全部完成，Day 26 正式结束，即将进入 Day 27。
-下一步: 开始 Day 27 游戏逆向实战（Unity/UE基础 + STL容器识别(vector/string) + 对象结构恢复）— DS 理论前置。
+正在: Day 27 游戏逆向实战 — 理论/实操/复盘/网站发布全部完成，Day 27 正式结束，即将进入 Day 28。
+下一步: 开始 Day 28 游戏数据分析（存档格式/网络协议/资源文件分析 + 静态分析工具 IDA/Ghidra）— DS 理论前置。
 
 ## Decisions  
 
+- <!-- at:2026-08-23T00:15:00+08:00 --> Day 27 游戏逆向实战正式完成：DS 理论前置（引擎=内存地图/STL 容器/vector 3 指针/string SSO/对象结构偏移）→ Sol 制作自建迷你 Demo GameMemoryLayoutLab（vector/短串/长串/PlayerRecord）并后台验收 → DS 微步实操（用户亲手取证：vector object_size=24 三指针 bytes_used=20=5×4；短串 Mage INLINE_SSO 就地存、长串 Legendary EXTERNAL_HEAP 外存；PlayerRecord 字段偏移 0/4/8/16）→ 复盘通过（vector 数字在体外靠 begin≠object 地址证明；end=最后一元素下一格；短串就地长串外存）。days.json 已写入正式文章并 build 发布，进度 27/30。
+- <!-- at:2026-08-23T00:08:54+08:00 --> Day 27 Sol 工程准备完成：新建纯用户态 `GameMemoryLayoutLab` 并接入 `学习.sln`；使用本机真实 MSVC x64 `std::vector<int>` 与 `std::string`，通过 `_ITERATOR_DEBUG_LEVEL=0` 让 Debug/Release 都保持可教学布局。vector 固定 5 个 int、预留 8 格并输出对象中的 begin/end/capacity；短串 `Mage` 的 data 位于 string 对象内部且偏移 0，长串 `Legendary_Player_From_Day27` 的对象首指针与外部 data 地址一致；`PlayerRecord` 输出 id/health/score/team 的偏移与实际字段地址。工程明确不含真实游戏、内存扫描或 Unity/UE 运行时。Debug/Release、正常/`--lab`/非法参数路径、x64 PE、布局数学、Release 产物边界及三个导出调试锚点均已验收。Day 保持 in-progress，教学阶段转为 DS 实操教学。
+
+- <!-- at:2026-08-22T23:59:00+08:00 --> Day 27 游戏逆向实战理论前置完成并交接 Sol 工程准备（用户已拍板走自建迷你 Demo 演示）。已讲并逐条确认理解：游戏引擎=游戏底座决定内存布局，搞清引擎=拿到"内存对象怎么摆"的规律地图（核心收获是内存布局地图，不是编程语言）；STL 容器=C++ 现成工具，vector(动态数组)/string(字符串) 游戏里到处是；vector 长相=3 个指针 begin(开头)/end(已用结尾)/capacity(容量结尾=备用结尾)；string 长相=与 vector 近亲，但有 SSO(小字符串优化)：短字符串就地存、长字符串才外存留指针。最终目标=从地址堆里认出 vector/string/对象。实操形态经 ask 确认：自建迷你 Demo 演示（不碰真实游戏）。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
 - <!-- at:2026-08-22T23:50:00+08:00 --> Day 26 内核对象管理正式完成：DS 理论前置（内核对象/句柄号码牌/ObRegisterCallbacks 句柄门前检查站/进程保护=在句柄门提前挡）→ Sol 制作纯用户态 ObjectHandleProtectionLab（两访问者先过句柄门前检查站，trusted_monitor 放行发句柄 0xD260 访问成功、untrusted_tool 拒绝不发句柄 NO_HANDLE 失败）并后台验收 → DS 微步实操（用户亲手取证：trusted_monitor checkpoint_seen→ALLOW→handle_issued→SUCCESS；untrusted_tool checkpoint_seen→DENY→handle_not_issued→FAILED reason=NO_HANDLE）→ 复盘两问通过（失败根因是没拿到句柄、reason=NO_HANDLE 为证；0xD260 是句柄号码牌不是对象）。days.json 已写入正式文章并 build 发布，进度 26/30。内核基础阶段（Day 21-26）收口。
 - <!-- at:2026-08-22T23:38:11+08:00 --> Day 26 Sol 工程准备完成：新建纯用户态 `ObjectHandleProtectionLab` 并接入 `学习.sln`；固定两个访问者在发放模拟句柄前进入同一检查函数，`trusted_monitor` 被放行并取得 `0xD260` 后访问成功，`untrusted_tool` 与未知访问者均在句柄门前被拒绝、没有句柄且访问失败。工程明确标注不含驱动、ObRegisterCallbacks 或真实内核句柄过滤。Debug/Release、正常/`--lab`/未知访问者/非法参数路径、x64 PE、Release 产物边界及两个导出调试锚点均已验收。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 
@@ -197,6 +201,8 @@ status: in-progress
 - <!-- id:f_day12_headless_entry task:t_hook_inline --> 初始 x64dbg headless `-c` 路线被默认 `EntryBreakpoint=1` 和启动时序截停在 system/mainCRTStartup；改用 `-cf` 脚本清除 `mainCRTStartup` 后才稳定命中 `HookAdd`，因此前面的 system/entry breakpoint 输出不算 Day 12 调试证据。
 
 ## Completed Work
+
+- <!-- ref:t_game_reverse at:2026-08-23T00:08:54+08:00 --> Day 27 Sol 工程准备完成：`学习\Dll1\GameMemoryLayoutLab` 已接入 `学习.sln`；x64/v145/C++20 Debug/Release 从解决方案定向 Rebuild 成功。自动验收从实际地址确认 vector 对象为 24 字节三指针布局且 `end-begin=20=5×4`、短 string 数据位于 32 字节对象内部、长 string 数据在对象外且首指针等于 `data()`、四个字段地址均等于对象基址加固定偏移；非法参数退出 2。`--lab` 稳定停在 `state=EVIDENCE_READY`，`Day27InspectVector`、`Day27InspectString`、`Day27InspectPlayer` 可按导出名定位，Release 运行包仅新增必要 EXE。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 
 - <!-- ref:t_kernel_ob at:2026-08-22T23:38:11+08:00 --> Day 26 Sol 工程准备完成：`学习\Dll1\ObjectHandleProtectionLab` 已接入 `学习.sln`；x64/v145/C++20 Debug/Release 从解决方案定向 Rebuild 成功。自动验收确认两个访问者都先经过 `BEFORE_HANDLE_ISSUE` 检查点：允许者获得 `0xD260` 并凭句柄访问成功，被拒绝者和未知访问者均不获得句柄且以 `NO_HANDLE` 失败；非法参数退出 2、未知访问者退出 3。`--lab` 稳定停在 `state=EVIDENCE_READY`，`Day26CheckHandleRequest` 与 `Day26UseIssuedHandle` 可按导出名定位，Release 运行包仅新增必要 EXE。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 
