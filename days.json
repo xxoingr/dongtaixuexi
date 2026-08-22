@@ -310,8 +310,13 @@
   "27": {
     "title": "游戏逆向实战",
     "video": "",
-    "html": "<div class=\"planned-box\"><h3>学习预告</h3><p>Unity/UE 基础、vector/string/STL 最低识别、对象结构恢复</p><p>这一课还没正式开始，学完后会补充完整原理、实验记录、调试证据和失败踩坑。</p></div>",
-    "status": "planned"
+    "html": "<h3>本课要解决什么</h3>\n<p>内核基础阶段结束，进入综合实战。第一个实战问题：<b>游戏的内存不是一堆乱码，里面有规律——怎么从\"只知道一堆地址\"里认出 vector、string 和对象结构？</b>一句话核心结论：<b>搞清游戏引擎 = 拿到\"内存对象怎么摆\"的规律地图；STL 容器有固定长相（vector=3 个指针、string 短串就地长串外存），学会认这些长相，就能从地址堆里认出有意义的东西。</b></p>\n<h3>游戏引擎 = 内存地图</h3>\n<p>游戏大多架在引擎（Unity / Unreal Engine）上，引擎决定内存布局。同一个引擎做的游戏，对象排布规律高度一致——摸清一套，就能套用到同类游戏。<b>搞清引擎的核心收获是\"内存怎么摆\"的规律，不是它用什么编程语言。</b></p>\n<h3>vector 长相：3 个指针</h3>\n<p>vector（动态数组）自己是个 24 字节的\"壳\"，里面装 3 个指针：<b>begin</b>（第一个元素）、<b>end</b>（已用区间的末尾边界）、<b>capacity</b>（租来的整段空间的末尾）。真正的一列元素租在外面。</p>\n<pre><code>begin ────────── 已用元素 ────────── end ─── 备用空格 ─── capacity\n        (有效数据)                          (租了还没用)</code></pre>\n<p>认 vector 的铁证：<b>end - begin = 元素个数 × 每个元素大小</b>；capacity - begin 对应预留槽数。end 指向\"最后一个元素的下一格\"，不是最后一个元素本身。</p>\n<h3>string 长相：SSO</h3>\n<p>string 是 vector 的近亲，但有 SSO（Small String Optimization）：<b>短字符串就地存在对象自己身上，长字符串才外存、对象身上留指针。</b>所以逆向认 string 要分两种：短串的字符紧挨对象（`storage=INLINE_SSO`），长串是指针指向外部堆（`storage=EXTERNAL_HEAP`）。</p>\n<h3>对象结构恢复</h3>\n<p>一个对象 = 一组字段按固定偏移排布。认对象就是认\"字段名 → 偏移 → 值\"：例如 PlayerRecord 里 id 在偏移 0、health 在偏移 4、score 在偏移 8、team 在偏移 16。<b>字段地址 = 对象基址 + 偏移。</b></p>\n<h3>实操证据链（2026-08-22）</h3>\n<p>Day27GameMemoryLayoutLab（自建迷你 Demo，不碰真实游戏）构造并打印三类结构：(1) vector：object_size=24，begin/end/capacity 三指针，bytes_used=20=5×4，reserved_slots=8，值 10,20,30,40,50；(2) 短串 Mage：data 在对象内、data_inside_object=true、storage=INLINE_SSO；长串 Legendary_Player_From_Day27：data 在对象外、storage=EXTERNAL_HEAP、raw_pointer_matches_data=true；(3) PlayerRecord：id/health/score/team 分别在偏移 0/4/8/16。summary 四项全 true。后台 day27_check.py 输出 PASS。</p>\n<h3>失败实验与坑</h3>\n<ul><li><b>所有地址每次运行都变（ASLR）</b>：只能比顺序、差值、归属关系，不比绝对地址。</li><li><b>end 不是最后一个元素</b>：是\"最后一个元素的后面\"，capacity 是\"全部预留空间的后面\"。</li><li><b>vector 的 24 字节三指针是当前 MSVC x64 实现</b>：不是所有编译器的永久保证；项目故意固定 _ITERATOR_DEBUG_LEVEL=0，否则 MSVC Debug STL 会加调试字段、不再是三个连续指针。</li><li><b>string 的 SSO 阈值（15）随编译器/版本变</b>：不能硬记\"15\"。</li><li><b>短串对象开头是字符、不是指针</b>：不能把对象开头字节误读成外部指针；只有长串才能把对象起始的第一个机器字解释为字符缓冲区指针。</li><li><b>对象尾部可能有对齐填充</b>：PlayerRecord 最后字段在偏移 16，但对象总大小 24。</li></ul>\n<h3>逆向者/防御视角</h3>\n<p>逆向者：游戏逆向的第一步常是\"认引擎 + 认容器\"——先定引擎，再用 vector 三指针、string SSO、对象偏移这些规律去读内存，把原始字节翻译成\"一列敌人\"\"玩家名字\"\"某对象的血量\"。防御者：知道攻击者会按这些规律自动扫描内存找关键对象，反作弊会做内存加密、对象分散、假数据等对抗，让\"认长相\"不再直接命中。</p>\n<h3>与前后课程关联</h3>\n<p>综合实战阶段第一课，把前面所有用户态知识（指针、内存、Hook、调试）用到\"读懂游戏内存\"上。为 Day 28（游戏数据分析：存档/协议/静态工具 IDA/Ghidra）铺路——本课的\"认内存\"是后面\"分析数据\"的前提。</p>",
+    "status": "done",
+    "practice": {
+      "tools": "Day27GameMemoryLayoutLab.exe（Release x64，C:\\Users\\Administrator\\Desktop\\学习\\x64\\Release\\，--lab 模式）、PowerShell、day27_check.py 后台自动验证脚本",
+      "target": "Day27GameMemoryLayoutLab.exe（GameMemoryLayoutLab 项目，学习.sln；自建迷你 Demo 构造 vector/string/PlayerRecord 演示内存识别）",
+      "result": "vector：object_size=24，begin/end/capacity 三指针，bytes_used=20=5×4，reserved_slots=8，值 10,20,30,40,50；短串 Mage：data_inside_object=true storage=INLINE_SSO；长串 Legendary_Player_From_Day27：storage=EXTERNAL_HEAP raw_pointer_matches_data=true；PlayerRecord 字段偏移 0/4/8/16；summary 四项全 true；停在 state=EVIDENCE_READY。day27_check.py 输出 PASS"
+    }
   },
   "28": {
     "title": "游戏数据分析",
@@ -367,6 +372,16 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-08-22",
+      "items": [
+        "Day 27: 游戏逆向实战 — Unity/UE基础 + STL容器识别(vector/string) + 对象结构恢复 理论+实操验收完成。核心结论：搞清引擎=拿到'内存对象怎么摆'的规律地图；STL 容器有固定长相(vector=3指针、string 短串就地长串外存)，认长相=从地址堆认出有意义的东西",
+        "证据：Day27GameMemoryLayoutLab(自建迷你Demo，不碰真实游戏)——vector object_size=24 begin/end/capacity 三指针 bytes_used=20=5×4 reserved_slots=8；短串 Mage data_inside_object=true INLINE_SSO、长串 Legendary_Player_From_Day27 EXTERNAL_HEAP raw_pointer_matches_data=true；PlayerRecord 字段偏移 0/4/8/16；summary 四项全 true；day27_check.py 输出 PASS",
+        "坑：所有地址每次运行都变(ASLR)只比顺序/差值/归属不比绝对地址；end 不是最后一个元素是它的下一格；vector 24 字节三指针是当前 MSVC x64 实现非所有编译器保证(须固定 _ITERATOR_DEBUG_LEVEL=0)；string SSO 阈值随版本变不能硬记 15；短串对象开头是字符不是指针(只有长串对象起始第一机器字才是字符缓冲区指针)；对象尾部有对齐填充(PlayerRecord 最后字段偏移16但总大小24)",
+        "理论映射：引擎决定对象/容器布局规律，Unity/UE 本课只保留理论映射(没验证真实 Unity/UE 游戏对象)",
+        "工程：GameMemoryLayoutLab 项目(Day27GameMemoryLayoutLab.exe，自建迷你 Demo，不接触真实游戏/外部进程/内存扫描器)Sol 后台验收(Debug/Release 构建+运行、非法参数、三个导出锚点、--lab 稳定停点)"
+      ]
+    },
     {
       "date": "2026-08-21",
       "items": [
