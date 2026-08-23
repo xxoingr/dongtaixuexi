@@ -3,7 +3,7 @@ schema: cc-dash/session@1
 project: windows-reverse-learning  
 session_id: s_2026-07-30_day8-apc  
 started: 2026-07-30T00:00:00+08:00  
-last_updated: 2026-08-23T00:15:00+08:00
+last_updated: 2026-08-23T19:00:00+08:00
 status: in-progress
 ---  
 
@@ -65,15 +65,18 @@ status: in-progress
 
 ## Current Status  
 
-进度: 27/30 (90%) — 第一阶段
+进度: 28/30 (93%) — 第一阶段
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
 教学阶段: DS 理论前置
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 27 游戏逆向实战 — 状态门补做的第二题用户已亲自答对（end 指向最后一个元素的下一格），Day 27 恢复正式完成，即将进入 Day 28。
-下一步: 开始 Day 28 游戏数据分析（存档格式/网络协议/资源文件分析 + 静态分析工具 IDA/Ghidra）— DS 理论前置。
+正在: Day 28 游戏数据分析 — 理论/实操/复盘/网站发布全部完成，Day 28 正式结束，即将进入 Day 29。
+下一步: 开始 Day 29 反外挂分析（检测引擎架构/特征码/行为检测/威胁建模/服务器侧校验）— DS 理论前置。
 
 ## Decisions  
 
+- <!-- at:2026-08-23T19:00:00+08:00 --> Day 28 游戏数据分析正式完成：DS 理论前置（存档=二进制账本/网络协议=电报/资源文件=解包/IDA-Ghidra 静态与动态互补）→ Sol 制作自建字节 BinaryDataAnalysisLab（16 字节存档 + 9 字节协议包）并后台验收 → DS 微步实操（用户亲手取证：gold offset=8 raw=40 E2 01 00 value=123456；小端序低位在前倒拼）→ 复盘两问通过（分析二进制=按字段偏移/大小/字节序翻译成人话；小端序低位字节放最前，用户先误说"00 放低位"后纠正）。days.json 已写入正式文章并 build 发布，进度 28/30。
+- <!-- at:2026-08-23T18:58:55+08:00 --> Day 28 Sol 工程准备完成：新建纯用户态 `BinaryDataAnalysisLab` 并接入 `学习.sln`；自建 16 字节存档按 magic/version/level/gold/equipment_count/checksum 输出字段名、偏移、原始字节和值，自建 9 字节协议包按 opcode/payload_length/player_id/action 拆解，并把同一载荷翻译为人话。损坏存档在解析认可前因 checksum 不一致退出 3。工程只演示自建二进制结构解析，不含真实游戏、真实网络抓包、资源解包或 IDA/Ghidra 实操。Debug/Release、正常/分项/`--lab`/损坏校验和/非法参数、x64 PE、三个导出调试锚点与 Release 产物边界均已验收。Day 保持 in-progress，教学阶段转为 DS 实操教学。
+- <!-- at:2026-08-23T00:40:00+08:00 --> Day 28 游戏数据分析理论前置完成并交接 Sol 工程准备（用户已拍板走自建迷你 Demo 演示）。已讲并逐条确认理解：存档格式=游戏写的二进制账本（看懂账本/找数据/绕过校验）；网络协议=客户端与服务器间的电报（抓包→看格式→破译含义）；资源文件=游戏目录里的货物与账本（先解包再逐类分析）；静态分析 IDA/Ghidra=不运行程序反汇编/反编译读机器码，与动态分析互补（用户能说出"静态不用运行、但网络协议等需运行时才出"的边界）。实操形态经 ask 确认：自建迷你 Demo 演示（不碰真实游戏/网络）。用户提出不知本机是否装有 IDA/Ghidra，已告知本课 Demo 用自带的十六进制查看即可、不强制装 IDA/Ghidra。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
 - <!-- at:2026-08-23T00:30:00+08:00 --> 状态门闭环：用户已亲自回答 Day 27 第二题并答对（end 指向最后一个元素的下一格）。Day 27 恢复正式完成、进度 27/30、教学阶段回 DS 理论前置，下一步 Day 28。正式文章内容无变化，不重复发布网站（网站已发布版本 58d4194 保持）。
 - <!-- at:2026-08-23T00:20:00+08:00 --> 触发"全阶段问题状态门"（更新笔记助手.txt 新增规则）：Day 27 第二题（end 指向最后一个元素本身还是下一格）DS 曾擅自代答并计为用户通过，用户指出其后两次回复仍在补充第一题、并未亲自回答第二题。按规则纠正：Day 27 暂回 in-progress、进度回 26/30、教学阶段改 DS 实操后复盘，暂停 Day 28；网站已发布不删不滚。现只重问第二题、不加答案不附带其他问题，等用户亲自回答。答对→恢复 Day 27 正式完成并继续 Day 28（文章内容无变化则不重复发布）；答不完整→老师式小步只纠一个关键点再问一个最小确认问题，等亲自回答后才闭环。
 - <!-- at:2026-08-23T00:15:00+08:00 --> Day 27 游戏逆向实战正式完成：DS 理论前置（引擎=内存地图/STL 容器/vector 3 指针/string SSO/对象结构偏移）→ Sol 制作自建迷你 Demo GameMemoryLayoutLab（vector/短串/长串/PlayerRecord）并后台验收 → DS 微步实操（用户亲手取证：vector object_size=24 三指针 bytes_used=20=5×4；短串 Mage INLINE_SSO 就地存、长串 Legendary EXTERNAL_HEAP 外存；PlayerRecord 字段偏移 0/4/8/16）→ 复盘通过（vector 数字在体外靠 begin≠object 地址证明；end=最后一元素下一格；短串就地长串外存）。days.json 已写入正式文章并 build 发布，进度 27/30。
@@ -204,6 +207,7 @@ status: in-progress
 
 ## Completed Work
 
+- <!-- ref:t_game_data at:2026-08-23T18:58:55+08:00 --> Day 28 Sol 工程准备完成：`学习\Dll1\BinaryDataAnalysisLab` 已接入 `学习.sln`；x64/v145/C++20 Debug/Release 定向 Rebuild 均为 0 警告、0 错误。自动验收确认 16 字节存档逐字段输出 offset/raw/value 且 checksum=625 有效，9 字节协议包逐字段拆出 opcode/长度/载荷并得到 player_id=42、action=7；篡改 gold 首字节后 checksum 计算值 626 与存储值 625 不符，退出 3；非法参数退出 2。`--lab` 可稳定输出全部证据后等待 Enter，`Day28Checksum`、`Day28ParseSave`、`Day28ParsePacket` 可按导出名定位，Release 运行包仅新增必要 EXE。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 - <!-- ref:t_game_reverse at:2026-08-23T00:08:54+08:00 --> Day 27 Sol 工程准备完成：`学习\Dll1\GameMemoryLayoutLab` 已接入 `学习.sln`；x64/v145/C++20 Debug/Release 从解决方案定向 Rebuild 成功。自动验收从实际地址确认 vector 对象为 24 字节三指针布局且 `end-begin=20=5×4`、短 string 数据位于 32 字节对象内部、长 string 数据在对象外且首指针等于 `data()`、四个字段地址均等于对象基址加固定偏移；非法参数退出 2。`--lab` 稳定停在 `state=EVIDENCE_READY`，`Day27InspectVector`、`Day27InspectString`、`Day27InspectPlayer` 可按导出名定位，Release 运行包仅新增必要 EXE。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 
 - <!-- ref:t_kernel_ob at:2026-08-22T23:38:11+08:00 --> Day 26 Sol 工程准备完成：`学习\Dll1\ObjectHandleProtectionLab` 已接入 `学习.sln`；x64/v145/C++20 Debug/Release 从解决方案定向 Rebuild 成功。自动验收确认两个访问者都先经过 `BEFORE_HANDLE_ISSUE` 检查点：允许者获得 `0xD260` 并凭句柄访问成功，被拒绝者和未知访问者均不获得句柄且以 `NO_HANDLE` 失败；非法参数退出 2、未知访问者退出 3。`--lab` 稳定停在 `state=EVIDENCE_READY`，`Day26CheckHandleRequest` 与 `Day26UseIssuedHandle` 可按导出名定位，Release 运行包仅新增必要 EXE。Day 保持 in-progress，教学阶段转为 DS 实操教学。
