@@ -321,8 +321,13 @@
   "28": {
     "title": "游戏数据分析",
     "video": "",
-    "html": "<div class=\"planned-box\"><h3>学习预告</h3><p>存档、资源、网络协议、IDA/Ghidra 静态分析方法论</p><p>这一课还没正式开始，学完后会补充完整原理、实验记录、调试证据和失败踩坑。</p></div>",
-    "status": "planned"
+    "html": "<h3>本课要解决什么</h3>\n<p>Day 27 学会了在\"运行中的内存\"里认 vector/string/对象。本课换个战场：<b>逆向不只在内存里，也在\"躺着的文件\"里——存档、网络包、资源、程序本体都是能分析的对象。</b>一句话核心结论：<b>分析二进制 = 按\"字段偏移、大小、字节序\"这些格式规则，把一堆原始字节翻译成人话。</b></p>\n<h3>四个分析对象</h3>\n<table><tr><th>对象</th><th>是什么</th><th>怎么分析</th></tr><tr><td>存档格式</td><td>游戏写的\"二进制账本\"（金币/等级/装备）</td><td>看字节→猜字段→找数据→绕过校验</td></tr><tr><td>网络协议</td><td>客户端与服务器间的\"电报\"</td><td>抓包→看格式→破译含义</td></tr><tr><td>资源文件</td><td>游戏目录里的货物与账本（贴图/配置/脚本）</td><td>先解包→再逐类分析</td></tr><tr><td>程序本体</td><td>EXE/DLL 的机器码</td><td>IDA/Ghidra 反汇编/反编译</td></tr></table>\n<h3>静态 vs 动态（互补）</h3>\n<p><b>静态分析</b>（IDA/Ghidra）：不运行程序，直接读文件，反汇编/反编译机器码——快、安全，能摸出框架。但网络包、运行时才解密的数据、内存临时值这些\"运行才出现\"的东西，静态看不到，要靠<b>动态分析</b>（运行、下断点、抓包）。两者互补，不是二选一。</p>\n<h3>小端序（Little Endian）</h3>\n<p>多字节整数在内存/文件里怎么存的问题。<b>小端序 = 低位字节放前面（低地址）、高位字节放后面</b>，读的时候倒过来拼。例：gold 存成 <code>40 E2 01 00</code>，倒过来拼成 <code>00 01 E2 40</code> = 0x0001E240 = 123456。注意\"40 是低位放最前\"，不是\"00 放低位\"。</p>\n<h3>实操证据链（2026-08-23）</h3>\n<p>Day28BinaryDataAnalysisLab（自建字节，不碰真实游戏/网络/IDA）演示两段二进制解析：(1) 存档 16 字节小端序，magic=SAVE/version=1/level=27/<b>gold 偏移 8 占 4 字节 raw=40 E2 01 00 → value=123456</b>/equipment_count=3/checksum=625 校验通过；(2) 协议包 9 字节，opcode=0x1001/payload_length=5/player_id=42/action=7。--tampered-save 把 gold 首字节 0x40→0x41，checksum 重算不匹配，CHECKSUM_MISMATCH 拒绝（退出码 3）。后台 day28_check.py 输出 PASS。</p>\n<h3>失败实验与坑</h3>\n<ul><li><b>小端序不能从左到右直接读</b>：40 E2 01 00 要倒着拼才是 123456。</li><li><b>offset 是字段相对整段数据起点的位置</b>：不要和 end/偏移混用。</li><li><b>checksum 只是演示\"格式校验\"</b>：不是现实游戏的通用算法。</li><li><b>本工程不构成真实游戏分析证据</b>：没碰真实存档/流量/解包，没装 IDA/Ghidra。</li><li><b>--lab 会等 Enter 是教学停留点</b>：不是卡死。</li></ul>\n<h3>逆向者/防御视角</h3>\n<p>逆向者：分析游戏数据常从\"最省力\"的地方下手——先翻存档（躺着的账本）、再看资源（配置表直接写数值）、再抓网络包（看客户端说了什么）、最后才上 IDA 啃程序本体。防御者：知道攻击者会改存档、伪造协议包，所以加校验和、加密、服务端校验，让\"看懂账本就能改\"不再直接成立。</p>\n<h3>与前后课程关联</h3>\n<p>建立在 Day 27（认内存里的对象）之上，把\"按规律读二进制\"从内存扩展到文件、网络、程序本体。为 Day 29（反外挂分析：检测引擎/特征码/行为检测/威胁建模）铺路——防御方的这些手段，正是针对本课讲的这些分析入口来做对抗。</p>",
+    "status": "done",
+    "practice": {
+      "tools": "Day28BinaryDataAnalysisLab.exe（Release x64，C:\\Users\\Administrator\\Desktop\\学习\\x64\\Release\\，--save/--packet/--lab/--tampered-save）、PowerShell、day28_check.py 后台自动验证脚本",
+      "target": "Day28BinaryDataAnalysisLab.exe（BinaryDataAnalysisLab 项目，学习.sln；自建字节演示二进制存档与协议包解析）",
+      "result": "存档 16 字节小端序：magic=SAVE/version=1/level=27/gold 偏移8 占4字节 raw=40 E2 01 00 value=123456/equipment_count=3/checksum=625 校验通过；协议包 opcode=0x1001/payload_length=5/player_id=42/action=7；--tampered-save 触发 CHECKSUM_MISMATCH 退出码 3。day28_check.py 输出 PASS"
+    }
   },
   "29": {
     "title": "反外挂分析",
@@ -372,6 +377,16 @@
     }
   ],
   "log": [
+    {
+      "date": "2026-08-23",
+      "items": [
+        "Day 28: 游戏数据分析 — 存档格式/网络协议/资源文件/IDA-Ghidra 理论+实操验收完成。核心结论：分析二进制=按字段偏移/大小/字节序把原始字节翻译成人话；小端序=低位字节放前、倒过来拼",
+        "证据：Day28BinaryDataAnalysisLab(自建字节)——存档 gold 偏移8 占4字节 raw=40 E2 01 00 value=123456(小端序倒拼 00 01 E2 40=0x0001E240)；协议包 opcode=0x1001/payload_length=5/player_id=42/action=7；--tampered-save 改 gold 首字节 0x40→0x41 触发 CHECKSUM_MISMATCH 拒绝；day28_check.py 输出 PASS",
+        "坑：小端序不能从左到右读(40 E2 01 00 要倒拼才是 123456)；offset 是字段相对整段起点不跟 end 混用；checksum 只演示格式校验非真实游戏算法；本工程不碰真实游戏/流量/解包、不装 IDA/Ghidra；--lab 等 Enter 是教学停留点不是卡死",
+        "理论映射：静态分析(IDA/Ghidra 不运行读机器码) vs 动态分析(运行/断点/抓包)互补；网络包等运行时才出的数据要靠动态；本课 IDA/Ghidra 只保留理论边界未实际安装操作",
+        "工程：BinaryDataAnalysisLab 项目(Day28BinaryDataAnalysisLab.exe，自建字节，不碰真实游戏/网络/IDA)Sol 后台验收(Debug/Release 构建+运行、--save/--packet/--lab/--tampered-save/非法参数路径、三个导出锚点)"
+      ]
+    },
     {
       "date": "2026-08-22",
       "items": [
