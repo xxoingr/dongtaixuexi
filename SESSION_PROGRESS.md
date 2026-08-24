@@ -3,7 +3,7 @@ schema: cc-dash/session@1
 project: windows-reverse-learning  
 session_id: s_2026-07-30_day8-apc  
 started: 2026-07-30T00:00:00+08:00  
-last_updated: 2026-08-23T19:00:00+08:00
+last_updated: 2026-08-24T23:20:00+08:00
 status: in-progress
 ---  
 
@@ -65,15 +65,22 @@ status: in-progress
 
 ## Current Status  
 
-进度: 28/30 (93%) — 第一阶段
+进度: 29/30 (97%) — 第一阶段
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
 教学阶段: DS 理论前置
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 28 游戏数据分析 — 理论/实操/复盘/网站发布全部完成，Day 28 正式结束，即将进入 Day 29。
-下一步: 开始 Day 29 反外挂分析（检测引擎架构/特征码/行为检测/威胁建模/服务器侧校验）— DS 理论前置。
+正在: Day 29 反外挂分析 — 理论/实操/复盘/网站发布全部完成，Day 29 正式结束，即将进入 Day 30。
+下一步: 开始 Day 30 综合闭环项目（完整分析报告: PE→注入→Hook→检测→保护→反外挂评估）— DS 理论前置。
 
 ## Decisions  
 
+- <!-- at:2026-08-24T23:20:00+08:00 --> Day 29 反外挂分析正式完成：DS 理论前置（分层设防/特征码/行为检测/威胁建模/服务器校验）→ Sol 制作中文 CS 风格自建训练靶场 Day29LayeredAntiCheatLab 并后台验收 → DS 微步实操（用户亲手扫描三个终端：已知特征=特征码命中/行为正常/拦截；变化特征=特征码未命中/行为警报/拦截；正常样本=特征码未命中/行为正常/放行）→ 复盘通过（已知特征靠外观命中特征码；变化特征靠行为层补抓；分层互补提高绕过成本）。days.json 已写入正式文章并 build 发布，进度 29/30。
+- <!-- at:2026-08-24T22:41:55+08:00 --> 用户确认 Day 29 靶场采用 CS 风格并要求完整中文，同时指出上一版枪械像矩形工具枪。Sol 保留既有 Day 29 检测函数与取证顺序，只重做用户可见层：界面中文化，SIGNATURE/BEHAVIOR/VERDICT 以中英对照保留；场景改为程序化工业训练场；枪械改为原创卡宾枪，不直接复制第三方游戏资产。Day 保持 in-progress、教学阶段仍为 DS 实操教学，前两张交回卡均由本轮最终替换卡取代。
+- <!-- at:2026-08-24T22:15:19+08:00 --> 用户亲自运行 Day 29 第一版图形程序后指出它仍像粗糙展示厅，且 Esc 直接结束，不符合 CS2 类靶场体验；已先通知 DS 暂停取证，用户随后批准方案 A。Sol 保留同一套 SIGNATURE→BEHAVIOR→VERDICT 检测函数，只重做图形交互层：默认先到主菜单，训练场增加程序化持枪视角、连续射击、30/90 弹药与换弹、三条靶道和移动人形靶、命中/曳光/HUD，以及原有三个扫描终端。Esc 现只进入 `PAUSED`，退出必须经菜单二次确认；这是 Day 29 自建模拟，不扩成完整回合/经济/拆包系统，也不修改 Day 31-60 的 ReverseStrikeLab。旧交回卡由本轮替换版交回卡取代，Day 保持 in-progress、教学阶段仍为 DS 实操教学。
+- <!-- at:2026-08-24T21:46:41+08:00 --> 用户指出 Day 27-29 可安全图形化的游戏/数据课程不应默认只看 PowerShell，确认今后凡机制能在自建、安全场景中如实表达，用户实操优先采用“进入窗口→亲手操作→观察结果”；命令行降为 Sol 后台验收与故障诊断。Day 29 因用户尚未开始取证，直接将原控制台入口改为 3D 分层防御训练场：三个实体终端分别代表已知特征、改特征但有可疑行为、正常样本，靠近后按 E 才按 SIGNATURE→BEHAVIOR→VERDICT 动画显示实际检测函数的结果。画面明确标注 SELF-BUILT SIMULATION，不读取真实进程、不伪造真实反外挂能力。长期规则与学习上下文助手已同步加入“用户实操优先可视化 / 可视化不能伪造机制”，Day 保持 in-progress、教学阶段仍为 DS 实操教学。
+- <!-- at:2026-08-24T21:22:40+08:00 --> Day 29 Sol 工程准备完成：新增纯用户态自建 `LayeredAntiCheatLab`，固定让三个模拟目标按 SIGNATURE→BEHAVIOR 顺序经过两层检测。已知目标命中 `DE AD BE EF` 并因 KNOWN_SIGNATURE 阻断；改特征目标把 `EF` 改为 `00`、第一层 MISS，但因模拟读其他进程内存与远程注入行为被第二层阻断；正常目标两层均未命中并放行。工程不读取真实进程、不接触真实外挂或游戏，服务器侧校验保持理论边界。Debug/Release、默认/分项目标/`--lab`/自测/非法参数、x64 PE、三个导出定位锚点与 Release 产物边界均已验收。Day 保持 in-progress，教学阶段转为 DS 实操教学。
+- <!-- at:2026-08-23T20:40:00+08:00 --> Day 29 反外挂分析理论前置完成并交接 Sol 工程准备（用户已拍板走自建迷你 Demo 演示）。已讲并逐条确认理解：反外挂=分层设防多层叠加提高攻击成本；特征码=外挂"身份证照片"认已知外挂、怕加壳/改特征；行为检测=看可疑动作抓外挂（能抓新型）、风险是误伤正常程序；威胁建模=换位思考先列攻击路径→薄弱点→防御再有的放矢（用户能说出"站在攻击者角度问从哪下手、能打到什么"）；服务器侧校验=关键数据放服务器本地改不动（用户举 MC 服务器版例子）。实操形态经 ask 确认：自建迷你 Demo 演示（不碰真实外挂）。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
+- <!-- at:2026-08-23T20:32:38+08:00 --> 用户授权 Sol 提前完成供 Day 31-60 长期复用的自有训练靶场 `ReverseStrikeLab`。V1 已完成并在独立 `学习\Dll1\ReverseStrikeLab\SESSION_PROGRESS.md` 留存权威工程状态：原生 C++20/x64、固定 raylib 6.0、程序化素材、单机战术 FPS；Debug/Release/独立运行包全量验收通过，并提供八个稳定导出锚点及逐阶段 `docs\LEARNING_MAP.md`。这是并行工程准备，不改变 Day 8-60 已确认课程内容或顺序，不把第二阶段任何 Day 提前标记完成；主线仍按当前 Day 29 的 DS 理论前置继续。
 - <!-- at:2026-08-23T19:00:00+08:00 --> Day 28 游戏数据分析正式完成：DS 理论前置（存档=二进制账本/网络协议=电报/资源文件=解包/IDA-Ghidra 静态与动态互补）→ Sol 制作自建字节 BinaryDataAnalysisLab（16 字节存档 + 9 字节协议包）并后台验收 → DS 微步实操（用户亲手取证：gold offset=8 raw=40 E2 01 00 value=123456；小端序低位在前倒拼）→ 复盘两问通过（分析二进制=按字段偏移/大小/字节序翻译成人话；小端序低位字节放最前，用户先误说"00 放低位"后纠正）。days.json 已写入正式文章并 build 发布，进度 28/30。
 - <!-- at:2026-08-23T18:58:55+08:00 --> Day 28 Sol 工程准备完成：新建纯用户态 `BinaryDataAnalysisLab` 并接入 `学习.sln`；自建 16 字节存档按 magic/version/level/gold/equipment_count/checksum 输出字段名、偏移、原始字节和值，自建 9 字节协议包按 opcode/payload_length/player_id/action 拆解，并把同一载荷翻译为人话。损坏存档在解析认可前因 checksum 不一致退出 3。工程只演示自建二进制结构解析，不含真实游戏、真实网络抓包、资源解包或 IDA/Ghidra 实操。Debug/Release、正常/分项/`--lab`/损坏校验和/非法参数、x64 PE、三个导出调试锚点与 Release 产物边界均已验收。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 - <!-- at:2026-08-23T00:40:00+08:00 --> Day 28 游戏数据分析理论前置完成并交接 Sol 工程准备（用户已拍板走自建迷你 Demo 演示）。已讲并逐条确认理解：存档格式=游戏写的二进制账本（看懂账本/找数据/绕过校验）；网络协议=客户端与服务器间的电报（抓包→看格式→破译含义）；资源文件=游戏目录里的货物与账本（先解包再逐类分析）；静态分析 IDA/Ghidra=不运行程序反汇编/反编译读机器码，与动态分析互补（用户能说出"静态不用运行、但网络协议等需运行时才出"的边界）。实操形态经 ask 确认：自建迷你 Demo 演示（不碰真实游戏/网络）。用户提出不知本机是否装有 IDA/Ghidra，已告知本课 Demo 用自带的十六进制查看即可、不强制装 IDA/Ghidra。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
@@ -185,6 +192,8 @@ status: in-progress
 
 ## Failed Attempts
 
+- <!-- id:f_day29_release_lock task:t_anti_cheat --> Day 29 中文/枪械改版首次 Release Rebuild 因 PID 17384 正在运行旧 Release EXE 而出现 LNK1104/拒绝访问；确认进程路径精确指向本课产物后向该窗口发送正常关闭请求，再次从 `学习.sln` 重建成功。以后重建前先退出正在运行的靶场，不重复改输出路径或清理文件试错。
+
 - <!-- id:f_day22_elevation task:t_kernel_callback --> Day 22 真实加载验收：第一次因 Codex 非管理员不能改 BCD；用户随后在管理员 PowerShell 运行脚本，证书导入步骤执行后 `bcdedit /set testsigning on` 明确返回“该值受安全引导策略保护”，确认根因是 UEFI Secure Boot，不是命令、驱动或签名失败。脚本已改为先检查 Secure Boot、BCD 成功后再导入证书；真实内核加载仍未执行。
 
 - <!-- id:f_day14_gui_resume_from_veh task:t_hook_veh --> Sol 用隔离用户目录启动干净普通 x64dbg，已成功命中 `Day14VehHandler` 并由用户读出 `E0421401`；但随后人工 F9 仍在 `ntdll!00007FFE7336C286` 触发 `C0000005`。因此“只清旧 GUI 会话后继续手动运行”不足以修复，禁止第三次重复；后续改为新进程的一次性脚本检查点。
@@ -207,6 +216,10 @@ status: in-progress
 
 ## Completed Work
 
+- <!-- ref:t_anti_cheat at:2026-08-24T22:41:55+08:00 --> Day 29 中文与原创 CS 风格视觉替换完成：用户可见窗口标题、主菜单、HUD、任务、靶标、扫描流程、检测结果、暂停与退出确认均为中文，关键检测术语保留中英对照；运行时从 Windows 系统字体加载所需中文字形，不向 Release 包复制字体。工业靶场由混凝土地面/墙体、钢制分道、背板、顶梁灯和箱体构成；原创卡宾枪含枪管、木质护木、机匣、瞄具、握把、弹匣、枪托、双手持握、后坐/枪口火光和弹匣下移换弹。验证脚本先对旧程序因缺少 `visual_language=zh-CN` 正确失败，再在新程序转绿；Debug/Release 均从 `学习.sln` Rebuild 并通过完整控制台/UI/图形 smoke、非法参数与四张互异截图检查。Release 默认窗口标题实测为“第29天 - 分层防御训练靶场”，进程可独立存活并正常关闭；PE32+ x64 Windows GUI、三个导出 RVA `0x3870/0x3880/0x3910`、单 EXE 边界均核对。Release SHA256=`001D1B7D7A843E470DC15A97CA93F59033508DFFCFB8A0535F1943B34057DC21`；用户证据仍待 DS 微步引导。
+- <!-- ref:t_anti_cheat at:2026-08-24T22:15:19+08:00 --> Day 29 CS2 类靶场改版完成：`LayeredAntiCheatLab` 默认进入带 START TRAINING/EXIT 的主菜单；游戏内支持 WASD/鼠标、左键连续射击、R 换弹、移动人形靶、命中标记与曳光、持枪 HUD、靠近终端按 E 分层扫描、F1 任务提示。Esc 状态机实测为 PLAYING→PAUSED，暂停菜单提供继续/重开/退出，退出另有确认层；`--ui-self-test` 锁定主菜单、暂停、重开清零、取消退出与确认退出路径。Debug/Release 从 `学习.sln` 定向 Rebuild 与全路径验证均通过；隐藏图形验收实际发射 3 发、命中 3 发、弹药 27/90，并分别导出且人工检查主菜单/游戏/暂停三张不同截图。首次暂停截图因双缓冲只读到旧游戏帧，已通过两帧稳定绘制修复，并在验证脚本加入二进制差异断言防回归。Release 仍为单一 x64 Windows GUI EXE，SHA256=`04855D0116E6060AE75893C10DD46AFF0106A34C4DC49ED3633DD5CA90B11144`；用户证据仍待 DS 微步引导。
+- <!-- ref:t_anti_cheat at:2026-08-24T21:46:41+08:00 --> Day 29 用户实操入口完成视觉改版：复用既有固定 raylib 6.0，`Day29LayeredAntiCheatLab.exe` 默认直接进入 1280×720 第一人称 3D 训练场，支持 WASD/鼠标、靠近终端按 E 扫描、R 重置、F1 任务提示；三目标的画面结果均由原 `Day29MatchSignature`、`Day29ClassifyBehavior`、`Day29EvaluateTarget` 计算。控制台链路仅保留为 `--console`/`--console-lab` 后台模式。解决方案定向 Debug/Release Rebuild、双配置全路径验证、60 帧隐藏图形 smoke 与截图导出、默认无参数窗口存活、x64 Windows GUI PE、三导出、非法参数和单 EXE Release 边界全部通过。用户证据尚待 DS 微步引导，Day 保持 in-progress。
+- <!-- ref:t_anti_cheat at:2026-08-24T21:22:40+08:00 --> Day 29 Sol 工程准备完成：`学习\Dll1\LayeredAntiCheatLab` 已接入 `学习.sln`；x64/v145/C++20 Debug/Release 从解决方案定向 Rebuild 成功。自动验收确认三种自建目标严格按第 1 层 SIGNATURE→第 2 层 BEHAVIOR 输出：已知特征命中并阻断，改动末字节后特征层 MISS 但行为层以两个可疑事件补抓，正常目标放行；`--lab` 可稳定停在完整证据画面，`--self-test` 与非法参数路径通过。`Day29MatchSignature`、`Day29ClassifyBehavior`、`Day29EvaluateTarget` 可按导出名定位；Release 运行目录只新增必要 EXE。用户实操证据尚待 DS 引导，Day 保持 in-progress。
 - <!-- ref:t_game_data at:2026-08-23T18:58:55+08:00 --> Day 28 Sol 工程准备完成：`学习\Dll1\BinaryDataAnalysisLab` 已接入 `学习.sln`；x64/v145/C++20 Debug/Release 定向 Rebuild 均为 0 警告、0 错误。自动验收确认 16 字节存档逐字段输出 offset/raw/value 且 checksum=625 有效，9 字节协议包逐字段拆出 opcode/长度/载荷并得到 player_id=42、action=7；篡改 gold 首字节后 checksum 计算值 626 与存储值 625 不符，退出 3；非法参数退出 2。`--lab` 可稳定输出全部证据后等待 Enter，`Day28Checksum`、`Day28ParseSave`、`Day28ParsePacket` 可按导出名定位，Release 运行包仅新增必要 EXE。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 - <!-- ref:t_game_reverse at:2026-08-23T00:08:54+08:00 --> Day 27 Sol 工程准备完成：`学习\Dll1\GameMemoryLayoutLab` 已接入 `学习.sln`；x64/v145/C++20 Debug/Release 从解决方案定向 Rebuild 成功。自动验收从实际地址确认 vector 对象为 24 字节三指针布局且 `end-begin=20=5×4`、短 string 数据位于 32 字节对象内部、长 string 数据在对象外且首指针等于 `data()`、四个字段地址均等于对象基址加固定偏移；非法参数退出 2。`--lab` 稳定停在 `state=EVIDENCE_READY`，`Day27InspectVector`、`Day27InspectString`、`Day27InspectPlayer` 可按导出名定位，Release 运行包仅新增必要 EXE。Day 保持 in-progress，教学阶段转为 DS 实操教学。
 
@@ -270,6 +283,9 @@ status: in-progress
 - 新会话提示词工具: `C:\Users\Administrator\Desktop\学习上下文助手.exe`
 - 提示词助手源码: `C:\Users\Administrator\Documents\Codex\2026-07-31\ds-codex-4\outputs\learning-context-assistant\learning_context_assistant.py`
 - 学习数据: `C:\Users\Administrator\Desktop\dongtaixuexi\days.json`  
+- Day 31-60 长期训练靶场: `C:\Users\Administrator\Desktop\学习\Dll1\ReverseStrikeLab\`
+- 训练靶场独立进度: `C:\Users\Administrator\Desktop\学习\Dll1\ReverseStrikeLab\SESSION_PROGRESS.md`
+- 训练靶场 Release 运行包: `C:\Users\Administrator\Desktop\学习\x64\Release\ReverseStrikeLabPackage\`
 
 ## Standings  
 
