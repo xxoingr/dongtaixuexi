@@ -16,6 +16,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans S
 .sidebar .roadmap{font-size:.7rem;line-height:1.6;color:#6b7280;background:#111318;border-radius:6px;padding:10px 12px;margin-bottom:20px;white-space:pre-wrap}
 .sidebar .roadmap .here{color:#fbbf24;font-weight:600}
 .sidebar .roadmap .done{color:#34d399}
+.sidebar .roadmap .planned{color:#6b7280}
 .sidebar nav a{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:6px;color:var(--sidebar-text);text-decoration:none;font-size:.85rem;transition:all .15s;margin-bottom:2px}
 .sidebar nav a:hover{background:#262930;color:#e0e3eb}
 .sidebar nav a.active{background:#1e3a5f;color:#60a5fa;font-weight:600}
@@ -63,7 +64,7 @@ pre code{background:none;padding:0;color:inherit}
 <h2>学习笔记</h2>
 <div class="sub">Windows 逆向 · 游戏安全</div>
 <button class="menu-toggle" id="mt">📚 目录</button>
-<div class="jump"><input id="jump" type="text" placeholder="输入跳转：12 / Day 12 / 基础-2" autocomplete="off"><button id="jb">跳转</button></div>
+<div class="jump"><input id="jump" type="text" placeholder="输入跳转：12 / Day 12 / 基础-2 / 31-34" autocomplete="off"><button id="jb">跳转</button></div>
 <div class="roadmap">▶前期基础<span class="done"> ✅</span>
 ▶PE 格式 (Day 1-4)<span class="done"> ✅</span>
   ├ ▶注入基础 (Day 5-7)<span class="done"> ✅</span>
@@ -71,7 +72,16 @@ pre code{background:none;padding:0;color:inherit}
   ├ ▶Hook 体系 (Day 11-15)<span class="done"> ✅</span>
   ├ ▶反调试与保护 (Day 16-20)<span class="done"> ✅</span>
   ├ ▶内核基础 (Day 21-26)<span class="done"> ✅</span>
-  ├ ▶综合实战 (Day 27-30)<span class="here"> ◀</span>
+  ├ ▶综合实战 (Day 27-30)<span class="done"> ✅</span>
+  └ 第二阶段
+  ├ ▶Day 31-34: x64 汇编进阶 + SSE/AVX + 编译器优化识别<span class="done"> ✅</span>
+  ├ ▶Day 35-38: C++ 对象模型 + RTTI + STL 容器恢复<span class="planned"> ⏳</span>
+  ├ ▶Day 39-41: SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级<span class="planned"> ⏳</span>
+  ├ ▶Day 42-45: 游戏数学 + 相机/矩阵/World-to-Screen<span class="planned"> ⏳</span>
+  ├ ▶Day 46-49: 调试器进阶 + Trace/Dump/自动化脚本<span class="planned"> ⏳</span>
+  ├ ▶Day 50-53: 版本 Diff + 特征码定位 + CE 进阶<span class="planned"> ⏳</span>
+  ├ ▶Day 54-57: Windows 多线程 + 同步机制 + Hook 稳定性<span class="planned"> ⏳</span>
+  ├ ▶Day 58-60: 第二次综合项目 + 完整逆向报告<span class="planned"> ⏳</span>
 </div>
 <nav>
     <a href="#" data-day="f0" class="done"><span class="dot"></span>基础-1 — CE 入门 — 内存搜索与修改</a>
@@ -107,8 +117,9 @@ pre code{background:none;padding:0;color:inherit}
     <a href="#" data-day="28" class="done"><span class="dot"></span>Day 28 — 游戏数据分析</a>
     <a href="#" data-day="29" class="done"><span class="dot"></span>Day 29 — 反外挂分析</a>
     <a href="#" data-day="30" class="done"><span class="dot"></span>Day 30 — 综合闭环项目</a>
+    <a href="#" data-day="day31-34" class="done"><span class="dot"></span>Day 31-34 — x64 汇编进阶 + SSE/AVX + 编译器优化识别</a>
 </nav>
-<div class="progress">课程 Day：30/30 · 前期基础：3/3<div class="bar"><div class="fill" style="width:100%"></div></div></div>
+<div class="progress">第一阶段 30/30 · 第二阶段 4/30（块 1/8）· 总体 34/60<div class="bar"><div class="fill" style="width:57%"></div></div></div>
 <div class="log-section">
 <div class="log-title">📅 学习日志</div>
 <div class="log-entry"><div class="log-date">2026-08-24</div><div class="log-items"><div class="log-item">Day 29: 反外挂分析 — 特征码/行为检测/分层设防/威胁建模/服务器侧校验 理论+实操验收完成。核心结论：反外挂=分层设防，特征码认长相、行为检测认动作、服务器独立维护/校验关键状态，多层互补叠加提高攻击者绕过成本</div><div class="log-item">证据：Day29LayeredAntiCheatLab(中文CS风格自建训练靶场，不读真实进程)用户亲手扫三个终端——已知特征:特征码命中(偏移2 DE AD BE EF)/行为正常/拦截；变化特征:特征码未命中/行为警报/拦截(行为层补抓)；正常样本:特征码未命中/行为正常/放行；流水线 SIGNATURE→BEHAVIOR→VERDICT；day29_check.py 输出 PASS</div><div class="log-item">坑：射击命中≠反外挂证据(正式证据是终端三层扫描)；必须靠近终端再按E；Esc只开暂停菜单不直接退出；单层可被绕(加壳绕特征码/改动作绕行为)故须多层互补；层数多≠一定强(堆同类检测无效)</div><div class="log-item">理论映射：威胁建模=先换位列攻击路径→薄弱点→防御再有的放矢；服务器侧校验=服务器独立维护/校验权威状态，客户端本地改动不能自动改变服务器认可的结果(MC服务器版类比)；特征码怕加壳/改特征，行为检测怕误伤正常程序</div><div class="log-item">工程：LayeredAntiCheatLab 项目(Day29LayeredAntiCheatLab.exe，中文GUI训练靶场，复用raylib，程序化场景与原创枪械，不读真实进程)Sol 后台验收(Debug/Release构建+运行、三目标分层检测、UI状态机、射击/换弹/暂停/退出、四张截图)</div></div></div><div class="log-entry"><div class="log-date">2026-08-24</div><div class="log-items"><div class="log-item">Day 30: 综合闭环项目 — 第一阶段收官。核心结论：PE→注入→Hook→检测→保护→反外挂评估 是一条完整攻防链，任何单层都可被绕、可靠防御靠可验证/可关联/互相补位的整体设计=以攻促防</div><div class="log-item">六环串链：PE(程序骨架与Loader)→注入(载荷进目标上下文)→Hook(改变后续执行路径，改表或改函数入口字节)→检测(从模块/内存/线程/异常/时间/行为找痕迹)→保护(提高理解/修改/稳定绕过成本)→反外挂评估(威胁模型评估客户端/内核/服务器覆盖与补位)</div><div class="log-item">三处纠偏(Sol审核)：①Hook 非'改箭头不改函数'，Inline Hook 直接改函数入口字节；②保护非'绝对防住'而是'提高绕过成本'；③补全 Day10(DEP/ASLR/CFG)/14/15(VEH/HWBP)/19(Patch出口打地鼠)/27/28(游戏结构+数据格式)入总链</div><div class="log-item">用户口述锚点：PE骨架地图/注入载荷进上下文/Hook改后面走哪条路/检测找痕迹/保护提成本/评估看每层能防什么漏什么怎么补位</div><div class="log-item">本课无新增工程或调试证据，仅综合串讲前29天知识；正式文章采用 Sol 优化稿+用户口述学习痕迹，进度 30/30 第一阶段收官</div></div></div><div class="log-entry"><div class="log-date">2026-08-23</div><div class="log-items"><div class="log-item">Day 28: 游戏数据分析 — 存档格式/网络协议/资源文件/IDA-Ghidra 理论+实操验收完成。核心结论：分析二进制=按字段偏移/大小/字节序把原始字节翻译成人话；小端序=低位字节放前、倒过来拼</div><div class="log-item">证据：Day28BinaryDataAnalysisLab(自建字节)——存档 gold 偏移8 占4字节 raw=40 E2 01 00 value=123456(小端序倒拼 00 01 E2 40=0x0001E240)；协议包 opcode=0x1001/payload_length=5/player_id=42/action=7；--tampered-save 改 gold 首字节 0x40→0x41 触发 CHECKSUM_MISMATCH 拒绝；day28_check.py 输出 PASS</div><div class="log-item">坑：小端序不能从左到右读(40 E2 01 00 要倒拼才是 123456)；offset 是字段相对整段起点不跟 end 混用；checksum 只演示格式校验非真实游戏算法；本工程不碰真实游戏/流量/解包、不装 IDA/Ghidra；--lab 等 Enter 是教学停留点不是卡死</div><div class="log-item">理论映射：静态分析(IDA/Ghidra 不运行读机器码) vs 动态分析(运行/断点/抓包)互补；网络包等运行时才出的数据要靠动态；本课 IDA/Ghidra 只保留理论边界未实际安装操作</div><div class="log-item">工程：BinaryDataAnalysisLab 项目(Day28BinaryDataAnalysisLab.exe，自建字节，不碰真实游戏/网络/IDA)Sol 后台验收(Debug/Release 构建+运行、--save/--packet/--lab/--tampered-save/非法参数路径、三个导出锚点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-22</div><div class="log-items"><div class="log-item">Day 27: 游戏逆向实战 — Unity/UE基础 + STL容器识别(vector/string) + 对象结构恢复 理论+实操验收完成。核心结论：搞清引擎=拿到'内存对象怎么摆'的规律地图；STL 容器有固定长相(vector=3指针、string 短串就地长串外存)，认长相=从地址堆认出有意义的东西</div><div class="log-item">证据：Day27GameMemoryLayoutLab(自建迷你Demo，不碰真实游戏)——vector object_size=24 begin/end/capacity 三指针 bytes_used=20=5×4 reserved_slots=8；短串 Mage data_inside_object=true INLINE_SSO、长串 Legendary_Player_From_Day27 EXTERNAL_HEAP raw_pointer_matches_data=true；PlayerRecord 字段偏移 0/4/8/16；summary 四项全 true；day27_check.py 输出 PASS</div><div class="log-item">坑：所有地址每次运行都变(ASLR)只比顺序/差值/归属不比绝对地址；end 不是最后一个元素是它的下一格；vector 24 字节三指针是当前 MSVC x64 实现非所有编译器保证(须固定 _ITERATOR_DEBUG_LEVEL=0)；string SSO 阈值随版本变不能硬记 15；短串对象开头是字符不是指针(只有长串对象起始第一机器字才是字符缓冲区指针)；对象尾部有对齐填充(PlayerRecord 最后字段偏移16但总大小24)</div><div class="log-item">理论映射：引擎决定对象/容器布局规律，Unity/UE 本课只保留理论映射(没验证真实 Unity/UE 游戏对象)</div><div class="log-item">工程：GameMemoryLayoutLab 项目(Day27GameMemoryLayoutLab.exe，自建迷你 Demo，不接触真实游戏/外部进程/内存扫描器)Sol 后台验收(Debug/Release 构建+运行、非法参数、三个导出锚点、--lab 稳定停点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-21</div><div class="log-items"><div class="log-item">Day 25: 过滤器驱动概念 — Minifilter/NDIS/WFP 理论+实操验收完成。核心结论：过滤器驱动=卡必经之路、先过目再放行的'检查站'，机制中性、善恶取决于写驱动的人（不是天生保护、也不是被 Hook 才变坏）</div><div class="log-item">证据：Day25FilterCheckpointLab(纯用户态)3 请求都先 checkpoint_seen 再处置——notes.txt PASS 原样到达、malware.exe BLOCK 不达终点(只有 destination_blocked)、draft.tmp MODIFY 改写 draft.safe 后终点收到 draft.safe；summary pass=1 block=1 modify=1 delivered=2；day25_check.py 输出 PASS</div><div class="log-item">坑：BLOCK 关键证据是'没有 destination_received'(终点没收到)不只 decision=BLOCK；MODIFY 关键证据是'终点收到的 payload 是改写后的 draft.safe'不只 before/after 文字；malware.exe/draft.tmp 是教学字符串非真实文件；本实验非真 Minifilter/NDIS/WFP(没注册文件系统回调/没碰网卡/没注册 WFP Callout)</div><div class="log-item">理论映射：Minifilter=卡文件读写必经之路；NDIS=卡网卡旁底层原始数据包(不认识上层应用)；WFP=卡更上层可按程序+地址+端口拦；三者的共同核心=请求先过检查站再决定放行/拦截/改写</div><div class="log-item">工程：FilterCheckpointLab 项目(Day25FilterCheckpointLab.exe，纯用户态，不写驱动)Sol 后台验收(Debug/Release 构建+运行、未知请求/非法参数路径、两个导出锚点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-21</div><div class="log-items"><div class="log-item">Day 26: 内核对象管理 — ObRegisterCallbacks/进程线程保护 理论+实操验收完成。核心结论：用户态访问内核对象拿到的永远是句柄(号码牌)不是对象本身；ObRegisterCallbacks=卡在'打开进程/线程句柄'门前的检查站，进程保护=在句柄这道门提前设卡、把想动进程的人挡在拿到句柄之前</div><div class="log-item">证据：Day26ObjectHandleProtectionLab(纯用户态)两条路径——trusted_monitor 先 checkpoint_seen(BEFORE_HANDLE_ISSUE)→decision=ALLOW→handle_issued handle=0xD260→object_access SUCCESS；untrusted_tool 同 checkpoint_seen→decision=DENY→handle_not_issued→object_access FAILED reason=NO_HANDLE；summary allowed=1 denied=1 handles_issued=1 successful_access=1；day26_check.py 输出 PASS</div><div class="log-item">坑：拒绝的关键证据是 handle_not_issued + reason=NO_HANDLE(失败在'没拿到句柄'不是'拿到后访问被拦'，DENY 在 handle_issued 之前)；0xD260 是教学模拟号码牌非真实 HANDLE；ProtectedGame.exe/trusted_monitor/untrusted_tool 是实验固定身份非真实进程；本实验非真实 ObRegisterCallbacks(没驱动注册、没过滤真实内核句柄)</div><div class="log-item">理论关联：与 Day 25 过滤器同思路(检查站)，Day 25 卡文件/网络、Day 26 卡进程/线程句柄；本课收口内核基础阶段 Day 21-26</div><div class="log-item">工程：ObjectHandleProtectionLab 项目(Day26ObjectHandleProtectionLab.exe，纯用户态，不写驱动)Sol 后台验收(Debug/Release 构建+运行、允许/拒绝/未知访问者/非法参数路径、两个导出锚点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-20</div><div class="log-items"><div class="log-item">Day 23: SSDT Hook 原理 — 内核级 Hook/KD 调试/VTL0/VTL1 理论+实操验收完成。核心结论：SSDT Hook=把内核'全市共享总电话簿'里某服务号指向的地址换成自己的地址；改的是表里的'地址箭头'不是函数本身；因表全系统共享，一次改动影响全系统所有用该服务号的程序（对比 IAT 只影响单程序）</div><div class="log-item">证据：Day23SSDTHookSimulationLab（纯用户态模拟 SSDT 函数指针表）改表前 dispatch service=0x23 target=0x7FF690EC1780→handler=ORIGINAL result=123；hook_action old=0x7FF690EC1780 new=0x7FF690EC1720；改表后同样 service=0x23→handler=HOOKED result=-23；same_service=true target_changed=true original_unchanged=true；day23_check.py 输出 PASS</div><div class="log-item">坑：不比较不同运行绝对地址（ASLR 基址变化）；打印地址非真 SSDT 地址（只是本进程用户态函数地址）；本实验是 Ring3 复现查表改表机制、非真实 SSDT Hook；双击普通模式窗口秒关、取证用 --lab 停在 EVIDENCE_READY</div><div class="log-item">理论边界：改 SSDT 得先站 Ring0（驱动=门票非作弊手法）；SSDT 在内核、普通 Ring3 调试器被权限墙挡住、须 KD/WinDbg；VTL0/VTL1=比 Ring0 更高的隔离房间，VTL0 的 Ring0 也看不到 VTL1</div><div class="log-item">工程：SSDTHookSimulationLab 项目（Day23SSDTHookSimulationLab.exe，纯用户态，不写驱动不改真 SSDT）Sol 后台验收（Debug/Release 构建+运行、改表前后对比、非法参数路径、三个导出锚点）</div></div></div><div class="log-entry"><div class="log-date">2026-08-20</div><div class="log-items"><div class="log-item">Day 24: 驱动通信 + 对象生命周期 — IOCTL/共享内存/引用计数/IRQL与锁 理论+实操验收完成。核心结论：驱动通信=驱动开接待窗口、用户程序递指令单(控制码+输入/输出缓冲区)；对象生命周期靠引用计数记账(借+1还-1降到0才回收)</div><div class="log-item">证据：Day24DriverCommunicationLifecycleLab(纯用户态)三条链——ioctl code=0x800 input 7,5→output 12；shared_views writer/reader 两个不同地址读到同一内容 match=true；引用计数 1→2→1→0 归零 reclaimed=true；irql_lock=THEORY_ONLY；day24_check.py 输出 PASS</div><div class="log-item">坑：writer/reader 地址不同是正常(不同虚拟地址映射同一块内存，看内容 match=true 不看地址)；0x800 是自定义模拟控制码非真实 IOCTL；'内存泄漏'≠'数据泄露'(忘减引用=对象不回收占内存)；reclaimed=true 是模拟标志非内核对象真实销毁；irql_lock=THEORY_ONLY 是主动声明没模拟</div><div class="log-item">理论边界：IRQL 和内核锁不能用普通用户态变量真实复现，本实验只演示通信/共享区域/引用记账</div><div class="log-item">工程：DriverCommunicationLifecycleLab 项目(Day24DriverCommunicationLifecycleLab.exe，纯用户态，不写驱动不调真实 DeviceIoControl)Sol 后台验收(Debug/Release 构建+运行、未知控制码/非法参数路径、四个导出锚点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-17</div><div class="log-items"><div class="log-item">Day 22: 内核回调机制 — PsSetCreateProcessNotifyRoutine + 驱动入口 理论+实操验收完成。核心结论：回调=先登记联系方式、事件发生时对方反过来调用你（方向与普通调用相反）；杀软靠它第一时间知道进程创建。链：DriverEntry(报到)→PsSetCreateProcessNotifyRoutine(注册回调/留电话)→内核按地址反过来调回调(进程创建进行到一半被叫、须快速返回)→DriverUnload(注销别留空号否则蓝屏)</div><div class="log-item">证据：真驱动被 UEFI Secure Boot 阻止无法加载，改纯用户态等价演示——WMI 订阅程序先打印 state=WAITING，另窗口起 cmd.exe 后被动收到 ProcessStart name=cmd.exe pid=26688 parent=15144 与 PING.EXE pid=17456 parent=26688（父生子 pid 链），进程消失被动收到 ProcessStop；day22_user_check.py 输出 PASS</div><div class="log-item">坑：靶子退出太快会漏事件（WMI WITHIN 1 每秒采样，须用 cmd+ping 让靶子活约 2 秒）；pid 会被复用（26688 从 cmd.exe 变 git.exe，记 pid≠记进程）；其他进程事件穿插属正常；Win32_ProcessStartTrace 需管理员（0x80041003），改用不需管理员的 WMI intrinsic event；双击运行 Ctrl+C 后 STOPPED 行闪一帧看不到（非必需证据）</div><div class="log-item">工程：KernelProcessEventLab 项目（Day22KernelProcessEventLab.exe，纯用户态 WMI 异步订阅，IWbemObjectSink::Indicate 接收回调）Sol 后台验收；真驱动源码归档于 KernelCallbackLab，从 学习.sln 移除、Secure Boot 保持开启</div></div></div><div class="log-entry"><div class="log-date">2026-08-16</div><div class="log-items"><div class="log-item">Day 21: 内核架构基础 — Ring0/Ring3/系统调用 syscall/SSDT 理论+实操验收完成。核心结论：用户态(Ring3)权限最低，高危操作经 ntdll 的系统调用桩递申请单由内核(Ring0)代劳；SSDT=内核的服务号→代码地址对照表，与 IAT 同类（IAT 改单程序、SSDT 改全系统=SSDT Hook 种子）</div><div class="log-item">证据：--lab 打印 mode=Ring3(USER)/api=ntdll!NtQuerySystemInformation/syscall_opcode=0F 05；attach 后 Ctrl+G 到入口见 mov r10,rcx/mov eax,0x36(服务号)/syscall/ret；F2 断点命中 INT3@DC62=入口+0x12 即 syscall 处；--no-wait 输出 ntstatus=0x00000000 + transition=Ring3->syscall->Ring0->Ring3 + done</div><div class="log-item">坑：不带 --lab 程序结束太快来不及 attach；不能硬记地址/服务号（ASLR+Windows 版本变化，0x36 只是当前系统实测值，优先用导出名定位）；用户态调试器看不到 Ring0 内核代码（syscall 后直接回到用户态指令，是正常权限隔离）；只停在程序包装层不够，必须进 ntdll 看到 syscall</div><div class="log-item">工程：KernelArchitectureLab 项目（Day21KernelArchitectureLab.exe，纯用户态，不写驱动不改 SSDT）Sol 后台验收（Debug/Release 构建+运行、标准 Win32 调试 API 命中 ntdll!NtQuerySystemInformation、入口+0x12=0F 05 syscall）</div></div></div><div class="log-entry"><div class="log-date">2026-08-15</div><div class="log-items"><div class="log-item">Day 20: 软件保护综述 — 加壳/混淆/自修改/反篡改/VM保护五大概念 理论+实操验收完成。核心结论：保护不是让人破不了，而是让破起来不划算；五招叠加、木桶原理、重点保护（VM 只保关键段，全包会卡到没法用）；验证结果混进功能数据可防掐出口</div><div class="log-item">证据：字符串对比——x64dbg 搜 DAY20_PLAIN_MARKER 命中（00007FF655DB52D0）、搜 DAY20_PROTECTED_MARKER 搜不到（EXE 二进制无原文），--lab 运行时打印 protected=DAY20_PROTECTED_MARKER（XOR 0x5A 现场还原）；反篡改——attach 改 payload 第一字节 31→30 后 integrity=TAMPERED + reaction=BLOCKED（退出码 20），不改对照 integrity=OK + feature_value=171 + done（退出码 0）</div><div class="log-item">坑：在系统断点（ntdll）处搜字符串会搜到系统字符串（CSPORT/ApiPort），先 Ctrl+G 跳程序自己的函数再搜；双击 EXE 闪退属正常，留窗口用 cmd 跑 --lab；XOR 只是教学级混淆、完整性检查可被 patch 出口绕过（复盘确认攻击者打的是对账后的岔路口，不是检测本身）</div><div class="log-item">工程：ProtectionOverviewLab 项目（Day20ProtectionOverviewLab.exe）Sol 按方案 A 制作并后台验收（Debug/Release 构建、正常/篡改/非法参数三路径、明文存在与保护串静态消失自动核查、四导出锚点 Win32 调试 API 命中）</div></div></div><div class="log-entry"><div class="log-date">2026-08-14</div><div class="log-items"><div class="log-item">Day 19: 绕过反调试 — 手动 Patch/ScyllaHide 原理/反反调试思维 理论+实操验收完成。Patch 改的是检测结果的使用处（出口）不是检测本身：nop 抹掉逃跑动作（检测照跑）、jmp 无视检测结果；反调试像打地鼠（分层+接力），正确姿势=先摸清检测点全图一次堵全</div><div class="log-item">证据：x64dbg 三处 Patch 逐处核对（1225 jne→90 90、122E je→EB 18 jmp 1248、1297 jbe→EB 18 jmp 12B1）；F9 后控制台 15 轮全部通过没有逃跑 done；DebugPort=0xFFFFFFFFFFFFFFFF/PEB=1 照查不逃；FatalExit 断点命中时调用栈为 CRT 正常收尾（exit→_wassert→FatalExit）无逃跑帧</div><div class="log-item">坑：nop 只写 1 字节会挤乱下一条指令（75 09 是 2 字节，CPU 按字节流读指令），用 Ctrl+E 二进制编辑写满字节；x64dbg TLS 回调自动断点与 GamePP 注入 GPP64.dll 交互致 ntdll C0000005 噪音（Sol 救场关闭 TLS Callback 自动断点后消失，正式 x64dbg.ini 已修复并留备份）</div><div class="log-item">工程：AntiAntiDebugLab 项目（Day19AntiAntiDebugLab.exe，10 秒 attach 窗口）Sol 后台预制验收三检查点通过</div></div></div><div class="log-entry"><div class="log-date">2026-08-12</div><div class="log-items"><div class="log-item">Day 18: 高级反调试 — RDTSC 计时/TLS 回调/NtQueryInformationProcess(DebugPort) 理论+实操验收完成</div><div class="log-item">证据：独立运行 TLS 0/0 + RDTSC 基线 55~210 万 + DebugPort=0；attach 后 DebugPort=0xFFFFFFFFFFFFFFFF、PEB=1（attach 也亮，与 Day 17 堆标志对照）；断点卡在两次 rdtsc 之间复查 RDTSC 590 亿量级（正常基线仅几十万到两百多万）；后台 DEBUG_PROCESS 验证器跨进程复核一致</div><div class="log-item">坑：软件断点下在循环顶会反复命中（看着像 F9 没反应）；双击运行的控制台窗口随 done 自动关闭；x64dbg attach 后目标先暂停属正常</div><div class="log-item">新增 AdvancedAntiDebugLab 项目（含 verify/day18_check.py）入学习.sln</div></div></div><div class="log-entry"><div class="log-date">2026-08-09</div><div class="log-items"><div class="log-item">Day 15: 硬件断点 (HWBP) — DR0-DR7 调试寄存器、执行/写入断点、反检测。软件断点=改代码字节(CC)，硬件断点=改 CPU 记事本(DR 寄存器)不改代码；写入断点抓到'改血量那条指令'(CE Find what writes 原理)；反作弊查 CC 防软件断点、读 DR 防硬件断点</div><div class="log-item">工程：HWBPLab 项目入 学习.sln，Debug/Release 编译+独立运行通过；普通 x64dbg 实操三连（执行/写入/软件断点）证据齐全；后台 Win32 调试 API 验证器复测通过；x64dbg headless 的 ntdll C0000005 已定位为环境噪音（不影响 GUI 实操）</div><div class="log-item">Day 16: 调试器原理（断点触发/异常分发/DebugPort/调试事件循环）。执行链：CPU 踩断点→内核→查 DebugPort→调试器最先→放行→VEH/SEH→WER 弹窗。DebugPort=门禁卡槽，平时 NULL、调试时非空；一个进程最多一个调试器。实操：独立运行+中途 attach，DebugPort NULL→0xFFFF 实时对比，0xE1234001 先到 x64dbg（first-chance）再放行给 VEH。坑：x64dbg 创建进程模式本机必现 ntdll C0000005（LoadLibraryW 线程），绕法=attach；Day 15'headless 特有'结论作废</div><div class="log-item">Day 17: 反调试基础（PEB.BeingDebugged/NtGlobalFlag 家族/IsDebuggerPresent）。三个检查点：IsDebuggerPresent（API，导入表留名）、PEB.BeingDebugged（直接读 GS:[0x60]+0x02，隐蔽）、堆 ForceFlags（heap+0x74，只认'被调试器创建'，attach 不触发）。实操：attach 后 1/1/0 vs 后台 DEBUG_PROCESS 创建 1/1/0x40000060。坑：NtGlobalFlag 堆偏移 0x68 与 KUSER_SHARED_DATA+0x320 本机不可靠，实测后改用堆头 +0x74</div></div></div><div class="log-entry"><div class="log-date">2026-08-06</div><div class="log-items"><div class="log-item">Day 14: VEH Hook + SEH 对比 — DS 前置与实操后复盘、Sol 工程/调试证据验收全部完成</div><div class="log-item">证据：Debug/Release Rebuild 与独立运行退出码 0；E0421401 由 VEH 处理返回 108，E0421402 按 VEH → SehFilter 顺序返回 200；Debug RVA 0x1240/0x1400 与 x64 .pdata/unwind 元数据已核对</div><div class="log-item">失败边界：普通 x64dbg GUI 在嵌套异常处理者软件断点人工续跑时出现非目标 C0000005，精确内部根因未验证；稳定路线改为新进程一次性检查点</div></div></div><div class="log-entry"><div class="log-date">2026-08-01</div><div class="log-items"><div class="log-item">Day 11: x64 汇编 + IAT Hook — 换 IAT 槽位地址实现 Hook，实验+调试验证+验收通过</div><div class="log-item">调试证据：RDX/R8/R9 寄存器传参 + 调用栈 main → MyMessageBoxA + 弹窗正文被篡改</div><div class="log-item">工程：IATHook 迁入 学习/Dll1/IATHook 并加入 学习.sln；修复构建脚本路径、OriginalFirstThunk 回退、VirtualProtect 错误检查；Release x64 构建 0 警告 0 错误</div></div></div><div class="log-entry"><div class="log-date">2026-07-31</div><div class="log-items"><div class="log-item">Day 8: APC 注入 (QueueUserAPC) — Alertable State 硬前提，实验 A/B 对比验证</div><div class="log-item">Day 9: 注入体系总结 — 六种方式对比、统一分析五问、线程劫持原理与反作弊证据链</div><div class="log-item">Day 10: 注入检测视角 — DEP/ASLR/CFG 缓解机制 + 反注入检测思路（概念推理验收，未做实时进程枚举实验）</div><div class="log-item">踩坑：LoadLibraryA 不能处理中文路径，改用 LoadLibraryW；MSVC UTF-8 源文件需 /utf-8</div><div class="log-item">新增 APCInjector + AlertableTarget 项目，统一输出到 学习/x64/Debug/</div><div class="log-item">笔记优化：前期基础与 Day 1-8 补齐复习锚点、验证证据、误区排查、逆向/防御视角和官方资料方向</div></div></div><div class="log-entry"><div class="log-date">2026-07-29</div><div class="log-items"><div class="log-item">Day 7: SetWindowsHookEx 钩子注入 — 编译→踩坑共享段→修复→全系统实测18000+次</div><div class="log-item">网站工具化: days.json + build.js 一键生成，告别编码问题</div><div class="log-item">TestGame 重写: Win32 GDI 射击游戏，全局变量暴露关键数据</div><div class="log-item">学习日志板块 + 实操记录板块上线</div></div></div><div class="log-entry"><div class="log-date">2026-07-28</div><div class="log-items"><div class="log-item">Day 1-4: PE 格式 — DOS头/NT头/COFF头/节表/导入表/导出表/重定位表</div><div class="log-item">Day 5: 手动映射注入 (Manual Map) — 7步实现，模块列表不可见</div><div class="log-item">Day 6: Shellcode 注入 — PEB走法 + MASM汇编 + 裸字节码</div></div></div><div class="log-entry"><div class="log-date">2026-07-27</div><div class="log-items"><div class="log-item">基础-1: CE 入门 — 精确搜索、模糊搜索、数据类型</div><div class="log-item">基础-2: 指针扫描 — 基址+多级偏移、动态vs静态指针</div><div class="log-item">基础-3: LoadLibrary DLL 注入 — 第一个注入器 + 锁血 DLL</div></div></div>
@@ -117,7 +128,7 @@ pre code{background:none;padding:0;color:inherit}
 </div>
 <div class="main"><div class="pc">
 
-    <div class="page active" data-day="f0">
+    <div class="page active" data-day="f0" data-short="基础-1">
       <h2>基础-1 — CE 入门 — 内存搜索与修改</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span> &nbsp; Cheat Engine 7.x</div>
       <h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：CE 靠"搜当前值 → 制造变化再搜 → 反复筛选"锁定某个数据在内存里的地址。</p><p><strong>最小执行链</strong>：附加进程 → 搜索当前值 → 游戏里改变值 → 再搜新值 → 反复缩小候选 → 改值验证</p><p><strong>最易混点</strong>：①找到的"动态地址"≠"永久地址"（重启就失效）②数据类型要匹配（4 Bytes 是整数、Float 是小数）</p><p><strong>证据锚点</strong>：改 HP=999 后游戏血条立刻变（已实测）</p><p><strong>忘了先看哪里</strong>：先确认"数据类型选对没"，再判断"是不是重启就失效的动态地址"</p><p><strong>前后关联</strong>：为指针扫描（基础-2）打基础；防御侧看"外部进程是否反复读写敏感数据"</p><h3>Cheat Engine 基础操作</h3><p>Cheat Engine (CE) 是最常用的游戏内存修改工具。核心功能：附加进程 → 搜索数值 → 筛选变化 → 锁定修改。</p><h3>精确数值搜索</h3><pre><code>1. 打开 CE → 附加目标进程
@@ -135,7 +146,7 @@ pre code{background:none;padding:0;color:inherit}
       </div>
     </div>
 
-    <div class="page" data-day="f1">
+    <div class="page" data-day="f1" data-short="基础-2">
       <h2>基础-2 — 指针扫描 — 基址与多级偏移</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span> &nbsp; Cheat Engine 指针扫描</div>
       <h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：动态地址每次重启都变，能跨重启稳定复现的是"模块基址 + 多级指针解引用 + 偏移"。</p><p><strong>最小执行链</strong>：找动态地址 → "找出谁访问它" → 看汇编 [rcx+0x58] 拆出偏移 → 追 rcx 值往上 → 回到模块基址</p><p><strong>最易混点</strong>：①寄存器当前值≠永久基址 ②"偏移"是字段相对指针的距离，不是地址本身</p><p><strong>证据锚点</strong>：重启游戏后同一条指针链仍读到正确血量（已实测）</p><p><strong>忘了先看哪里</strong>：先分清"偏移=字段距离、基址=模块起点"，再看指针链有没有中间层选错</p><p><strong>前后关联</strong>：把"数据地址"推进到"对象结构"，为 Day 27 对象结构恢复铺路</p><h3>为什么需要指针扫描</h3><p>重启游戏后，之前找到的地址会失效——因为数据在内存中的位置每次都在变（ASLR、动态分配）。但<strong>基址不变</strong>，只需要找到从基址到数据的指针链。</p><h3>CE 指针扫描流程</h3><pre><code>1. 找到血量的动态地址
@@ -158,7 +169,7 @@ pre code{background:none;padding:0;color:inherit}
       </div>
     </div>
 
-    <div class="page" data-day="f2">
+    <div class="page" data-day="f2" data-short="基础-3">
       <h2>基础-3 — LoadLibrary DLL 注入 — 第一个注入器</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span> &nbsp; Visual Studio 2026, C++</div>
       <h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：让目标进程里的 Windows Loader 正常加载我的 DLL，之后 DLL 和目标共享同一地址空间。</p><p><strong>最小执行链</strong>：OpenProcess → VirtualAllocEx 分配 → WriteProcessMemory 写 DLL 路径 → CreateRemoteThread(LoadLibraryA) → DllMain 执行</p><p><strong>最易混点</strong>：①不是"复制文件进去"，是"让 Loader 加载" ②位数必须匹配（x64 目标配 x64 DLL）</p><p><strong>证据锚点</strong>：模块列表出现 DLL + DllMain 锁血生效（已实测）</p><p><strong>忘了先看哪里</strong>：先查"路径编码（中文用 W 版）和位数匹配"，再看模块列表</p><p><strong>前后关联</strong>：是 Day 5 手动映射的参照物（一个交系统、一个自己干）</p><h3>什么是 DLL 注入</h3><p>把你自己写的 DLL 塞进目标进程的地址空间，让它在目标进程内部执行代码。注入后你的 DLL 就像游戏自己的一部分——可以直接读写游戏内存。</p><h3>LoadLibrary 注入原理（最经典的注入方式）</h3><pre><code>1. OpenProcess — 打开目标进程
@@ -188,7 +199,7 @@ Day 7: 钩子注入（系统被动注入，不碰目标进程）</code></pre><h3
       </div>
     </div>
 
-    <div class="page" data-day="1">
+    <div class="page" data-day="1" data-short="Day 1">
       <h2>Day 1 — DOS 头 + NT 头 + COFF 头</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：PE 解析第一条链是 MZ → e_lfanew → PE\0\0 → COFF → Optional Header → 节表，让前一个字段指向下一个。</p><p><strong>最小执行链</strong>：MZ(4D5A) → 到文件偏移 0x3C 读 e_lfanew(本实验值 0xF8) → 跳 0xF8 验 PE\0\0 → Machine(0x8664) → Magic(0x20B)</p><p><strong>最易混点</strong>：①e_lfanew 是文件偏移不是 RVA ②Machine 答"架构"、Magic 答"PE32 还是 PE32+"</p><p><strong>证据锚点</strong>：HxD 逐字节验证 MZ/e_lfanew/PE 签名/Machine/Magic（已实测）</p><p><strong>忘了先看哪里</strong>：先背"MZ→e_lfanew→PE 签名"这条跳转链</p><p><strong>前后关联</strong>：为 Day 2 节表、Day 3 导入表铺路</p><h3>PE 文件总览</h3><pre><code>+------------+
@@ -221,7 +232,7 @@ Day 7: 钩子注入（系统被动注入，不碰目标进程）</code></pre><h3
       </div>
     </div>
 
-    <div class="page" data-day="2">
+    <div class="page" data-day="2" data-short="Day 2">
       <h2>Day 2 — 节表 (Section Table)</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：节表把文件切成 .text/.rdata/.data 等区，记录每节在"文件"和"内存"两个坐标系里的位置。</p><p><strong>最小执行链</strong>：定位节表起始 → 每项 40 字节遍历 → Name/VirtualSize/VirtualAddress/SizeOfRawData/PointerToRawData → 文件偏移↔RVA 对应</p><p><strong>最易混点</strong>：①文件偏移(PointerToRawData)≠RVA(VirtualAddress) ②SizeOfRawData(文件)≠VirtualSize(内存)</p><p><strong>证据锚点</strong>：从 0x200 遍历出 10 个节、核对文件地址与 RVA 对应（已实测）</p><p><strong>忘了先看哪里</strong>：先分清"文件偏移 vs RVA 是两套坐标"，再决定加不加 ImageBase</p><p><strong>前后关联</strong>：Manual Map 要按节复制；IAT Hook 依赖对 .rdata 的判断</p><h3>节表在哪</h3><pre><code>节表起始 = 0xF8 + 0x18 + 0xF0 = 0x200</code></pre><p>每项 40 字节，共 10 个节。</p><h3>节表结构（40 字节）</h3><table><tr><th>偏移</th><th>大小</th><th>字段</th><th>含义</th></tr><tr><td>+0x00</td><td>8B</td><td>Name</td><td>节名</td></tr><tr><td>+0x08</td><td>4B</td><td>VirtualSize</td><td>内存大小</td></tr><tr><td>+0x0C</td><td>4B</td><td>VirtualAddress</td><td>RVA</td></tr><tr><td>+0x10</td><td>4B</td><td>SizeOfRawData</td><td>文件大小</td></tr><tr><td>+0x14</td><td>4B</td><td>PointerToRawData</td><td>文件偏移</td></tr><tr><td>+0x24</td><td>4B</td><td>Characteristics</td><td>节属性</td></tr></table><h3>核心概念</h3><p><strong>PointerToRawData</strong> = 文件地址，<strong>VirtualAddress</strong> = RVA。文件和内存是两个坐标系。</p><h3>FileAlignment vs SectionAlignment</h3><table><tr><th>参数</th><th>值</th><th>含义</th></tr><tr><td>FileAlignment</td><td>0x200</td><td>文件对齐</td></tr><tr><td>SectionAlignment</td><td>0x1000</td><td>内存对齐（页）</td></tr></table><h3>常见节</h3><table><tr><th>节名</th><th>作用</th><th>为什么重要</th></tr><tr><td>.text</td><td>代码</td><td>Hook 改这里</td></tr><tr><td>.rdata</td><td>只读数据</td><td>导入/导出表</td></tr><tr><td>.data</td><td>全局变量</td><td>CE 搜的值在这</td></tr><tr><td>.reloc</td><td>重定位</td><td>ASLR 修正</td></tr></table><h3>已验证结论与调试证据</h3><p>用 <code>e_lfanew + 0x18 + SizeOfOptionalHeader</code> 定位节表，再以每项 40 字节遍历。用 <code>PointerToRawData</code> 找文件内容，用 <code>VirtualAddress</code> 判断其加载后的 RVA。</p><h3>常见误区与排查</h3><p>不要把 <code>SizeOfRawData</code> 与 <code>VirtualSize</code> 当成相同概念；前者描述文件，后者描述内存。遇到地址换算错误时，先写清当前值属于哪套坐标，再决定是否加 ImageBase 或减去节的 RVA。</p><h3>关联与防御视角</h3><p>Manual Map 必须按节复制并建立正确内存布局；IAT Hook 也依赖对 <code>.rdata</code> 等区域的正确判断。防御侧可把不合理的节属性、重叠布局或可执行可写节作为可疑证据之一。</p><h3>版本与资料</h3><p>对齐值由样本的 Optional Header 决定，不能硬编码。资料方向：Microsoft 的 PE/COFF Specification。</p>
@@ -235,7 +246,7 @@ Day 7: 钩子注入（系统被动注入，不碰目标进程）</code></pre><h3
       </div>
     </div>
 
-    <div class="page" data-day="3">
+    <div class="page" data-day="3" data-short="Day 3">
       <h2>Day 3 — 导入表 (Import Table)</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：导入表记录"我需要谁的函数"，IAT 是 Loader 最终填进"实际函数地址"的位置。</p><p><strong>最小执行链</strong>：DataDirectory[Import] → IMAGE_IMPORT_DESCRIPTOR → Name(哪个 DLL) → INT(函数名) → IAT(填地址)</p><p><strong>最易混点</strong>：①INT 是"购物清单"、IAT 是"收货地址" ②加载后 IAT 被 Loader 覆写成真实地址</p><p><strong>证据锚点</strong>：沿 DataDirectory 定位导入描述符、DLL 名与 INT/IAT 结构（已实测）；"Loader 把 IAT 填成真地址"是课堂推理，本课没做同一槽位加载前后对照</p><p><strong>忘了先看哪里</strong>：先分清"INT=清单、IAT=地址表"，再看程序是不是走 IAT 间接调用</p><p><strong>前后关联</strong>：IAT Hook 就是改这张表（Day 11 主角）</p><h3>导入表在哪</h3><p>Optional Header 的 DataDirectory[1]，Dll1.dll 中 RVA=0x20348。</p><h3>IMAGE_IMPORT_DESCRIPTOR（20 字节）</h3><table><tr><th>字段</th><th>大小</th><th>含义</th></tr><tr><td>OriginalFirstThunk</td><td>4B</td><td>INT 的 RVA</td></tr><tr><td>TimeDateStamp</td><td>4B</td><td>绑定时间戳</td></tr><tr><td>ForwarderChain</td><td>4B</td><td>转发链</td></tr><tr><td>Name</td><td>4B</td><td>DLL 名字 RVA</td></tr><tr><td>FirstThunk</td><td>4B</td><td>IAT 的 RVA</td></tr></table><h3>INT vs IAT</h3><table><tr><th></th><th>INT</th><th>IAT</th></tr><tr><td>加载后</td><td>不变，保持函数名</td><td>被覆写为真实地址</td></tr><tr><td>比喻</td><td>购物清单</td><td>收货地址</td></tr></table><h3>IAT Hook 原理</h3><p>程序代码不变，IAT 槽位被调包——把 IAT 里的函数地址替换成你的 Hook 地址。作弊场景：Hook Present 画透视。</p><h3>已验证结论与调试证据</h3><p>沿 DataDirectory[Import] 找到 <code>IMAGE_IMPORT_DESCRIPTOR</code>，再分别观察 DLL 名、INT 与 IAT。加载前后最关键的变化是：IAT 槽位从名称/序号信息变为可调用地址。</p><h3>常见误区与排查</h3><p>INT 与 IAT 不是重复表；IAT 会被 Loader 改写。没有看到某个 API 的 IAT 并不证明程序没有使用它，程序也可能通过 <code>GetProcAddress</code> 动态解析。</p><h3>关联与防御视角</h3><p>IAT Hook 依赖“改槽位、不改调用点”的思路，也是 Day 11 的基础。防御或完整性检查可把 IAT 指向不可信模块、不可执行地址或异常私有内存作为进一步分析线索。</p><h3>版本与资料</h3><p>导入结构随 PE32/PE32+ 的指针宽度不同而变化。资料方向：Microsoft PE/COFF Specification 与 Windows Loader 文档。</p>
@@ -249,7 +260,7 @@ Day 7: 钩子注入（系统被动注入，不碰目标进程）</code></pre><h3
       </div>
     </div>
 
-    <div class="page" data-day="4">
+    <div class="page" data-day="4" data-short="Day 4">
       <h2>Day 4 — 导出表 + 重定位表 + 进程地址空间</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：导出表是"我能提供什么"、导入表是"我需要什么"、重定位表是"ASLR 后哪些绝对地址要修"。</p><p><strong>最小执行链</strong>：导出表(GetProcAddress 查) / 重定位表(ASLR 后每个绝对地址 + delta) / 注入后共享地址空间(指针直接访问)</p><p><strong>最易混点</strong>：①RVA≠绝对地址，VA=ImageBase+RVA ②ASLR 下不能假设 DLL 装首选基址</p><p><strong>证据锚点</strong>：GetProcAddress 查导出表流程（已实测）；重定位 delta、注入后同进程地址空间关系是课堂推理/机制理解，没记录具体基址与修正项数值</p><p><strong>忘了先看哪里</strong>：先分清"导出表=提供、导入表=需要、重定位表=修正地址"三者各管什么</p><p><strong>前后关联</strong>：Day 5 手动映射必须处理重定位；Day 6 位置无关代码尽量不依赖绝对地址</p><h3>导出表</h3><p>列出「我能给外部提供哪些函数」。GetProcAddress 运行时查导出表。</p><table><tr><th>时机</th><th>怎么找</th><th>谁来的</th></tr><tr><td>加载时</td><td>读导入表→查导出表→填 IAT</td><td>系统自动</td></tr><tr><td>运行时</td><td>GetProcAddress→查导出表</td><td>你手动调</td></tr></table><h3>重定位表</h3><p>ASLR 下 DLL 基址变了，里头的绝对地址全错了。重定位表是「需修正的地址清单」，每条 RVA 加 delta。Dll1.dll 有 3 块、28 个条目。</p><h3>进程地址空间</h3><p><strong>为什么 DLL 注入后无需 OpenProcess？</strong> 注入后 DLL 跑在游戏进程内部，共享同一虚拟地址空间——一个普通指针就能直接读写。</p><pre><code>注入前：你的进程 →[OpenProcess+WPM]→ 游戏进程
@@ -264,7 +275,7 @@ Day 7: 钩子注入（系统被动注入，不碰目标进程）</code></pre><h3
       </div>
     </div>
 
-    <div class="page" data-day="5">
+    <div class="page" data-day="5" data-short="Day 5">
       <h2>Day 5 — 手动映射注入 (Manual Map)</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span> &nbsp; B站「Manual Map 手动映射注入 实现原理」</div>
       <h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：把 Windows Loader 的活（映射、重定位、导入解析）全自己干；"模块列表看不见"≠"内存里没有"。</p><p><strong>最小执行链</strong>：解析 PE 头 → VirtualAllocEx 分配 → 复制节 → 修重定位 → 填 IAT → 跳过 DllMain → CreateRemoteThread(基址+导出 RVA)</p><p><strong>最易混点</strong>：①"模块列表不可见"只说明没走正常 Loader 登记，不证明映射成功/安全 ②extern "C" 只解决导出名、不替你干 Loader 活</p><p><strong>证据锚点</strong>：注入后模块列表看不到 DLL 但血量锁定（已实测）</p><p><strong>忘了先看哪里</strong>：先看"重定位、导入、TLS、运行时初始化"哪一步漏了</p><p><strong>前后关联</strong>：把 Day 1-4 的 PE 知识串成实战链路；与 Day 6 Shellcode 的"自己解决依赖"对比</p><h3>两种注入区别</h3><table><tr><th></th><th>LoadLibrary</th><th>手动映射</th></tr><tr><td>谁干活</td><td>Windows 加载器</td><td>你自己 (~200行)</td></tr><tr><td>模块列表可见？</td><td>✅</td><td>❌</td></tr><tr><td>LoadImageNotify？</td><td>✅</td><td>❌</td></tr><tr><td>CRT 可用？</td><td>✅</td><td>❌</td></tr><tr><td>隐蔽性</td><td>低</td><td>高</td></tr></table><h3>七个步骤</h3><pre><code>1. 解析 PE 头
@@ -287,7 +298,7 @@ Day 7: 钩子注入（系统被动注入，不碰目标进程）</code></pre><h3
       </div>
     </div>
 
-    <div class="page" data-day="6">
+    <div class="page" data-day="6" data-short="Day 6">
       <h2>Day 6 — Shellcode 注入</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span> &nbsp; B站「Shellcode 注入 x64 PEB」</div>
       <h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：Shellcode 是不依赖 PE Loader 的裸字节码，自己从 PEB 找 kernel32、自己解析导出表拿函数。</p><p><strong>最小执行链</strong>：GS:[0x60]→PEB → PEB_LDR_DATA → 模块链表 → kernel32 基址 → 解析导出表找 GetProcAddress → LoadLibraryA → MessageBoxA</p><p><strong>最易混点</strong>：①PEB 模块遍历顺序不是跨版本永久保证（硬编码偏移会放大兼容风险）②普通 C 函数依赖导入/全局状态，不能直接当 Shellcode</p><p><strong>证据锚点</strong>：3480 字节 shellcode 注入后弹出 "Hello from shellcode!"（已实测）</p><p><strong>忘了先看哪里</strong>：先看"PEB 走法的偏移对不对、栈对齐"</p><p><strong>前后关联</strong>：与 Day 5 都是"自己解决依赖"，区别是载体=完整 PE vs 裸机器码</p><h3>什么是 Shellcode</h3><p>一段裸字节码，没有 PE 加载器、没有 CRT、没有导入表。必须自己从 PEB 找到 kernel32，自己解析导出表，自己动态拿函数地址。<strong>位置无关代码 (PIC)</strong>，shellcode 被放到任意内存地址都能正确执行。</p><h3>x64 PEB 走法</h3><pre><code>GS:[0x60]         → TEB → PEB
@@ -317,7 +328,7 @@ LDR + 0x20       → InMemoryOrderModuleList
       </div>
     </div>
 
-    <div class="page" data-day="7">
+    <div class="page" data-day="7" data-short="Day 7">
       <h2>Day 7 — SetWindowsHookEx 钩子注入</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span> &nbsp; B站「SetWindowsHookEx 全局钩子注入」</div>
       <h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：借系统的消息 Hook 机制，让目标 GUI 线程在处理消息时进入我的回调；HookSetter 自己不用 OpenProcess/写内存，但系统仍会把 Hook DLL 装进目标进程、回调也在目标进程里跑。</p><p><strong>最小执行链</strong>：SetWindowsHookExW 注册 → 系统记录全局钩子 → 目标 GUI 进程取消息 → 系统自动加载 DLL → 调 GetMsgProc → CallNextHookEx</p><p><strong>最易混点</strong>：①Hook 装上≠立刻执行（依赖消息循环）②共享节会被映射进多个进程、共享同一份内容；普通非共享节的全局变量才是每进程各一份，别把该独立的标志放共享节</p><p><strong>证据锚点</strong>：注册全局钩子后打开记事本/浏览器即弹窗、累计 18000+ 次（已实测）</p><p><strong>忘了先看哪里</strong>：先看"目标线程有没有消息循环"，再看"共享段变量是不是放错了"</p><p><strong>前后关联</strong>：系统被动注入代表，和 APC 都依赖目标线程特定条件；防御看 Hook 链+异常 DLL+GUI 行为</p><h3>主动注入 vs 系统被动注入</h3><p>Day 5（手动映射）和 Day 6（Shellcode）都是<strong>主动注入</strong>——你自己调 OpenProcess、VirtualAllocEx、CreateRemoteThread 把代码塞进目标进程。</p><p>Day 7 是<strong>系统被动注入</strong>——你只调用一个合法的 Win32 API 注册钩子，<strong>系统</strong>在目标进程取消息时自动把你的 DLL 拉进去。</p><h3>SetWindowsHookEx 工作流程</h3><pre><code>1. HookSetter.exe 调用 SetWindowsHookExW(WH_GETMESSAGE, GetMsgProc, hDll, 0)
@@ -339,7 +350,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="8">
+    <div class="page" data-day="8" data-short="Day 8">
       <h2>Day 8 — APC 注入 (QueueUserAPC)</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span> &nbsp; VS2026, APCInjector.exe, AlertableTarget.exe</div>
       <h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：QueueUserAPC 往别人线程排队塞一个回调，必须线程进入 Alertable State 才执行；排队成功≠执行。</p><p><strong>最小执行链</strong>：OpenProcess → VirtualAllocEx → 写 DLL 路径 → 遍历线程 → QueueUserAPC(LoadLibraryW) → 线程进 Alertable State → 内核取 APC → DllMain</p><p><strong>最易混点</strong>：①"APC 已投递"≠"已执行" ②GetMessage 不进入 Alertable State（最常见失败原因）</p><p><strong>证据锚点</strong>：实验 A(GetMessage)失败 vs 实验 B(SleepEx TRUE)成功（已实测）</p><p><strong>忘了先看哪里</strong>：先确认"目标线程是否进入 Alertable State"，再看路径/payload</p><p><strong>前后关联</strong>：和 Hook 都把执行时机交给目标线程；为 Day 9 六种注入统一模型提供 APC 这一支</p><h3>APC = Asynchronous Procedure Call</h3><p>往别人线程里排队塞一个函数调用。不创建新线程，复用已有线程执行代码。类比：CreateRemoteThread = 闯进去开一桌饭，QueueUserAPC = 留张便签等他闲下来自己看。</p><h3>核心术语</h3><table><tr><th>术语</th><th>含义</th><th>类比</th></tr><tr><td>APC 队列</td><td>每个线程一根挂便签的绳子</td><td>便签墙</td></tr><tr><td>QueueUserAPC</td><td>往别人绳子上挂便签</td><td>贴便签</td></tr><tr><td>Alertable State</td><td>线程说"我现在有空看便签"</td><td>翻便签</td></tr><tr><td>KiDeliverApc</td><td>内核取便签、执行回调</td><td>看到便签去开会</td></tr></table><h3>Alertable State 触发 API</h3><p>末尾有 <code>Ex</code> 且第二个参数 <code>TRUE</code>：<code>SleepEx</code>、<code>WaitForSingleObjectEx</code>、<code>WaitForMultipleObjectsEx</code>、<code>MsgWaitForMultipleObjectsEx</code>、<code>SignalObjectAndWait</code></p><p><strong>GetMessage 不进入 Alertable State</strong> — 这是 APC 注入最常见的失败原因。</p><h3>APC 三种类型（弱→强）</h3><pre><code>User Mode APC  &lt;  Normal Kernel APC  &lt;  Special Kernel APC
@@ -359,7 +370,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="9">
+    <div class="page" data-day="9" data-short="Day 9">
       <h2>Day 9 — 注入体系总结</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span> &nbsp; 阶段性复盘：六种注入方式的统一模型</div>
       <h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：不要把注入只记成六个名字；分析任何方式都回答"载体/内存从哪来/执行入口/Loader 谁负责/防御看到什么"五问。</p><p><strong>最小执行链</strong>：可信模块边界 → 发现异常行为链 → 证据映射到注入家族 → 针对性验证</p><p><strong>最易混点</strong>：①稳定性来自系统维护秩序、风险来自自己接管秩序 ②线程劫持必须保存 RIP/EIP 否则原执行流截断</p><p><strong>证据锚点</strong>：课堂推理与验收（未做实时进程枚举，仍未验证）</p><p><strong>忘了先看哪里</strong>：先背"统一分析五问"，再看每种方式的载体/入口/Loader 责任</p><p><strong>前后关联</strong>：Day 5-9 各种注入的收口；为 Day 10 检测视角提供反推依据</p><h3>这一课真正要记住什么</h3><p>不要把注入只记成六个名字。分析任何一种方式时，都先回答：<strong>代码在哪里、怎么进入目标进程、由谁执行、谁负责加载细节、会留下什么证据</strong>。</p><h3>统一分析五问</h3><table><tr><th>问题</th><th>要看的东西</th></tr><tr><td>代码载体是什么？</td><td>DLL、完整 PE 镜像、Shellcode，还是跳板代码</td></tr><tr><td>内存从哪里来？</td><td>系统正常加载、私有内存页，还是已存在模块中的位置</td></tr><tr><td>执行入口是谁？</td><td>新线程、目标已有线程、GUI 消息回调、APC 回调</td></tr><tr><td>Loader 行为谁负责？</td><td>Windows Loader，还是注入方自己处理导入、重定位、TLS 等细节</td></tr><tr><td>防御方能看到什么？</td><td>模块、线程入口、可执行私有内存、上下文变化与跨进程行为链</td></tr></table><h3>六种方式对比</h3><table><tr><th>方式</th><th>代码载体</th><th>谁来执行</th><th>特点与主要风险</th></tr><tr><td>LoadLibrary</td><td>DLL 路径</td><td>新建远程线程调用系统 Loader</td><td>流程正规、稳定；模块列表和加载痕迹明显</td></tr><tr><td>Manual Map</td><td>完整 PE 镜像</td><td>远程线程或映射器入口</td><td>自己模拟 Loader；导入、重定位、TLS 漏一项都可能失败</td></tr><tr><td>Shellcode</td><td>原始机器码</td><td>新线程或其他执行入口</td><td>无标准模块外形；调用约定、寄存器、栈对齐很关键</td></tr><tr><td>SetWindowsHookEx</td><td>DLL</td><td>目标 GUI 线程的 Hook 回调</td><td>依赖消息循环；Hook 装上不等于回调一定发生</td></tr><tr><td>APC</td><td>函数地址或 Shellcode</td><td>目标线程的 APC 回调</td><td>必须进入 Alertable State；Queue 成功不等于实际执行</td></tr><tr><td>线程劫持</td><td>Shellcode 或跳板</td><td>被暂停并改写上下文的已有线程</td><td>没有新线程；最容易破坏寄存器、栈、锁和原执行流</td></tr></table><h3>稳定、痕迹与控制权</h3><p>越借助系统的正规流程，系统替你维护的秩序越多，所以通常越稳定；代价是模块、路径、线程和 Loader 行为更容易被观察到。越是自己控制执行链，就越要自己承担这些秩序：模块装载、内存权限、调用栈、寄存器和恢复现场。它不等于完全绕过系统，而是系统只提供基础能力，不再替你保证高级流程正确。</p><p><code>借系统流程：系统 Loader / 消息回调 / APC 机制</code></p><p><code>自己控制流程：私有可执行内存 / 自行处理 PE / 改写已有线程上下文</code></p><p><strong>稳定性来自系统维护秩序；风险来自自己接管秩序。</strong></p><h3>线程劫持的原理</h3><p>线程劫持的本质是临时改写一个已有线程的下一条执行位置：保存原始 <code>RIP/EIP</code> 与必要现场 → 让线程短暂进入 payload → 恢复现场并回到原始 <code>RIP/EIP</code>。如果没有保存原始位置，payload 结束后线程不知道该回哪里，原执行流会被截断。</p><p>它容易崩，是因为线程暂停时可能正在持锁、依赖寄存器中的值、使用栈上的局部数据，或正处于 Loader、GUI、同步等敏感逻辑。新建线程像给任务单独开一张干净的桌子；线程劫持则是在别人正在工作的桌面上临时插手。</p><h3>反作弊：从证据反推注入家族</h3><p>防御方不必一开始就准确叫出攻击技术名。更实用的顺序是：先建立可信的模块与内存边界 → 发现异常行为链 → 将证据映射到可能的注入家族 → 再做针对性验证。</p><table><tr><th>观察到的证据</th><th>可能方向</th><th>下一步验证</th></tr><tr><td>新 DLL 出现在模块列表</td><td>LoadLibrary、Hook 类</td><td>检查路径、签名、加载时间与加载调用链</td></tr><tr><td>模块列表无 DLL，但存在 PE 结构</td><td>Manual Map</td><td>检查私有内存、PE 头、导入与重定位痕迹</td></tr><tr><td>线程入口或当前 RIP 不落在可信模块范围</td><td>Shellcode、Manual Map、线程劫持</td><td>枚举模块地址区间，并比对线程入口、RIP 与内存属性</td></tr><tr><td>线程 RIP 突然跳到私有可执行内存</td><td>线程劫持</td><td>检查上下文变化、暂停/恢复行为与恢复后的执行流</td></tr><tr><td>Alertable wait 后出现异常执行地址</td><td>APC</td><td>关联 APC 队列、线程等待状态与回调地址</td></tr><tr><td>外部进程高权限打开游戏并写内存</td><td>远程注入类</td><td>关联句柄权限、写入地址、内存保护和后续执行事件</td></tr></table><h3>本课验收结论</h3><p>已经能够解释：LoadLibrary 为什么稳定但明显；Manual Map 在模拟什么；Shellcode 为什么受调用约定约束；Hook 与 APC 各自的触发前提；线程劫持为何要保存 <code>RIP/EIP</code>；以及如何从模块、内存、线程和上下文的异常反向判断注入方向。</p>
@@ -373,7 +384,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="10">
+    <div class="page" data-day="10" data-short="Day 10">
       <h2>Day 10 — 注入检测视角</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>本课要解决什么</h3><p>不要把 RWX 当作唯一注入规则。检测要把模块、内存区域、线程入口和行为历史组合成证据链，区分可疑现象与更可靠的执行证据。</p><h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：私有可执行内存只是线索，线程从其中启动才是强执行证据；没 RWX 不等于安全（可先写 RW 再改 RX）。</p><p><strong>最小执行链</strong>：可疑私有内存 → 写入载荷 → RW 改 RX → 线程从该地址启动 → 结合句柄/模块/上下文定性</p><p><strong>最易混点</strong>：①DEP/ASLR/CFG 各管一件事（数据页执行/地址可预测性/间接跳转目标）②RWX 内存 JIT 也可能用，不能单独定性</p><p><strong>证据锚点</strong>：课堂推理与验收，未实时进程枚举（仍未验证）</p><p><strong>忘了先看哪里</strong>：先看"线程起始地址是否落在私有可执行内存"，而不是只看有没有 RWX</p><p><strong>前后关联</strong>：从模块/内存/线程反推 Day 5-9 的注入；为 Day 11 x64 调用约定补基础</p><h3>DEP / ASLR / CFG 各自限制什么</h3><table><tr><th>机制</th><th>限制对象</th><th>对注入或控制流攻击的意义</th></tr><tr><td>DEP</td><td>数据页能否执行</td><td>阻止把普通 RW 数据页直接当机器码运行；攻击者仍可能申请或改成可执行页。</td></tr><tr><td>ASLR</td><td>模块加载地址的可预测性</td><td>让硬编码函数地址、固定 gadget 或部分 ROP 链不可靠；运行时泄露或解析实际地址后仍可能绕过。</td></tr><tr><td>CFG</td><td>间接调用/跳转的合法目标</td><td>限制控制流跳到未允许的目标地址；它不负责检测所有注入，而是增加任意跳转的难度。</td></tr></table><h3>检测证据链</h3><pre><code>可疑私有内存出现
@@ -391,7 +402,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="11">
+    <div class="page" data-day="11" data-short="Day 11">
       <h2>Day 11 — x64 汇编 + IAT Hook</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span> &nbsp; 最小实验：自己 Hook 自己进程的 MessageBoxA</div>
       <h3>本课要解决什么</h3><p>写一个能真正生效的 IAT Hook，并且用调试器证明执行链：调用被拦截 → 先进 Hook 函数 → 再调回原函数。前提是先吃透 Windows x64 调用约定——参数怎么传、栈怎么摆。</p><h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：IAT 槽位存函数地址，IAT Hook=把槽位地址换成自己函数地址；call [IAT 槽位] 就跳进 Hook。</p><p><strong>最小执行链</strong>：找 IAT 槽位 → 保存原地址 → VirtualProtect 改可写 → 换地址 → 恢复页属性 → call [IAT] 跳 Hook → 用保存的原地址调回原函数</p><p><strong>最易混点</strong>：①本实验先插队、再调保存的原函数以保留原行为；是否调回原函数取决于 Hook 目的（也可阻断/改结果）②IAT 槽位存地址、名字在 INT ③附加进程≠注入</p><p><strong>证据锚点</strong>：断点停 Hook 入口、寄存器 RDX/R8/R9 实测参数、调用栈 main→MyMessageBoxA（已实测）</p><p><strong>忘了先看哪里</strong>：先看 x64 调用约定四条（RCX/RDX/R8/R9、RSP 16 对齐、影子空间）</p><p><strong>前后关联</strong>：Day 3 导入表是找槽位基础；Day 12 Inline Hook 改为直接改函数开头机器码</p><h3>x64 调用约定（四条规则）</h3><table><tr><th>规则</th><th>内容</th><th>意义</th></tr><tr><td>1</td><td>前 4 个整数/指针参数 → RCX、RDX、R8、R9</td><td>参数不压栈，直接放寄存器</td></tr><tr><td>2</td><td>浮点参数 → XMM0-XMM3（整数浮点各自独立编号）</td><td>游戏坐标等 float 参数在 XMM 里</td></tr><tr><td>3</td><td>调用任何函数前，RSP 必须 16 字节对齐</td><td>API 内部用 SSE 指令，SSE 要求 16 对齐，不对齐一进 API 就崩</td></tr><tr><td>4</td><td>调用方预留 32 字节影子空间（Shadow Space）</td><td>被调函数存放 RCX/RDX/R8/R9 的临时区</td></tr></table><p><strong>崩在别人家，错在自己家：</strong>RSP 对齐是“调用那一刻”由调用方保证的；崩溃点常在 API 内部，原因却在调用方没对齐。</p><h3>INT vs IAT（导入表两列）</h3><table><tr><th></th><th>装什么</th><th>比喻</th></tr><tr><td>INT（OriginalFirstThunk）</td><td>函数名字</td><td>购物清单</td></tr><tr><td>IAT（FirstThunk）</td><td>函数真实地址</td><td>收货地址</td></tr></table><p>INT 和 IAT 里的函数按同一顺序排列：在 INT 里找到目标函数名，记下标，到 IAT 同下标取槽位。</p><h3>IAT Hook 执行链</h3><pre><code>1. 找到目标函数在 IAT 里的槽位（PE头 → 导入表 → 目标DLL → 按名字匹配）
@@ -410,7 +421,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="12">
+    <div class="page" data-day="12" data-short="Day 12">
       <h2>Day 12 — Inline Hook</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span> &nbsp; 最小实验：x64 self-hook + x64dbg</div>
 
@@ -430,7 +441,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="13">
+    <div class="page" data-day="13" data-short="Day 13">
       <h2>Day 13 — VTable Hook</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
 
@@ -450,7 +461,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="14">
+    <div class="page" data-day="14" data-short="Day 14">
       <h2>Day 14 — VEH Hook + SEH 对比</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
 
@@ -470,7 +481,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="15">
+    <div class="page" data-day="15" data-short="Day 15">
       <h2>Day 15 — 硬件断点 (HWBP)</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
 
@@ -490,7 +501,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="16">
+    <div class="page" data-day="16" data-short="Day 16">
       <h2>Day 16 — 调试器原理</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
 
@@ -510,7 +521,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="17">
+    <div class="page" data-day="17" data-short="Day 17">
       <h2>Day 17 — 反调试基础</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
 
@@ -530,7 +541,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="18">
+    <div class="page" data-day="18" data-short="Day 18">
       <h2>Day 18 — 高级反调试</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>本课要解决什么</h3><p>Day 17 的三个检查点都在 main 函数里"翻记录"，而记录（PEB 公告栏）可以被破解者撕掉。本课讲三种更隐蔽的查岗方式：<b>RDTSC 掐秒表（量执行时间）、TLS 回调（抢在 main 之前查）、NtQueryInformationProcess（绕开传话员直接查内核深层的 DebugPort 专线）</b>。一句话核心结论：<b>标记可以伪装，时间没法伪装；浅层档案能撕，内核金库的登记簿撕不到——三种方式各靠一个"伪装不了"的点识破调试器。</b></p><h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：RDTSC 测两段代码间的耗时——被断点/单步卡过，时间差异常变长就暴露调试；TLS 回调在主入口前就跑、NtQueryInformationProcess 直接问系统调试信息。</p><p><strong>最小执行链</strong>：读 RDTSC → 执行一小段代码 → 再读 RDTSC → 比较耗时 → 异常变长=有调试器卡过</p><p><strong>最易混点</strong>：①RDTSC 只能说明"时间异常"，不能单独证明一定有调试器 ②TLS 回调只是"较早的检查时机"不是检测结论 ③attach 和创建期调试产生不同痕迹</p><p><strong>证据锚点</strong>：独立 RDTSC 基线 55~210 万、断点卡在两次 rdtsc 之间暴涨到约 590 亿 cycles（已实测）</p><p><strong>忘了先看哪里</strong>：先看"两次 RDTSC 之间有没有被断点卡住"</p><p><strong>前后关联</strong>：Day 16/17 之上加时间维度；为 Day 19 绕过铺路</p><h3>三个检查点</h3><table><tr><th>检查点</th><th>问谁 / 靠什么</th><th>独立运行</th><th>中途 attach</th><th>怕什么</th></tr><tr><td>RDTSC</td><td>CPU 硬件时钟（指令直读，无中间人）</td><td>基线 55~210 万 cycles</td><td>attach 不停顿不暴涨</td><td>断点/单步停顿必暴涨，无法伪装</td></tr><tr><td>TLS 回调</td><td>PE 文件 .CRT$XLB 名单，加载器在 main 前点名</td><td>回调先查（0/0）</td><td>—</td><td>名单可被改（Day 19）</td></tr><tr><td>NTQ → DebugPort</td><td>内核深层的调试专线（用户态改不了）</td><td>0（邮路未建）</td><td>0xFFFFFFFFFFFFFFFF（attach 也亮！）</td><td>被 hook 掉 NTQ 本身（Day 19）</td></tr></table><p>为什么 RDTSC 骗不了：系统时间 API（GetTickCount 等）是"大厅墙上的挂钟"，有报时员（函数调用）可以拦；RDTSC 是 CPU 硬件指令，程序自己低头看手腕上的秒表，不经过任何函数，没有"回答者"可替换。为什么 DebugPort 撕不掉：传话员（IsDebuggerPresent）看的是用户态公告栏（PEB），破解者伸手能撕；NTQ 查的邮路登记簿在内核金库里，用户态的手伸不下去——而 attach 时系统会立刻建好邮路，所以中途挂上也亮，这一点和 Day 17 的堆标志（attach 不亮）正好相反。</p><h3>执行链</h3><ol><li><b>RDTSC</b>：t0=读一次时钟 → 执行被测代码 → t1=再读一次 → 耗时=t1−t0。调试器只要在中间停下（断点/单步），耗时就从"微秒级"暴涨到"秒级"（几十亿 cycles），一次停顿就露馅</li><li><b>TLS 回调</b>：程序文件里登记一张"入场名单"（.CRT$XLB 段），系统加载器在 main 之前先点名，名单上的回调先跑——检测代码放进回调里，就抢在"调试者在入口点下断"之前先看了一遍</li><li><b>NTQ → DebugPort</b>：程序调 NtQueryInformationProcess(ProcessDebugPort=7) 问内核"我的调试邮路建了吗"——没建（0）= 没调试；建了（非 0）= 有调试器正在跟我通信</li></ol><h3>实操证据（2026-08-12 实测）</h3><p>实验程序 Day18AdvancedAntiDebugLab（AdvancedAntiDebugLab 项目，学习.sln，x64 Debug，输出 学习/Dll1/x64/Debug/）：TLS 回调先查 → 3 轮基线 → 15 轮循环（每轮 RDTSC+DebugPort+PEB 自查打印）→ 等待回车复查。</p><ul><li>独立运行：<b>[TLS] 0/0</b>（回调确实抢在 main 前查过）；RDTSC 基线 55~210 万 cycles；DebugPort=0、PEB=0；done 退出码 0</li><li>x64dbg 中途 attach：<b>[7] 行起 DebugPort 变 0xFFFFFFFFFFFFFFFF、PEB=1</b>——attach 也亮，深层档案抓中途挂载</li><li>断点下在两次 rdtsc 之间（0x118D，循环顶）：撞断点停留约数十秒后放行，<b>[复查] RDTSC=59074751553（约 590 亿 cycles），正常基线只有几十万到两百多万</b></li><li>后台验证器（verify/day18_check.py，标准 Win32 调试 API）：独立创建 DebugPort=0/PEB=0；DEBUG_PROCESS 创建 DebugPort=0xFFFFFFFFFFFFFFFF/PEB=1，跨进程读数与程序自查完全一致</li><li>x64dbg 自带"TLS 回调断点"功能：attach 时自动在 DLL 的 TLS 回调处下断点并停在 int 3——印证"回调是调试器已知的岗哨位置，赢的是时间差不是调试器本身"</li></ul><h3>失败实验与坑（重要）</h3><ul><li><b>软件断点反复命中，看着像"F9 没反应"</b>：断点下在循环顶（118D），程序每转一圈都经过它；按 F9 后跑一小段又撞上，反复暂停。真相不是运行按钮坏了，是断点把自己反复拦下。解法：点断点行按 F2 取消，再 F9 放行</li><li><b>双击运行的控制台窗口会随 done 自动关闭</b>：复查输出一闪而过。想看完整输出，可在程序运行中（循环轮次内）下断点，或从命令行启动（窗口保留）</li><li><b>x64dbg attach 后目标会先暂停一下</b>：这是正常的（挂载后需要 F9 继续），不是卡死；日志出现"INT3 断点于 ...118D"说明断点命中而非故障</li></ul><h3>逆向者/防御视角</h3><p>分析者视角：RDTSC 检测的特征是代码里出现两次 rdtsc（反汇编可见 0F 31），可先搜特征码再决定绕法；TLS 回调在 PE 的 TLS 目录可见，x64dbg 甚至专门有"TLS 回调断点"；查 DebugPort 的特征是导入 ntdll 的 NtQueryInformationProcess + 类别号 7。防御者视角：三种方式必须叠用——PEB 可改、RDTSC 段可 NOP、TLS 名单可改、NTQ 可 hook，每种都有专属死穴，叠用才逼破解者每个坑都填上，漏一个就被抓；检测间还能互相对答案（你改平了时间，反而暴露在动手脚）。</p><h3>与前后课程关联</h3><p>建立在 Day 16（DebugPort 邮路：异常分发时调试器最优先，信走这条邮路）和 Day 17（PEB 档案袋/堆标志/attach 差异）之上：本课的 DebugPort 就是 Day 16 那条邮路的"检查点版"，attach 与创建差异与 Day 17 的堆标志形成对照（堆标志 attach 不亮、DebugPort attach 亮）。为 Day 19（绕过反调试：手动 Patch/ScyllaHide 原理/反反调试思维）埋下伏笔——知道了每种检测的死穴，才知道怎么绕。</p>
@@ -544,7 +555,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="19">
+    <div class="page" data-day="19" data-short="Day 19">
       <h2>Day 19 — 绕过反调试</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>本课要解决什么</h3><p>Day 18 说每种反调试检测都有死穴；本课把死穴变成行动：<b>手动 Patch 三处逃跑出口、理解 ScyllaHide 的&#34;改答案&#34;思路、建立&#34;打地鼠→先摸清全图再动手&#34;的反反调试思维</b>。一句话核心结论：<b>Patch 改的是&#34;检测结果的使用处&#34;，不是检测本身——检测照跑，逃跑的腿被打断。</b></p><h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：绕过不是"让检测函数消失"，而是 Patch 检测后的"判断分支/反应出口"（打地鼠：多个检测点接力，得一次堵全）。</p><p><strong>最小执行链</strong>：定位检测点 → 找到判断/反应出口 → Patch(nop 抹逃跑动作 / jmp 无视结果) → 检测照跑但不逃</p><p><strong>最易混点</strong>：①nop 只写 1 字节会挤乱下一条指令(要写满完整指令) ②"Patch 改出口不改检测" ③打地鼠=分层接力检测需一次堵全</p><p><strong>证据锚点</strong>：三处 Patch(1225 75 09→90 90、122E 74 18→EB 18、1297 76 18→EB 18)后"15 轮全部通过"（已实测）</p><p><strong>忘了先看哪里</strong>：先看"检测结果被用在哪个出口"，再决定 patch 哪</p><p><strong>前后关联</strong>：Day 16-18 检测手段的攻防往返；为 Day 20 保护(反篡改)铺路</p><h3>三个 Patch 点（Debug x64）</h3><table><tr><th>#</th><th>位置(RVA)</th><th>原始</th><th>改后</th><th>堵住什么</th></tr><tr><td>1</td><td>GuardDebugPort+0x1225</td><td>75 09（jne short +9）</td><td>90 90（nop）</td><td>DebugPort 非空→逃跑分支，岔路填平</td></tr><tr><td>2</td><td>GuardDebugPort+0x122E</td><td>74 18（je 1248）</td><td>EB 18（jmp 1248）</td><td>检查值非 0→逃跑，强制走正常路径</td></tr><tr><td>3</td><td>GuardRDTSC+0x1297</td><td>76 18（jbe 12B1）</td><td>EB 18（jmp 12B1）</td><td>RDTSC 超阈值→逃跑，强制走正常路径</td></tr></table><h3>两种改法有什么不同</h3><p><b>nop（90 90）</b>：检测照跑——1227 的 movzx eax,[rsp+28]（查 DebugPort）和 test eax,eax 都照样执行，只是&#34;根据结果跳去逃跑&#34;这个动作被抹掉。门卫还在查岗，但查完动不了。<b>jmp（EB 18）</b>：把&#34;满足条件才跳&#34;改成&#34;无条件跳&#34;，检测结果被强制无视，岔路口改成了直行道。共同点：动手术刀的位置都是<b>检测结果的出口</b>，不是检测本身——这正是手动 Patch 与 ScyllaHide 的差异：ScyllaHide 注入 DLL 后 Hook 掉检测函数（如 NtQueryInformationProcess），让&#34;查岗的传话员&#34;被收买、问什么都答&#34;没有调试器&#34;；手动 Patch 则是直接改被保护程序的指令字节。一个改答案，一个改程序。</p><h3>反调试检测像打地鼠</h3><p>救场前第一轮只堵了门卫 1 的 DebugPort 检查，门卫 2 的 RDTSC 接棒逃跑（RDTSC=40329279 超阈值）——检测是一点一点冒出来的，不是一次全亮。真实保护软件里检测<b>分层 + 接力</b>：查调试器、查断点、查补丁、查钩子、查内存改动……patch 一层冒下一层。所以反反调试的正确姿势不是&#34;哪冒头打哪&#34;，而是<b>先摸清检测点全图，一次把所有逃跑出口堵上</b>——今天三处一起核对、一起改，就是这个思路。</p><h3>实操证据（2026-08-14）</h3><p>三处 Patch 后按 F9：程序输出 <b>&#34;15 轮全部通过，没有逃跑&#34; + done</b>；每轮照查 DebugPort=0xFFFFFFFFFFFFFFFF、PEB=1（被调试的证据都在），但逃跑岔路全被堵死。断点列表里的 kernel32.FatalExit 断点当&#34;逃跑警报器&#34;：命中时调用栈为 exit→_wassert→FatalExit（CRT 正常收尾路径，没有任何 day19 模块帧），证明不是门卫逃跑触发——警报器抓到的不是小偷，是物业自己的巡检。</p><h3>失败实验与坑（重要）</h3><ul><li><b>空格汇编输入 nop 只写 1 字节，挤乱下一条指令</b>：75 09（jne）是 2 字节，nop 是 1 字节；只写 1 个 90 会留下半个 09，把下一条 0F B6 44 24 28 挤乱。根因：CPU 按字节流读指令，不是一行一行读。解法：Ctrl+E 二进制编辑写满 2 字节（90 90），或勾选&#34;保持大小&#34;让工具自动补 NOP。</li><li><b>x64dbg 环境 C0000005@ntdll+0x1C286 噪音</b>：attach 后 F9 即停在 ntdll 访问违例，Shift+F9 放行两次无效。经 Sol 救场确认不是程序/Patch 问题，是 x64dbg 的 TLS 回调自动断点与 GamePP 注入 GPP64.dll 的初始化交互；关闭用户/系统 TLS Callback 自动断点后噪音消失，程序正常运行。</li></ul><h3>逆向者/防御视角</h3><p>分析者视角：Patch 的特征是内存字节与磁盘文件不一致，防御方可以做 CRC/自校验（读自己代码算指纹，被改就报警）反制；ScyllaHide 的特征是 DLL 注入 + 检测函数被 hook。防御者视角：检测要叠用（一个被堵另一个接棒）、要自校验（防 Patch）、要互相对答案（你改平了时间反而暴露动手脚）——这些正是 Day 20 软件保护综述的引子。</p><h3>与前后课程关联</h3><p>兑现 Day 18 埋的伏笔：PEB 可改、RDTSC 段可 NOP、NTQ 可 hook，本课把三个死穴逐一用 Patch 落实。为 Day 20（软件保护综述：加壳/混淆/自修改/反篡改/VM 保护概念）铺路——本课的自校验思路就是反篡改保护的种子。</p>
@@ -558,7 +569,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="20">
+    <div class="page" data-day="20" data-short="Day 20">
       <h2>Day 20 — 软件保护综述</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>本课要解决什么</h3><p>前面 19 天都在攻击者角度（找入口、下钩子、躲检测、打 Patch），本课第一次掉头看<b>写程序的人怎么保护自己</b>：加壳、混淆、自修改、反篡改、VM 保护五大招式各自在防什么、要付什么代价。一句话核心结论：<b>保护不是让人破不了，而是让破起来不划算——五招可以叠加，每加一层就多扒一层皮。</b></p><h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：保护不是让人破不了，而是让破起来不划算——五招(加壳/混淆/自修改/反篡改/VM)叠加、木桶原理、重点保护。</p><p><strong>最小执行链</strong>：加壳(藏入口/导入) → 混淆(搅乱) → 自修改(运行才改自己) → 反篡改(检测与反应分离) → VM(字节码换执行者)</p><p><strong>最易混点</strong>：①"混淆"改长相 vs "VM"换执行者(不同) ②反篡改"检测与反应分离"(Day 19 打地鼠) ③验证结果要混进功能数据(防掐出口)</p><p><strong>证据锚点</strong>：搜 DAY20_PLAIN_MARKER 命中、DAY20_PROTECTED_MARKER 静态搜不到但 --lab 运行时还原；改 payload 首字节后 integrity=TAMPERED+BLOCKED（已实测）</p><p><strong>忘了先看哪里</strong>：先记"五招各自防什么(藏/乱/变/查/换)"</p><p><strong>前后关联</strong>：Day 19 绕过反调试的防御侧收口；为 Day 21 内核层铺路</p><h3>五大招式对比表</h3><table><tr><th>招式</th><th>大白话</th><th>藏/挡什么</th><th>主要代价</th><th>攻击者的路</th></tr><tr><td>加壳（Packer）</td><td>程序打成压缩包，双击边解边跑</td><td>藏入口点（EP）和导入表（借 Windows 函数的清单）</td><td>体积膨胀</td><td>等解壳瞬间做内存转储（dump）</td></tr><tr><td>混淆（Obfuscation）</td><td>把文章改成倒装句+缩写，意思不变</td><td>搅乱代码顺序/等价替换（a+1 写成 a-(-1)）</td><td>可读性变差难维护</td><td>单步跟踪拼效果，费劲但能读懂</td></tr><tr><td>自修改（Self-modifying）</td><td>程序自己给自己 patch</td><td>文件里的代码和跑起来的对不上账</td><td>容易改坏自己（字节数错就崩）</td><td>软件断点（CC）会被冲掉，改用硬件断点（DR 寄存器，只盯地址不改字节）</td></tr><tr><td>反篡改（Tamper detection）</td><td>程序自己查自己有没有被改</td><td>防改代码、防换环境（调试器/模拟器）</td><td>误报+代码变重</td><td>不动检测，专打检测结果的出口（Day 19 打法）</td></tr><tr><td>VM 保护（Virtualization）</td><td>把程序翻译成只有翻译机能懂的密文</td><td>连&#34;谁在执行&#34;都换了：CPU 跑解释器，真逻辑在字节码里</td><td>速度慢几十倍，只能重点保护关键段</td><td>先逆向翻译机规则，极费功夫（VMP 是这种技术的产品名）</td></tr></table><h3>最容易混的三组区别</h3><ul><li><b>加壳 vs 混淆</b>：壳管&#34;门面&#34;（藏入口点和导入表，运行时整个解出来）；混淆管&#34;内部&#34;（改程序自己的代码长相）。</li><li><b>混淆 vs VM 保护</b>：混淆改的是代码<b>长什么样</b>（还是 CPU 直接跑的真指令，能读懂）；VM 改的是<b>谁在跑</b>（CPU 只跑翻译机，逻辑锁在字节码里，必须破译规则）。</li><li><b>反篡改 vs 反调试</b>：一家人——反调试是反篡改的特例（检测环境被换成调试器）。检测和对检测结果的反应是<b>两段分开</b>的，Day 19 只 patch 反应、检测照跑。</li></ul><h3>木桶原理与重点保护</h3><p>攻击者不啃最硬的点，专打旁边没设防的地方。所以：<b>没有总闸可掐</b>（验证结果混进功能数据，改数据=程序拿错数字自己跑崩，找不到可 nop 的逃跑动作）；<b>只保护关键段</b>（全程序上 VM 保护会卡到没法用，只保授权验证/核心算法一小块）。目标永远是提高逆向成本：时间 > 收益，攻击者自然放弃。</p><h3>实操一：字符串混淆证据链（2026-08-15）</h3><p>程序里两根标记：<code>DAY20_PLAIN_MARKER</code>（明文）和 <code>DAY20_PROTECTED_MARKER</code>（XOR 0x5A 编码藏住）。执行链：加混淆 → 原文从文件里消失 → 运行时解码函数现场还原 → 打印原文。证据：x64dbg 字符串窗口搜 DAY20_PLAIN 命中（地址 00007FF655DB52D0，引用处 <code>lea rdx,[&lt;kPlainMarker&gt;]</code>）；搜 DAY20_PROTECTED 搜不到；EXE 二进制核对 PROTECTED 原文不存在；但 <code>--lab</code> 运行时打印 <code>protected=DAY20_PROTECTED_MARKER</code>——静态藏、运行时还原，一条链完整。</p><h3>实操二：完整性反篡改证据链（2026-08-15）</h3><p>程序自带 8 字节账本 <code>Day20ProtectedPayload</code>，按 FNV-1a 哈希对账。执行链：改内存一个字节 → 按回车触发对账（Day20VerifyIntegrity）→ 哈希对不上 → 走反应（Day20ReactToTamper）→ 打印 BLOCKED 退出。证据：<code>--lab</code> 打印 payload=00007FF655DB8000（+verify/reaction/decode 锚点）；x64dbg 中途 attach 后把第一个字节 31 改成 30；按回车输出 <code>integrity=TAMPERED</code> + <code>reaction=BLOCKED</code>（退出码 20）；对照实验不改直接跑：<code>integrity=OK</code> + <code>feature_value=171</code> + <code>done</code>（退出码 0）。同一程序改与不改结果完全不同，检测与反应两段分离亲眼可见。</p><h3>失败实验与坑</h3><ul><li><b>在系统断点处搜字符串搜到一堆 ntdll 的东西</b>（CSPORT/ApiPort）：程序还没进自己的模块，&#34;搜索当前模块字符串&#34;搜的是 ntdll。解法：先 Ctrl+G 跳程序自己的函数（如 Day20VerifyIntegrity）再搜。</li><li><b>双击 EXE 闪退</b>：跑完自动退出属正常；要留窗口用 cmd 里 <code>Day20ProtectionOverviewLab.exe --lab</code>（打印锚点后等 Enter）。</li><li><b>证据边界（重要）</b>：XOR 只是教学级混淆，证明&#34;静态外观改变、运行时还原&#34;，不是真加壳/加密；完整性检查可被 patch 出口绕过（复盘确认：攻击者掐的是对账后的岔路口/让对账函数永远答&#34;对得上&#34;），证明&#34;存在检测与反应链&#34;不代表能抵御专业绕过。</li></ul><h3>逆向者/防御视角</h3><p>分析者看到：字符串静态缺失但运行时出现 → 混淆；内存与磁盘字节不一致 → 有人 patch；指令跑着跑着变样 → 自修改；入口是壳代码 → 加壳。防御者：五招叠加（壳管门口、混淆搅内部、VM 保关键段、反篡改守各处），检测要分层接力（防打地鼠被一次堵全），验证结果要混进功能数据（防掐出口）。</p><h3>与前后课程关联</h3><p>兑现 Day 19 伏笔：&#34;检测与反应分离&#34;和&#34;改出口不动检测&#34;在本课反篡改实验里成为正式主角。为 Day 21 内核基础铺路：Ring0 级保护（内核回调/驱动）是五招之外更深的防御层，也呼应 Day 29 反外挂分析（检测引擎架构）与服务器侧校验。</p>
@@ -572,7 +583,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="21">
+    <div class="page" data-day="21" data-short="Day 21">
       <h2>Day 21 — 内核架构基础</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>本课要解决什么</h3><p>前面 20 天都在用户态（Ring3）打转，本课第一次看清 Windows 的分层结构：程序住在哪、高危操作谁来做、跨层走哪扇门。一句话核心结论：<b>用户态程序（Ring3）权限最低，任何碰硬件/碰别的进程的高危操作，通常都经 ntdll 里的系统调用桩（syscall stub）递申请单，由内核（Ring0）代劳再返回结果。</b></p><h3>30 秒复习入口</h3><p><strong>一句话核心结论</strong>：Ring3(用户态)权限最低、Ring0(内核态)最高；普通 x64 程序向内核要服务时，通常走 ntdll 的 syscall stub 进内核，用户代码不能任意直接跑 Ring0。</p><p><strong>最小执行链</strong>：用户态 API → syscall 指令(0F 05) → CPU Ring3→Ring0 → 内核按服务号查 SSDT → 执行 → 返回 Ring3</p><p><strong>最易混点</strong>：①SSDT=全市地图(改它影响全系统) vs IAT=每家店路牌(改它只影响单程序) ②普通用户态请求内核服务通常经 ntdll 的 syscall stub 进内核，用户代码不能任意跳进 Ring0 ③用户态调试器看不到 Ring0 内核代码</p><p><strong>证据锚点</strong>：--lab 打印 syscall_opcode=0F 05、attach 见 mov r10,rcx/mov eax,0x36/syscall/ret、断点命中 INT3@入口+0x12（已实测）</p><p><strong>忘了先看哪里</strong>：先记"syscall=请求内核服务的标准入口、SSDT=服务号→地址表"</p><p><strong>前后关联</strong>：Day 20 保护之上进入内核层；为 Day 22 回调、Day 23 SSDT Hook 铺路</p><h3>两个圈子对比表</h3><table><tr><th></th><th>Ring3（用户态）</th><th>Ring0（内核态）</th></tr><tr><td>谁住这</td><td>你的 exe、游戏、浏览器</td><td>Windows 核心、驱动</td></tr><tr><td>权限</td><td>最低，处处受管</td><td>最高，碰一切（内存/硬件/别的进程）</td></tr><tr><td>出错后果</td><td>只崩自己一个</td><td>整个系统蓝屏</td></tr><tr><td>类比</td><td>小区住户</td><td>物业总控室</td></tr></table><h3>系统调用（syscall）执行链</h3><p>程序要读文件，文件在硬盘、硬盘只有内核能碰，程序不能自己伸手，只能打报告。完整链：</p><pre><code>用户态程序调用 ReadFile（用户态窗口函数）
@@ -590,7 +601,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="22">
+    <div class="page" data-day="22" data-short="Day 22">
       <h2>Day 22 — 内核回调机制</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>本课要解决什么</h3>
@@ -627,7 +638,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="23">
+    <div class="page" data-day="23" data-short="Day 23">
       <h2>Day 23 — SSDT Hook 原理</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>本课要解决什么</h3>
@@ -660,7 +671,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="24">
+    <div class="page" data-day="24" data-short="Day 24">
       <h2>Day 24 — 驱动通信 + 对象生命周期</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>本课要解决什么</h3>
@@ -692,7 +703,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="25">
+    <div class="page" data-day="25" data-short="Day 25">
       <h2>Day 25 — 过滤器驱动概念</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>本课要解决什么</h3>
@@ -721,7 +732,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="26">
+    <div class="page" data-day="26" data-short="Day 26">
       <h2>Day 26 — 内核对象管理</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>本课要解决什么</h3>
@@ -751,7 +762,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="27">
+    <div class="page" data-day="27" data-short="Day 27">
       <h2>Day 27 — 游戏逆向实战</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>本课要解决什么</h3>
@@ -785,7 +796,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="28">
+    <div class="page" data-day="28" data-short="Day 28">
       <h2>Day 28 — 游戏数据分析</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>本课要解决什么</h3>
@@ -814,7 +825,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="29">
+    <div class="page" data-day="29" data-short="Day 29">
       <h2>Day 29 — 反外挂分析</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>本课要解决什么</h3>
@@ -843,7 +854,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="page" data-day="30">
+    <div class="page" data-day="30" data-short="Day 30">
       <h2>Day 30 — 综合闭环项目</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
       <h3>本课要解决什么</h3>
@@ -872,14 +883,101 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
       </div>
     </div>
 
-    <div class="nav-bar"><button id="pb" disabled>◀ 上一页</button><span class="pi" id="pi">Day 1 / 33</span><button id="nb">下一页 ▶</button></div>
+    <div class="page" data-day="day31-34" data-short="Day 31-34">
+      <h2>Day 31-34 — x64 汇编进阶 + SSE/AVX + 编译器优化识别</h2>
+      <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
+      <h3>本课要解决什么</h3>
+<p>前 30 天打的是“看懂结构、注入、Hook、反调试”的地基；进入第二阶段，第一件事是回到最底层的机器语言：<b>x64 汇编进阶</b>。逆向的核心不是背指令，而是能回答三个问题：<b>参数怎么传进函数、结果怎么传出来、编译器把源码优化成了什么样子</b>。本课还要引入两类“一次算一堆数”的指令——SSE 与 AVX，它们是现代程序（尤其游戏）浮点运算的主力。目标不是背寄存器，而是<b>在调试器里亲手看到这些机制发生</b>，并能在真实游戏代码里认出它们。</p>
+<h3>30 秒复习入口</h3>
+<p><strong>一句话核心结论</strong>：x64 里整数参数走 RCX/RDX/R8/R9、结果回 RAX；浮点参数走 XMM0–XMM3、结果回 XMM0；第 5 个起进栈；SSE 的 addps 一次加 4 个 float、AVX 的 vaddps ymm 一次加 8 个；Release 会把无用计算删掉、把算式化简，但结果不变。</p>
+<p><strong>最小执行链</strong>：函数进门 sub rsp,28h(影子空间) → 前 4 参进寄存器(整数 RCX/RDX/R8/R9、浮点 XMM0–XMM3) → 第 5 参写 [rsp+20] → call 压返回地址 → 算完整数回 RAX / 浮点回 XMM0</p>
+<p><strong>最易混点</strong>：①整数参数坐通用寄存器、浮点参数坐 XMM，是两套座位，别混 ②写 32 位寄存器会自动清高 32 位，写内存的 dword 只动 4 字节、旁边旧值留着 ③优化只改“算法和指令条数”，不改“结果”</p>
+<p><strong>证据锚点</strong>：Debug/Release 同函数对照（Debug 19 条 vs Release 3 条）；XMM0=41960000=18.75；XMM2=3D088889=0.0333；RAX=0x73=115（均已实测）</p>
+<p><strong>忘了先看哪里</strong>：先背“整数→RCX 家族、浮点→XMM 家族、第 5 参→栈、整数回 RAX、浮点回 XMM0”，再想 Debug 和 Release 是不是同一份结果</p>
+<p><strong>前后关联</strong>：为 Day 35-38 C++ 对象模型（成员偏移、vtable）和 Day 42-45 游戏数学（矩阵、World-to-Screen 的浮点/XMM）铺路；Day 11 的 x64 汇编与调用约定在这里深化</p>
+<h3>一句话核心结论</h3>
+<p>x64 调用约定把整数与浮点分成两条通道（整数 RCX/RDX/R8/R9→RAX，浮点 XMM0–XMM3→XMM0，第 5 参起进栈）；SSE/AVX 用更宽的寄存器一次并行处理多个浮点数；编译器在 Release 下会删除无用计算并化简表达式，只保证结果相同、不保证指令结构相同。识别这些规律，才能在反汇编里把“函数签名”和“计算逻辑”还原出来。</p>
+<h3>执行链：一个函数调用到底发生了什么</h3>
+<p>以五参数整数函数 <code>Day31IntegerFive(a,b,c,d,e)</code> 为例，在 x64 下从头到尾：</p>
+<ol>
+<li>调用方先 <code>sub rsp, 28h</code>，留出 40 字节<b>影子空间（shadow space）</b>，这是前 4 个参数的预留座位。</li>
+<li>前 4 个参数依次装进 <code>ecx/edx/r8d/r9d</code>（32 位写法，自动清高 32 位）。</li>
+<li>第 5 个参数没有寄存器名额，写进栈：<code>mov dword ptr [rsp+20h], e</code>。</li>
+<li><code>call</code> 把返回地址压栈（RSP 再减 8）。</li>
+<li>被调函数进门，读第 5 参用 <code>[rsp+28h]</code>（影子空间 32 字节 + 返回地址 8 字节 = 偏移 0x28）。</li>
+<li>算完，整数结果放进 <code>eax/rax</code> 返回；浮点结果放进 <code>xmm0</code> 返回。</li>
+</ol>
+<p>浮点函数 <code>Day32FloatFive</code> 同一套规则，只是前 4 个参数坐的是 <code>xmm0–xmm3</code>，第 5 参同样上栈，结果回 <code>xmm0</code>。</p>
+<h3>对比表：整数通道 vs 浮点通道 vs 并行通道</h3>
+<table>
+<tr><th>通道</th><th>参数寄存器</th><th>第 5 参</th><th>返回值</th><th>代表指令</th></tr>
+<tr><td>整数（标量）</td><td>RCX/RDX/R8/R9</td><td>栈 [rsp+28]</td><td>RAX</td><td>add / imul</td></tr>
+<tr><td>浮点（标量）</td><td>XMM0–XMM3</td><td>栈 [rsp+28]</td><td>XMM0</td><td>addss / mulss</td></tr>
+<tr><td>SSE（4 个并行）</td><td>—（内存指针）</td><td>—</td><td>XMM0</td><td>addps（packed）</td></tr>
+<tr><td>AVX（8 个并行）</td><td>—（内存指针）</td><td>—</td><td>YMM0</td><td>vaddps ymm</td></tr>
+</table>
+<p><b>标量 vs 打包</b>是另一个易混点：<code>addss</code>（scalar，一次 1 个数）与 <code>addps</code>（packed，一次 4 个数）只差一个字母，含义完全不同。</p>
+<h3>调试证据（已实测）</h3>
+<ul>
+<li>整数：<code>Day31IntegerFive(1,2,3,4,17)</code> 返回 <code>RAX=0x73=115</code>；第 5 参 17 在调用方 <code>[rsp+20]</code>、被调方 <code>[rsp+28]</code>。</li>
+<li>浮点：<code>Day32FloatFive(1.25,2.5,3,4,8)</code> 返回 <code>XMM0=41960000=18.75</code>；前 4 参在 XMM0–XMM3，第 5 参 8.0 在栈。</li>
+<li>SSE/AVX：<code>Day33SseAdd</code> 用 <code>addps</code> 一次算出 <code>11,22,33,44</code>；<code>Day33AvxAdd</code> 用 <code>vaddps ymm</code> 一次算出 8 个 9。程序自测 <code>summary=PASS</code>。</li>
+<li>优化：<code>Day34OptimizationProbe</code> 的 Debug 版 19 条指令、Release 版 3 条（<code>lea eax,[rcx+rcx*4]</code> → <code>lea eax,[rax*2+0x32]</code> → <code>ret</code>），结果都是 190。</li>
+<li>靶场：<code>RslUpdatePlayerMovement</code>（RVA 0x71E0）由 <code>StepGame</code> 每帧调用，<code>deltaSeconds</code> 经 XMM2 传入（<code>3D088889=0.0333</code>），内部有 <code>mulss/sqrtss/comiss/divss</code> 与多处条件分支。<code>RslApplyDamage</code>（RVA 0x6460）用整数参数 + 条件分支 + RAX 返回，护甲规则 <code>min(armor, scaled/2)</code>，<code>--self-test</code> 全 PASS。</li>
+</ul>
+<h3>证据等级边界</h3>
+<ul>
+<li><b>已实测</b>：上述所有寄存器值、指令序列、程序自测 PASS，均来自实际调试器/运行输出。</li>
+<li><b>课堂推理</b>：护甲“吸收一半、最多到护甲用完”是源码 <code>min(armor, scaled/2)</code> 与反汇编 <code>sar eax,1</code> 的对应解读（被 <code>damage=PASS</code> 验证）。</li>
+<li><b>仍需验证</b>：Debug 与 Release 之间编译器具体用了哪些优化规则的完整清单未逐一枚举；不同编译器/优化级别下的具体指令形态需另行验证。</li>
+</ul>
+<h3>失败实验与常见误区</h3>
+<ul>
+<li><b>现象</b>：x64dbg 的 XMM 寄存器窗口单步时显示半刷/乱码（如 XMM0 只刷新一半、XMM2 显示 0）。</li>
+<li><b>原因</b>：寄存器窗口刷新滞后，不是 CPU 算错。</li>
+<li><b>排查</b>：改用内存里真实写回的结果（dump 输出数组）或程序自测 <code>summary=PASS</code> 兜底，不要只信寄存器窗口。</li>
+<li><b>误区</b>：把 <code>addss</code>（1 个）当成 <code>addps</code>（4 个）；把“写 32 位寄存器会清高 32 位”和“写内存 dword 只动 4 字节”两者混淆。</li>
+<li><b>误区</b>：以为 Release 优化会改变结果——优化只改算法与指令条数，结果必须一致。</li>
+</ul>
+<h3>逆向视角与防御视角</h3>
+<p><b>逆向</b>：认参数通道（整数 vs 浮点）能反推函数签名；认 SSE/AVX 的 <code>ps</code>/<code>ymm</code> 能判断“这段在并行处理一批浮点”；认 Release 的短函数与 <code>lea</code> 化简，能习惯优化后的“非直译”代码。</p>
+<p><b>防御</b>：编译器优化与 SIMD 让静态分析更难直读；完整性校验、反篡改需要理解这些“机器层重写”才能设计出能识别“被改过字节”的方案。攻击方同样能利用优化规律把壳或混淆藏在更紧凑的代码里。</p>
+<h3>实验环境</h3>
+<p>Windows x64；MSVC 14.x；<code>Day31_34X64OptimizationLab</code>（Debug/Release x64）；<code>ReverseStrikeLab</code> V1 Release 包（固定 raylib 6.0，自建单机靶场）；x64dbg；<code>dumpbin</code>。</p>
+<h3>已验证结论</h3>
+<p>整数/浮点两条调用约定通道；SSE/AVX 并行宽度；Debug 19 条 vs Release 3 条且结果同为 190；护甲规则 <code>min(armor, scaled/2)</code>。</p>
+<h3>仅为推测的结论</h3>
+<p>编译器优化规则的完整清单；不同 MSVC 版本下的指令形态差异。</p>
+<h3>调试证据</h3>
+<p>关键原始值：<code>RAX=0x73</code>、<code>XMM0=41960000</code>、<code>XMM2=3D088889</code>、<code>RVA 0x71E0 / 0x6460</code>，见上文“调试证据（已实测）”。</p>
+<h3>失败实验</h3>
+<p>x64dbg XMM 窗口刷新滞后导致的误判，已通过内存 dump 与程序自测兜底修正。</p>
+<h3>版本相关内容</h3>
+<p>SSE 用 128 位 XMM、AVX 用 256 位 YMM；AVX 指令带 <code>v</code> 前缀（VEX 编码）；MSVC x64 的调用约定与 System V x64（前 6 参进寄存器）不同，本课仅覆盖 Windows x64。</p>
+<h3>官方资料来源</h3>
+<p>Microsoft x64 calling convention 文档；Intel/AMD 手册的 SSE/AVX 指令集章节；Microsoft PE/COFF 与调试文档。</p>
+      <div class="practice-box">
+        <h3>🛠 实操记录</h3>
+        <table>
+          <tr><th style="width:80px">使用工具</th><td>x64dbg + dumpbin + Day31_34X64OptimizationLab（Debug/Release）+ ReverseStrikeLab --self-test</td></tr>
+          <tr><th>目标程序</th><td>专用 Lab 四个观察点（整数/浮点调用约定、SSE/AVX、Debug vs Release 优化）+ 靶场两个锚点（RslUpdatePlayerMovement / RslApplyDamage）</td></tr>
+          <tr><th>过程 & 结果</th><td>整数五参 Day31IntegerFive(1,2,3,4,17) 返回 RAX=0x73=115，第 5 参上栈；浮点 Day32FloatFive 返回 XMM0=41960000=18.75；SSE addps 得 11,22,33,44、AVX vaddps ymm 得 8 个 9；Debug 19 条 vs Release 3 条、结果同为 190；靶场 RslUpdatePlayerMovement 浮点移动/归一化/分支（StepGame 每帧调用，deltaSeconds=XMM2=0.0333）、RslApplyDamage 整数/分支/RAX 返回与护甲规则 min(armor,scaled/2) 均取证，--self-test 全 PASS</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="nav-bar"><button id="pb" disabled>◀ 上一页</button><span class="pi" id="pi">基础-1 / 34</span><button id="nb">下一页 ▶</button></div>
 </div></div>
 <script>
-(function(){var p=document.querySelectorAll(".page");var n=document.querySelectorAll(".sidebar nav a");var b=document.getElementById("pb");var x=document.getElementById("nb");var t=document.getElementById("pi");var j=document.getElementById("jump");var jb=document.getElementById("jb");var mt=document.getElementById("mt");var sb=document.querySelector(".sidebar");var F=3;var c=0;var l=p.length;
-function label(i){var d=p[i].dataset.day;return d.charAt(0)==="f"?"基础-"+((+d.slice(1))+1):"Day "+d}
+(function(){var p=document.querySelectorAll(".page");var n=document.querySelectorAll(".sidebar nav a");var b=document.getElementById("pb");var x=document.getElementById("nb");var t=document.getElementById("pi");var j=document.getElementById("jump");var jb=document.getElementById("jb");var mt=document.getElementById("mt");var sb=document.querySelector(".sidebar");var F=3;var U=[{"kind":"foundation"},{"kind":"foundation"},{"kind":"foundation"},{"kind":"day","startDay":1,"endDay":1},{"kind":"day","startDay":2,"endDay":2},{"kind":"day","startDay":3,"endDay":3},{"kind":"day","startDay":4,"endDay":4},{"kind":"day","startDay":5,"endDay":5},{"kind":"day","startDay":6,"endDay":6},{"kind":"day","startDay":7,"endDay":7},{"kind":"day","startDay":8,"endDay":8},{"kind":"day","startDay":9,"endDay":9},{"kind":"day","startDay":10,"endDay":10},{"kind":"day","startDay":11,"endDay":11},{"kind":"day","startDay":12,"endDay":12},{"kind":"day","startDay":13,"endDay":13},{"kind":"day","startDay":14,"endDay":14},{"kind":"day","startDay":15,"endDay":15},{"kind":"day","startDay":16,"endDay":16},{"kind":"day","startDay":17,"endDay":17},{"kind":"day","startDay":18,"endDay":18},{"kind":"day","startDay":19,"endDay":19},{"kind":"day","startDay":20,"endDay":20},{"kind":"day","startDay":21,"endDay":21},{"kind":"day","startDay":22,"endDay":22},{"kind":"day","startDay":23,"endDay":23},{"kind":"day","startDay":24,"endDay":24},{"kind":"day","startDay":25,"endDay":25},{"kind":"day","startDay":26,"endDay":26},{"kind":"day","startDay":27,"endDay":27},{"kind":"day","startDay":28,"endDay":28},{"kind":"day","startDay":29,"endDay":29},{"kind":"day","startDay":30,"endDay":30},{"kind":"phase2","startDay":31,"endDay":34}];var c=0;var l=p.length;
+function label(i){return p[i].dataset.short}
 function s(i){for(var k=0;k<l;k++)p[k].classList.remove("active");for(var k2=0;k2<n.length;k2++)n[k2].classList.remove("active");p[i].classList.add("active");n[i].classList.add("active");b.disabled=i===0;x.disabled=i===l-1;t.textContent=label(i)+" / "+l}
 function done(){if(window.innerWidth<=768)sb.classList.remove("open");window.scrollTo(0,0)}
-function go(){var e=j.value.trim().toLowerCase();var m;if((m=e.match(/^(?:day\s*)?(\d{1,2})$/))){var d=+m[1];if(d>=1&&d<=30){c=d+F-1;s(c);j.value="";done();return}}if((m=e.match(/^(?:基础|base|f)\s*-?\s*(\d)$/))){var f=+m[1];if(f>=1&&f<=F){c=f-1;s(c);j.value="";done();return}}j.value="未找到，试试 1-30 或 基础-1"}
+function go(){var e=j.value.trim().toLowerCase();var m;
+if((m=e.match(/^(?:基础|base|f)s*-?s*(d)$/))){var f=+m[1];if(f>=1&&f<=F){c=f-1;s(c);j.value="";done();return}}
+if((m=e.match(/^(?:days*)?(d{1,2})s*-s*(d{1,2})$/))){var a=+m[1],b2=+m[2];for(var k=0;k<l;k++){var uu=U[k];if((uu.kind==="day"||uu.kind==="phase2")&&uu.startDay===a&&uu.endDay===b2){c=k;s(c);j.value="";done();return}}j.value="未找到该课程块";return}
+if((m=e.match(/^(?:days*)?(d{1,2})$/))){var d=+m[1];for(var k3=0;k3<l;k3++){var uu2=U[k3];if(uu2.kind==="day"&&uu2.startDay===d){c=k3;s(c);j.value="";done();return}if(uu2.kind==="phase2"&&uu2.startDay<=d&&d<=uu2.endDay){c=k3;s(c);j.value="";done();return}}if(d>=31&&d<=60){j.value="该课程块尚未发布";return}j.value="未找到，试试 1-30 或 基础-1";return}
+j.value="未找到，试试 1-30、31-34 或 基础-1"}
 b.onclick=function(){if(c>0){c--;s(c)}};x.onclick=function(){if(c<l-1){c++;s(c)}};
 for(var i=0;i<n.length;i++){(function(idx){n[idx].onclick=function(e){e.preventDefault();c=idx;s(c);done()}})(i)}
 j.onfocus=function(){j.select()};j.onkeydown=function(e){if(e.key==="Enter"){go();return false}};jb.onclick=go;
