@@ -572,6 +572,17 @@
         "坑：软件断点下在循环顶会反复命中（看着像 F9 没反应）；双击运行的控制台窗口随 done 自动关闭；x64dbg attach 后目标先暂停属正常",
         "新增 AdvancedAntiDebugLab 项目（含 verify/day18_check.py）入学习.sln"
       ]
+    },
+    {
+      "date": "2026-08-27",
+      "items": [
+        "Day 31-34: x64 汇编进阶 + SSE/AVX + 编译器优化识别 理论+实操验收+网站闭环完成。核心结论：x64 两条调用约定通道(整数 RCX/RDX/R8/R9→RAX、浮点 XMM0–XMM3→XMM0、第5参起上栈)；SSE 的 addps 一次加4个 float、AVX 的 vaddps ymm 一次加8个；Release 删无用计算、化简算式、结果不变",
+        "证据(专用Lab Day31_34X64OptimizationLab)：整数 Day31IntegerFive(1,2,3,4,17) 返回 RAX=0x73=115(第5参调用方[rsp+20]/被调方[rsp+28])；浮点 Day32FloatFive(1.25,2.5,3,4,8) 返回 XMM0=41960000=18.75；SSE addps 得 11,22,33,44、AVX vaddps ymm 得 8个9；Day34OptimizationProbe Debug 19条 vs Release 3条(lea 化简为 input*10+50)结果同为190",
+        "证据(靶场 ReverseStrikeLab)：RslUpdatePlayerMovement(RVA 0x71E0)由 StepGame 每帧调用，deltaSeconds 经 XMM2 传入=3D088889=0.0333，内部 mulss/sqrtss/comiss/divss 浮点移动+归一化+条件分支；RslApplyDamage(RVA 0x6460)整数参数+条件分支+RAX返回，护甲规则 min(armor,scaled/2) 已确认；--self-test 全 PASS",
+        "坑：x64dbg 的 XMM 寄存器窗口单步时显示半刷/乱码(XMM0只刷一半、XMM2显示0)不是CPU算错，改用内存dump或程序自测 summary=PASS 兜底；写32位寄存器自动清高32位、写内存dword只动4字节两者不同；每次重载程序 ASLR 随机地址、断点要重新下；mulss=标量1个、addps=打包4个，一字之差含义不同",
+        "理论映射：认参数/返回值通道可反推函数签名；认 ps/ymm 判断并行浮点；认 Release 短函数+lea 化简习惯优化后的非直译代码；护甲'吸收一半、最多到用完'是 min(armor,scaled/2) 的机器对应(sar eax,1)",
+        "网站闭环：第二阶段网站结构由 Sol 定稿，days.json 新增 phase2 合并块数组(不拆空壳日)、build.js 支持合并块导航/覆盖日跳转/三段式进度；Day 31-34 合并块文章含一个六项复习入口；进度 34/60，plan 20/36，转 Day 35-38"
+      ]
     }
   ],
   "phase2": [
