@@ -3,7 +3,7 @@ schema: cc-dash/session@1
 project: windows-reverse-learning  
 session_id: s_2026-07-30_day8-apc  
 started: 2026-07-30T00:00:00+08:00  
-last_updated: 2026-08-27T23:04:04+08:00
+last_updated: 2026-08-30T16:38:35+08:00
 status: in-progress
 ---  
 
@@ -67,13 +67,16 @@ status: in-progress
 
 进度: 34/60 — 第一阶段 30/30 完成，第二阶段 Day 31-34 完成（4/30）
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
-教学阶段: DS 理论前置
+教学阶段: DS 闭环维护
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 35-38 C++ 对象模型 + RTTI + STL 容器恢复 — Day 31-34 已正式完成并闭环；进入第二阶段下一块，等待 DS 理论前置，不提前展开后续 Day。
-下一步: DS 开始 Day 35-38 理论前置（C++ 对象模型 + RTTI + STL 容器恢复），一次讲一个概念并确认理解；理论前置完成后按固定链路输出《给 Sol 的实操工程请求》。
+正在: Day 35-38 C++ 对象模型 + RTTI + STL 容器恢复 — 两段实操与 DS 实操后复盘均已完成（对象布局/vptr/vtable/RTTI/vector 三指针 全部亲手读内存验证）；等待第二阶段网站闭环（正式文章、build、验证、发布）。
+下一步: DS 按已定稿 phase2 结构把 Day 35-38 合并文章写入 days.json，运行 node build.js 并验证、发布；全部完成后才把 Day 35-38 标记 done 并进入 Day 39-41。
 
 ## Decisions  
 
+- <!-- at:2026-08-30T17:00:00+08:00 --> Day 35-38 两段实操与 DS 实操后复盘完成：DS 引导用户实操取证——x64dbg 命令行传参反复不生效（进程始终走 argc==1 图形路径），改为 PowerShell 带 `--day35-38-lab` 启动停在等回车 + x64dbg attach 读内存取证。用户亲手读内存验证：对象开头 8 字节=vptr(指向 vtable)、vtable 两槽位=虚函数地址、RTTI 类型名 `.?AVDay35Boss@day35_38@@`、vector begin/end/capacity 三指针及 end-begin=64 字节=2 元素。复盘理解确认通过（vptr→vtable→虚函数地址；RTTI=vptr-8 读指针→COL→RVA 偏移→TypeDescriptor→类型名；vector 三指针反推元素数）。教学阶段转 DS 闭环维护，Day 保持 in-progress 等待网站闭环。
+- <!-- at:2026-08-30T16:38:35+08:00 --> Day 35-38 Sol 工程准备完成：没有给既有 `PlayerState/BotState/WeaponDefinition` 强加虚函数或改变游戏 ABI，而是在同一 ReverseStrikeLab 新增最小 `Day35Actor/Day35Boss` 校准段，再应用到真实靶场结构与 STL 成员；提供 `--day35-38-evidence`/`--day35-38-lab` 及 `Day35_38ObjectCheckpoint`、`Day35_38VirtualDispatch`、`Day35_38StlCheckpoint` 三个导出锚点。x64 Debug/Release 从 `学习.sln` Rebuild、独立运行/交互等待、原 V1 全量回归、非法参数、导出/Release 虚调用反汇编和 Win32 调试事件三断点均通过；调试器实测 RTTI 链解析到 `.?AVDay35Boss@day35_38@@`，Debug/Release 的 STL 实现布局差异也被保留为当前 MSVC 构建事实。教学阶段转为 DS 实操教学，Day 仍未完成。
+- <!-- at:2026-08-30T16:20:18+08:00 --> Day 35-38 理论前置完成并交接 Sol 工程准备：DS 已讲并逐条确认理解——this 指针=对象方法隐藏的第 0 参数、永远走 RCX；对象布局=字段按声明顺序排、区分"字段偏移(从哪开始)"与"对象总大小(到哪结束)"；vtable/vptr=多态机器真相(vptr 指向虚表、表里装各版本函数地址、调用是"读vptr→查表→取地址→跳"三段式)；RTTI=运行时类型信息、挨着 vtable、逆向靠类型名字符串认对象真身；STL 容器复习(vector=begin/end/capacity 三指针、string=短串就地长串外存 SSO)。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
 - <!-- at:2026-08-27T23:31:16+08:00 --> Day 31-34 正式完成并闭环：DS 按 Sol 定稿的第二阶段网站结构改造 build.js（新增 `phase2` 合并块读取/校验/归一化渲染/覆盖日跳转/三段式进度），在 days.json 新增唯一 `phase2` 合并块对象（id=day31-34, status=done）及一篇含六项复习入口的正式文章，node build.js 验证通过（34 文章单元、34 复习入口、进度口径 30/30·4/30·34/60、无绝对化表述、无 Day 35+ 页面），仅暂存 SESSION_PROGRESS.md/days.json/build.js/index.html 四文件并提交 4333877 推送，线上 Pages 已核对（HTTP 200、34 复习入口、34/60 进度、Day 31-34 页面存在）。t_phase_a 标记完成，plan 19/36→20/36，进度 34/60，当前课程转 Day 35-38，教学阶段 DS 理论前置。未提前展开或完成 Day 35-38。
 - <!-- at:2026-08-27T23:04:04+08:00 --> 用户要求消除 DS/Sol 对话不互通造成的隐含交接风险：今后凡会影响另一模型后续工作的持久改变，由作出改变的一方按归属直接写入长期规则、主 SESSION、靶场 SESSION 或正式文章，使另一方今后自动沿用；用户不需要每课反复传卡。只有当前工作确实要在两个模型之间立刻切换时才生成一次性交接卡。本次已把该同步门写入 `C:\Users\Administrator\Desktop\更新笔记助手.txt`。
 - <!-- at:2026-08-27T23:00:28+08:00 --> 用户进一步明确：Day 1-30 网站优化不是只返修一次旧文章，而是 DS 今后每次新增课程文章都必须沿用的默认基线；最新一次通过 Sol 审核的网站结构与内容质量标准自动取代旧写法。该持续维护门已写入长期规则，后续 DS 发布前必须逐篇核对，不得恢复旧模板。
