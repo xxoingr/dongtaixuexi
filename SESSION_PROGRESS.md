@@ -55,7 +55,7 @@ status: in-progress
 ### 第二阶段：Day 31-60（GPT-5.5 建议，Day 30 后执行）
 
 - [x] <!-- id:t_phase_a dep:t_integration --> Day 31-34: x64 汇编进阶 + SSE/AVX + 编译器优化识别  
-- [ ] <!-- id:t_phase_b dep:t_phase_a --> Day 35-38: C++ 对象模型 + RTTI + STL 容器恢复  
+- [x] <!-- id:t_phase_b dep:t_phase_a --> Day 35-38: C++ 对象模型 + RTTI + STL 容器恢复  
 - [ ] <!-- id:t_phase_c dep:t_phase_b --> Day 39-41: SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级  
 - [ ] <!-- id:t_phase_d dep:t_phase_c --> Day 42-45: 游戏数学 + 相机/矩阵/World-to-Screen  
 - [ ] <!-- id:t_phase_e dep:t_phase_d --> Day 46-49: 调试器进阶 + Trace/Dump/自动化脚本  
@@ -65,15 +65,16 @@ status: in-progress
 
 ## Current Status  
 
-进度: 34/60 — 第一阶段 30/30 完成，第二阶段 Day 31-34 完成（4/30）
+进度: 38/60 — 第一阶段 30/30 完成，第二阶段 Day 31-34、Day 35-38 完成（8/30）
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
-教学阶段: DS 闭环维护
+教学阶段: DS 理论前置
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 35-38 C++ 对象模型 + RTTI + STL 容器恢复 — 两段实操与 DS 实操后复盘均已完成（对象布局/vptr/vtable/RTTI/vector 三指针 全部亲手读内存验证）；等待第二阶段网站闭环（正式文章、build、验证、发布）。
-下一步: DS 按已定稿 phase2 结构把 Day 35-38 合并文章写入 days.json，运行 node build.js 并验证、发布；全部完成后才把 Day 35-38 标记 done 并进入 Day 39-41。
+正在: Day 39-41 SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级 — Day 35-38 已正式完成并闭环；进入第二阶段下一块，等待 DS 理论前置，不提前展开后续 Day。
+下一步: DS 开始 Day 39-41 理论前置（SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级），一次讲一个概念并确认理解；理论前置完成后按固定链路输出《给 Sol 的实操工程请求》。
 
 ## Decisions  
 
+- <!-- at:2026-08-30T18:24:10+08:00 --> Day 35-38 正式完成并闭环：DS 按已定稿 phase2 结构在 days.json 新增唯一 day35-38 合并块对象（status=done）及一篇含六项复习入口的正式文章（对象布局/vptr/vtable/RTTI/vector/string），node build.js 验证通过（35 文章单元、35 复习入口、进度口径 30/30·8/30·38/60、无绝对化表述、无 Day 39+ 页面），仅暂存 SESSION_PROGRESS.md/days.json/index.html 三文件并提交 f3931e1 推送，线上 Pages 已核对（HTTP 200、38/60 进度、Day 35-38 页面存在）。t_phase_b 标记完成，plan 20/36→21/36，进度 38/60，当前课程转 Day 39-41，教学阶段 DS 理论前置。未提前展开或完成 Day 39-41。
 - <!-- at:2026-08-30T17:00:00+08:00 --> Day 35-38 两段实操与 DS 实操后复盘完成：DS 引导用户实操取证——x64dbg 命令行传参反复不生效（进程始终走 argc==1 图形路径），改为 PowerShell 带 `--day35-38-lab` 启动停在等回车 + x64dbg attach 读内存取证。用户亲手读内存验证：对象开头 8 字节=vptr(指向 vtable)、vtable 两槽位=虚函数地址、RTTI 类型名 `.?AVDay35Boss@day35_38@@`、vector begin/end/capacity 三指针及 end-begin=64 字节=2 元素。复盘理解确认通过（vptr→vtable→虚函数地址；RTTI=vptr-8 读指针→COL→RVA 偏移→TypeDescriptor→类型名；vector 三指针反推元素数）。教学阶段转 DS 闭环维护，Day 保持 in-progress 等待网站闭环。
 - <!-- at:2026-08-30T16:38:35+08:00 --> Day 35-38 Sol 工程准备完成：没有给既有 `PlayerState/BotState/WeaponDefinition` 强加虚函数或改变游戏 ABI，而是在同一 ReverseStrikeLab 新增最小 `Day35Actor/Day35Boss` 校准段，再应用到真实靶场结构与 STL 成员；提供 `--day35-38-evidence`/`--day35-38-lab` 及 `Day35_38ObjectCheckpoint`、`Day35_38VirtualDispatch`、`Day35_38StlCheckpoint` 三个导出锚点。x64 Debug/Release 从 `学习.sln` Rebuild、独立运行/交互等待、原 V1 全量回归、非法参数、导出/Release 虚调用反汇编和 Win32 调试事件三断点均通过；调试器实测 RTTI 链解析到 `.?AVDay35Boss@day35_38@@`，Debug/Release 的 STL 实现布局差异也被保留为当前 MSVC 构建事实。教学阶段转为 DS 实操教学，Day 仍未完成。
 - <!-- at:2026-08-30T16:20:18+08:00 --> Day 35-38 理论前置完成并交接 Sol 工程准备：DS 已讲并逐条确认理解——this 指针=对象方法隐藏的第 0 参数、永远走 RCX；对象布局=字段按声明顺序排、区分"字段偏移(从哪开始)"与"对象总大小(到哪结束)"；vtable/vptr=多态机器真相(vptr 指向虚表、表里装各版本函数地址、调用是"读vptr→查表→取地址→跳"三段式)；RTTI=运行时类型信息、挨着 vtable、逆向靠类型名字符串认对象真身；STL 容器复习(vector=begin/end/capacity 三指针、string=短串就地长串外存 SSO)。按 v5.3 链路输出《给 Sol 的实操工程请求》，教学阶段改为 Sol 工程准备，Day 保持 in-progress。
