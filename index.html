@@ -76,7 +76,7 @@ pre code{background:none;padding:0;color:inherit}
   └ 第二阶段
   ├ ▶Day 31-34: x64 汇编进阶 + SSE/AVX + 编译器优化识别<span class="done"> ✅</span>
   ├ ▶Day 35-38: C++ 对象模型 + RTTI + STL 容器恢复<span class="done"> ✅</span>
-  ├ ▶Day 39-41: SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级<span class="planned"> ⏳</span>
+  ├ ▶Day 39-41: SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级<span class="done"> ✅</span>
   ├ ▶Day 42-45: 游戏数学 + 相机/矩阵/World-to-Screen<span class="planned"> ⏳</span>
   ├ ▶Day 46-49: 调试器进阶 + Trace/Dump/自动化脚本<span class="planned"> ⏳</span>
   ├ ▶Day 50-53: 版本 Diff + 特征码定位 + CE 进阶<span class="planned"> ⏳</span>
@@ -119,8 +119,9 @@ pre code{background:none;padding:0;color:inherit}
     <a href="#" data-day="30" class="done"><span class="dot"></span>Day 30 — 综合闭环项目</a>
     <a href="#" data-day="day31-34" class="done"><span class="dot"></span>Day 31-34 — x64 汇编进阶 + SSE/AVX + 编译器优化识别</a>
     <a href="#" data-day="day35-38" class="done"><span class="dot"></span>Day 35-38 — C++ 对象模型 + RTTI + STL 容器恢复</a>
+    <a href="#" data-day="day39-41" class="done"><span class="dot"></span>Day 39-41 — SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级</a>
 </nav>
-<div class="progress">第一阶段 30/30 · 第二阶段 8/30（块 2/8）· 总体 38/60<div class="bar"><div class="fill" style="width:63%"></div></div></div>
+<div class="progress">第一阶段 30/30 · 第二阶段 11/30（块 3/8）· 总体 41/60<div class="bar"><div class="fill" style="width:68%"></div></div></div>
 <div class="log-section">
 <div class="log-title">📅 学习日志</div>
 <div class="log-entry"><div class="log-date">2026-08-27</div><div class="log-items"><div class="log-item">Day 31-34: x64 汇编进阶 + SSE/AVX + 编译器优化识别 理论+实操验收+网站闭环完成。核心结论：x64 两条调用约定通道(整数 RCX/RDX/R8/R9→RAX、浮点 XMM0–XMM3→XMM0、第5参起上栈)；SSE 的 addps 一次加4个 float、AVX 的 vaddps ymm 一次加8个；Release 删无用计算、化简算式、结果不变</div><div class="log-item">证据(专用Lab Day31_34X64OptimizationLab)：整数 Day31IntegerFive(1,2,3,4,17) 返回 RAX=0x73=115(第5参调用方[rsp+20]/被调方[rsp+28])；浮点 Day32FloatFive(1.25,2.5,3,4,8) 返回 XMM0=41960000=18.75；SSE addps 得 11,22,33,44、AVX vaddps ymm 得 8个9；Day34OptimizationProbe Debug 19条 vs Release 3条(lea 化简为 input*10+50)结果同为190</div><div class="log-item">证据(靶场 ReverseStrikeLab)：RslUpdatePlayerMovement(RVA 0x71E0)由 StepGame 每帧调用，deltaSeconds 经 XMM2 传入=3D088889=0.0333，内部 mulss/sqrtss/comiss/divss 浮点移动+归一化+条件分支；RslApplyDamage(RVA 0x6460)整数参数+条件分支+RAX返回，护甲规则 min(armor,scaled/2) 已确认；--self-test 全 PASS</div><div class="log-item">坑：x64dbg 的 XMM 寄存器窗口单步时显示半刷/乱码(XMM0只刷一半、XMM2显示0)不是CPU算错，改用内存dump或程序自测 summary=PASS 兜底；写32位寄存器自动清高32位、写内存dword只动4字节两者不同；每次重载程序 ASLR 随机地址、断点要重新下；mulss=标量1个、addps=打包4个，一字之差含义不同</div><div class="log-item">理论映射：认参数/返回值通道可反推函数签名；认 ps/ymm 判断并行浮点；认 Release 短函数+lea 化简习惯优化后的非直译代码；护甲'吸收一半、最多到用完'是 min(armor,scaled/2) 的机器对应(sar eax,1)</div><div class="log-item">网站闭环：第二阶段网站结构由 Sol 定稿，days.json 新增 phase2 合并块数组(不拆空壳日)、build.js 支持合并块导航/覆盖日跳转/三段式进度；Day 31-34 合并块文章含一个六项复习入口；进度 34/60，plan 20/36，转 Day 35-38</div></div></div><div class="log-entry"><div class="log-date">2026-08-24</div><div class="log-items"><div class="log-item">Day 29: 反外挂分析 — 特征码/行为检测/分层设防/威胁建模/服务器侧校验 理论+实操验收完成。核心结论：反外挂=分层设防，特征码认长相、行为检测认动作、服务器独立维护/校验关键状态，多层互补叠加提高攻击者绕过成本</div><div class="log-item">证据：Day29LayeredAntiCheatLab(中文CS风格自建训练靶场，不读真实进程)用户亲手扫三个终端——已知特征:特征码命中(偏移2 DE AD BE EF)/行为正常/拦截；变化特征:特征码未命中/行为警报/拦截(行为层补抓)；正常样本:特征码未命中/行为正常/放行；流水线 SIGNATURE→BEHAVIOR→VERDICT；day29_check.py 输出 PASS</div><div class="log-item">坑：射击命中≠反外挂证据(正式证据是终端三层扫描)；必须靠近终端再按E；Esc只开暂停菜单不直接退出；单层可被绕(加壳绕特征码/改动作绕行为)故须多层互补；层数多≠一定强(堆同类检测无效)</div><div class="log-item">理论映射：威胁建模=先换位列攻击路径→薄弱点→防御再有的放矢；服务器侧校验=服务器独立维护/校验权威状态，客户端本地改动不能自动改变服务器认可的结果(MC服务器版类比)；特征码怕加壳/改特征，行为检测怕误伤正常程序</div><div class="log-item">工程：LayeredAntiCheatLab 项目(Day29LayeredAntiCheatLab.exe，中文GUI训练靶场，复用raylib，程序化场景与原创枪械，不读真实进程)Sol 后台验收(Debug/Release构建+运行、三目标分层检测、UI状态机、射击/换弹/暂停/退出、四张截图)</div></div></div><div class="log-entry"><div class="log-date">2026-08-24</div><div class="log-items"><div class="log-item">Day 30: 综合闭环项目 — 第一阶段收官。核心结论：PE→注入→Hook→检测→保护→反外挂评估 是一条完整攻防链，任何单层都可被绕、可靠防御靠可验证/可关联/互相补位的整体设计=以攻促防</div><div class="log-item">六环串链：PE(程序骨架与Loader)→注入(载荷进目标上下文)→Hook(改变后续执行路径，改表或改函数入口字节)→检测(从模块/内存/线程/异常/时间/行为找痕迹)→保护(提高理解/修改/稳定绕过成本)→反外挂评估(威胁模型评估客户端/内核/服务器覆盖与补位)</div><div class="log-item">三处纠偏(Sol审核)：①Hook 非'改箭头不改函数'，Inline Hook 直接改函数入口字节；②保护非'绝对防住'而是'提高绕过成本'；③补全 Day10(DEP/ASLR/CFG)/14/15(VEH/HWBP)/19(Patch出口打地鼠)/27/28(游戏结构+数据格式)入总链</div><div class="log-item">用户口述锚点：PE骨架地图/注入载荷进上下文/Hook改后面走哪条路/检测找痕迹/保护提成本/评估看每层能防什么漏什么怎么补位</div><div class="log-item">本课无新增工程或调试证据，仅综合串讲前29天知识；正式文章采用 Sol 优化稿+用户口述学习痕迹，进度 30/30 第一阶段收官</div></div></div><div class="log-entry"><div class="log-date">2026-08-23</div><div class="log-items"><div class="log-item">Day 28: 游戏数据分析 — 存档格式/网络协议/资源文件/IDA-Ghidra 理论+实操验收完成。核心结论：分析二进制=按字段偏移/大小/字节序把原始字节翻译成人话；小端序=低位字节放前、倒过来拼</div><div class="log-item">证据：Day28BinaryDataAnalysisLab(自建字节)——存档 gold 偏移8 占4字节 raw=40 E2 01 00 value=123456(小端序倒拼 00 01 E2 40=0x0001E240)；协议包 opcode=0x1001/payload_length=5/player_id=42/action=7；--tampered-save 改 gold 首字节 0x40→0x41 触发 CHECKSUM_MISMATCH 拒绝；day28_check.py 输出 PASS</div><div class="log-item">坑：小端序不能从左到右读(40 E2 01 00 要倒拼才是 123456)；offset 是字段相对整段起点不跟 end 混用；checksum 只演示格式校验非真实游戏算法；本工程不碰真实游戏/流量/解包、不装 IDA/Ghidra；--lab 等 Enter 是教学停留点不是卡死</div><div class="log-item">理论映射：静态分析(IDA/Ghidra 不运行读机器码) vs 动态分析(运行/断点/抓包)互补；网络包等运行时才出的数据要靠动态；本课 IDA/Ghidra 只保留理论边界未实际安装操作</div><div class="log-item">工程：BinaryDataAnalysisLab 项目(Day28BinaryDataAnalysisLab.exe，自建字节，不碰真实游戏/网络/IDA)Sol 后台验收(Debug/Release 构建+运行、--save/--packet/--lab/--tampered-save/非法参数路径、三个导出锚点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-22</div><div class="log-items"><div class="log-item">Day 27: 游戏逆向实战 — Unity/UE基础 + STL容器识别(vector/string) + 对象结构恢复 理论+实操验收完成。核心结论：搞清引擎=拿到'内存对象怎么摆'的规律地图；STL 容器有固定长相(vector=3指针、string 短串就地长串外存)，认长相=从地址堆认出有意义的东西</div><div class="log-item">证据：Day27GameMemoryLayoutLab(自建迷你Demo，不碰真实游戏)——vector object_size=24 begin/end/capacity 三指针 bytes_used=20=5×4 reserved_slots=8；短串 Mage data_inside_object=true INLINE_SSO、长串 Legendary_Player_From_Day27 EXTERNAL_HEAP raw_pointer_matches_data=true；PlayerRecord 字段偏移 0/4/8/16；summary 四项全 true；day27_check.py 输出 PASS</div><div class="log-item">坑：所有地址每次运行都变(ASLR)只比顺序/差值/归属不比绝对地址；end 不是最后一个元素是它的下一格；vector 24 字节三指针是当前 MSVC x64 实现非所有编译器保证(须固定 _ITERATOR_DEBUG_LEVEL=0)；string SSO 阈值随版本变不能硬记 15；短串对象开头是字符不是指针(只有长串对象起始第一机器字才是字符缓冲区指针)；对象尾部有对齐填充(PlayerRecord 最后字段偏移16但总大小24)</div><div class="log-item">理论映射：引擎决定对象/容器布局规律，Unity/UE 本课只保留理论映射(没验证真实 Unity/UE 游戏对象)</div><div class="log-item">工程：GameMemoryLayoutLab 项目(Day27GameMemoryLayoutLab.exe，自建迷你 Demo，不接触真实游戏/外部进程/内存扫描器)Sol 后台验收(Debug/Release 构建+运行、非法参数、三个导出锚点、--lab 稳定停点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-21</div><div class="log-items"><div class="log-item">Day 25: 过滤器驱动概念 — Minifilter/NDIS/WFP 理论+实操验收完成。核心结论：过滤器驱动=卡必经之路、先过目再放行的'检查站'，机制中性、善恶取决于写驱动的人（不是天生保护、也不是被 Hook 才变坏）</div><div class="log-item">证据：Day25FilterCheckpointLab(纯用户态)3 请求都先 checkpoint_seen 再处置——notes.txt PASS 原样到达、malware.exe BLOCK 不达终点(只有 destination_blocked)、draft.tmp MODIFY 改写 draft.safe 后终点收到 draft.safe；summary pass=1 block=1 modify=1 delivered=2；day25_check.py 输出 PASS</div><div class="log-item">坑：BLOCK 关键证据是'没有 destination_received'(终点没收到)不只 decision=BLOCK；MODIFY 关键证据是'终点收到的 payload 是改写后的 draft.safe'不只 before/after 文字；malware.exe/draft.tmp 是教学字符串非真实文件；本实验非真 Minifilter/NDIS/WFP(没注册文件系统回调/没碰网卡/没注册 WFP Callout)</div><div class="log-item">理论映射：Minifilter=卡文件读写必经之路；NDIS=卡网卡旁底层原始数据包(不认识上层应用)；WFP=卡更上层可按程序+地址+端口拦；三者的共同核心=请求先过检查站再决定放行/拦截/改写</div><div class="log-item">工程：FilterCheckpointLab 项目(Day25FilterCheckpointLab.exe，纯用户态，不写驱动)Sol 后台验收(Debug/Release 构建+运行、未知请求/非法参数路径、两个导出锚点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-21</div><div class="log-items"><div class="log-item">Day 26: 内核对象管理 — ObRegisterCallbacks/进程线程保护 理论+实操验收完成。核心结论：用户态访问内核对象拿到的永远是句柄(号码牌)不是对象本身；ObRegisterCallbacks=卡在'打开进程/线程句柄'门前的检查站，进程保护=在句柄这道门提前设卡、把想动进程的人挡在拿到句柄之前</div><div class="log-item">证据：Day26ObjectHandleProtectionLab(纯用户态)两条路径——trusted_monitor 先 checkpoint_seen(BEFORE_HANDLE_ISSUE)→decision=ALLOW→handle_issued handle=0xD260→object_access SUCCESS；untrusted_tool 同 checkpoint_seen→decision=DENY→handle_not_issued→object_access FAILED reason=NO_HANDLE；summary allowed=1 denied=1 handles_issued=1 successful_access=1；day26_check.py 输出 PASS</div><div class="log-item">坑：拒绝的关键证据是 handle_not_issued + reason=NO_HANDLE(失败在'没拿到句柄'不是'拿到后访问被拦'，DENY 在 handle_issued 之前)；0xD260 是教学模拟号码牌非真实 HANDLE；ProtectedGame.exe/trusted_monitor/untrusted_tool 是实验固定身份非真实进程；本实验非真实 ObRegisterCallbacks(没驱动注册、没过滤真实内核句柄)</div><div class="log-item">理论关联：与 Day 25 过滤器同思路(检查站)，Day 25 卡文件/网络、Day 26 卡进程/线程句柄；本课收口内核基础阶段 Day 21-26</div><div class="log-item">工程：ObjectHandleProtectionLab 项目(Day26ObjectHandleProtectionLab.exe，纯用户态，不写驱动)Sol 后台验收(Debug/Release 构建+运行、允许/拒绝/未知访问者/非法参数路径、两个导出锚点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-20</div><div class="log-items"><div class="log-item">Day 23: SSDT Hook 原理 — 内核级 Hook/KD 调试/VTL0/VTL1 理论+实操验收完成。核心结论：SSDT Hook=把内核'全市共享总电话簿'里某服务号指向的地址换成自己的地址；改的是表里的'地址箭头'不是函数本身；因表全系统共享，一次改动影响全系统所有用该服务号的程序（对比 IAT 只影响单程序）</div><div class="log-item">证据：Day23SSDTHookSimulationLab（纯用户态模拟 SSDT 函数指针表）改表前 dispatch service=0x23 target=0x7FF690EC1780→handler=ORIGINAL result=123；hook_action old=0x7FF690EC1780 new=0x7FF690EC1720；改表后同样 service=0x23→handler=HOOKED result=-23；same_service=true target_changed=true original_unchanged=true；day23_check.py 输出 PASS</div><div class="log-item">坑：不比较不同运行绝对地址（ASLR 基址变化）；打印地址非真 SSDT 地址（只是本进程用户态函数地址）；本实验是 Ring3 复现查表改表机制、非真实 SSDT Hook；双击普通模式窗口秒关、取证用 --lab 停在 EVIDENCE_READY</div><div class="log-item">理论边界：改 SSDT 得先站 Ring0（驱动=门票非作弊手法）；SSDT 在内核、普通 Ring3 调试器被权限墙挡住、须 KD/WinDbg；VTL0/VTL1=比 Ring0 更高的隔离房间，VTL0 的 Ring0 也看不到 VTL1</div><div class="log-item">工程：SSDTHookSimulationLab 项目（Day23SSDTHookSimulationLab.exe，纯用户态，不写驱动不改真 SSDT）Sol 后台验收（Debug/Release 构建+运行、改表前后对比、非法参数路径、三个导出锚点）</div></div></div><div class="log-entry"><div class="log-date">2026-08-20</div><div class="log-items"><div class="log-item">Day 24: 驱动通信 + 对象生命周期 — IOCTL/共享内存/引用计数/IRQL与锁 理论+实操验收完成。核心结论：驱动通信=驱动开接待窗口、用户程序递指令单(控制码+输入/输出缓冲区)；对象生命周期靠引用计数记账(借+1还-1降到0才回收)</div><div class="log-item">证据：Day24DriverCommunicationLifecycleLab(纯用户态)三条链——ioctl code=0x800 input 7,5→output 12；shared_views writer/reader 两个不同地址读到同一内容 match=true；引用计数 1→2→1→0 归零 reclaimed=true；irql_lock=THEORY_ONLY；day24_check.py 输出 PASS</div><div class="log-item">坑：writer/reader 地址不同是正常(不同虚拟地址映射同一块内存，看内容 match=true 不看地址)；0x800 是自定义模拟控制码非真实 IOCTL；'内存泄漏'≠'数据泄露'(忘减引用=对象不回收占内存)；reclaimed=true 是模拟标志非内核对象真实销毁；irql_lock=THEORY_ONLY 是主动声明没模拟</div><div class="log-item">理论边界：IRQL 和内核锁不能用普通用户态变量真实复现，本实验只演示通信/共享区域/引用记账</div><div class="log-item">工程：DriverCommunicationLifecycleLab 项目(Day24DriverCommunicationLifecycleLab.exe，纯用户态，不写驱动不调真实 DeviceIoControl)Sol 后台验收(Debug/Release 构建+运行、未知控制码/非法参数路径、四个导出锚点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-17</div><div class="log-items"><div class="log-item">Day 22: 内核回调机制 — PsSetCreateProcessNotifyRoutine + 驱动入口 理论+实操验收完成。核心结论：回调=先登记联系方式、事件发生时对方反过来调用你（方向与普通调用相反）；杀软靠它第一时间知道进程创建。链：DriverEntry(报到)→PsSetCreateProcessNotifyRoutine(注册回调/留电话)→内核按地址反过来调回调(进程创建进行到一半被叫、须快速返回)→DriverUnload(注销别留空号否则蓝屏)</div><div class="log-item">证据：真驱动被 UEFI Secure Boot 阻止无法加载，改纯用户态等价演示——WMI 订阅程序先打印 state=WAITING，另窗口起 cmd.exe 后被动收到 ProcessStart name=cmd.exe pid=26688 parent=15144 与 PING.EXE pid=17456 parent=26688（父生子 pid 链），进程消失被动收到 ProcessStop；day22_user_check.py 输出 PASS</div><div class="log-item">坑：靶子退出太快会漏事件（WMI WITHIN 1 每秒采样，须用 cmd+ping 让靶子活约 2 秒）；pid 会被复用（26688 从 cmd.exe 变 git.exe，记 pid≠记进程）；其他进程事件穿插属正常；Win32_ProcessStartTrace 需管理员（0x80041003），改用不需管理员的 WMI intrinsic event；双击运行 Ctrl+C 后 STOPPED 行闪一帧看不到（非必需证据）</div><div class="log-item">工程：KernelProcessEventLab 项目（Day22KernelProcessEventLab.exe，纯用户态 WMI 异步订阅，IWbemObjectSink::Indicate 接收回调）Sol 后台验收；真驱动源码归档于 KernelCallbackLab，从 学习.sln 移除、Secure Boot 保持开启</div></div></div><div class="log-entry"><div class="log-date">2026-08-16</div><div class="log-items"><div class="log-item">Day 21: 内核架构基础 — Ring0/Ring3/系统调用 syscall/SSDT 理论+实操验收完成。核心结论：用户态(Ring3)权限最低，高危操作经 ntdll 的系统调用桩递申请单由内核(Ring0)代劳；SSDT=内核的服务号→代码地址对照表，与 IAT 同类（IAT 改单程序、SSDT 改全系统=SSDT Hook 种子）</div><div class="log-item">证据：--lab 打印 mode=Ring3(USER)/api=ntdll!NtQuerySystemInformation/syscall_opcode=0F 05；attach 后 Ctrl+G 到入口见 mov r10,rcx/mov eax,0x36(服务号)/syscall/ret；F2 断点命中 INT3@DC62=入口+0x12 即 syscall 处；--no-wait 输出 ntstatus=0x00000000 + transition=Ring3->syscall->Ring0->Ring3 + done</div><div class="log-item">坑：不带 --lab 程序结束太快来不及 attach；不能硬记地址/服务号（ASLR+Windows 版本变化，0x36 只是当前系统实测值，优先用导出名定位）；用户态调试器看不到 Ring0 内核代码（syscall 后直接回到用户态指令，是正常权限隔离）；只停在程序包装层不够，必须进 ntdll 看到 syscall</div><div class="log-item">工程：KernelArchitectureLab 项目（Day21KernelArchitectureLab.exe，纯用户态，不写驱动不改 SSDT）Sol 后台验收（Debug/Release 构建+运行、标准 Win32 调试 API 命中 ntdll!NtQuerySystemInformation、入口+0x12=0F 05 syscall）</div></div></div><div class="log-entry"><div class="log-date">2026-08-15</div><div class="log-items"><div class="log-item">Day 20: 软件保护综述 — 加壳/混淆/自修改/反篡改/VM保护五大概念 理论+实操验收完成。核心结论：保护不是让人破不了，而是让破起来不划算；五招叠加、木桶原理、重点保护（VM 只保关键段，全包会卡到没法用）；验证结果混进功能数据可防掐出口</div><div class="log-item">证据：字符串对比——x64dbg 搜 DAY20_PLAIN_MARKER 命中（00007FF655DB52D0）、搜 DAY20_PROTECTED_MARKER 搜不到（EXE 二进制无原文），--lab 运行时打印 protected=DAY20_PROTECTED_MARKER（XOR 0x5A 现场还原）；反篡改——attach 改 payload 第一字节 31→30 后 integrity=TAMPERED + reaction=BLOCKED（退出码 20），不改对照 integrity=OK + feature_value=171 + done（退出码 0）</div><div class="log-item">坑：在系统断点（ntdll）处搜字符串会搜到系统字符串（CSPORT/ApiPort），先 Ctrl+G 跳程序自己的函数再搜；双击 EXE 闪退属正常，留窗口用 cmd 跑 --lab；XOR 只是教学级混淆、完整性检查可被 patch 出口绕过（复盘确认攻击者打的是对账后的岔路口，不是检测本身）</div><div class="log-item">工程：ProtectionOverviewLab 项目（Day20ProtectionOverviewLab.exe）Sol 按方案 A 制作并后台验收（Debug/Release 构建、正常/篡改/非法参数三路径、明文存在与保护串静态消失自动核查、四导出锚点 Win32 调试 API 命中）</div></div></div><div class="log-entry"><div class="log-date">2026-08-14</div><div class="log-items"><div class="log-item">Day 19: 绕过反调试 — 手动 Patch/ScyllaHide 原理/反反调试思维 理论+实操验收完成。Patch 改的是检测结果的使用处（出口）不是检测本身：nop 抹掉逃跑动作（检测照跑）、jmp 无视检测结果；反调试像打地鼠（分层+接力），正确姿势=先摸清检测点全图一次堵全</div><div class="log-item">证据：x64dbg 三处 Patch 逐处核对（1225 jne→90 90、122E je→EB 18 jmp 1248、1297 jbe→EB 18 jmp 12B1）；F9 后控制台 15 轮全部通过没有逃跑 done；DebugPort=0xFFFFFFFFFFFFFFFF/PEB=1 照查不逃；FatalExit 断点命中时调用栈为 CRT 正常收尾（exit→_wassert→FatalExit）无逃跑帧</div><div class="log-item">坑：nop 只写 1 字节会挤乱下一条指令（75 09 是 2 字节，CPU 按字节流读指令），用 Ctrl+E 二进制编辑写满字节；x64dbg TLS 回调自动断点与 GamePP 注入 GPP64.dll 交互致 ntdll C0000005 噪音（Sol 救场关闭 TLS Callback 自动断点后消失，正式 x64dbg.ini 已修复并留备份）</div><div class="log-item">工程：AntiAntiDebugLab 项目（Day19AntiAntiDebugLab.exe，10 秒 attach 窗口）Sol 后台预制验收三检查点通过</div></div></div><div class="log-entry"><div class="log-date">2026-08-12</div><div class="log-items"><div class="log-item">Day 18: 高级反调试 — RDTSC 计时/TLS 回调/NtQueryInformationProcess(DebugPort) 理论+实操验收完成</div><div class="log-item">证据：独立运行 TLS 0/0 + RDTSC 基线 55~210 万 + DebugPort=0；attach 后 DebugPort=0xFFFFFFFFFFFFFFFF、PEB=1（attach 也亮，与 Day 17 堆标志对照）；断点卡在两次 rdtsc 之间复查 RDTSC 590 亿量级（正常基线仅几十万到两百多万）；后台 DEBUG_PROCESS 验证器跨进程复核一致</div><div class="log-item">坑：软件断点下在循环顶会反复命中（看着像 F9 没反应）；双击运行的控制台窗口随 done 自动关闭；x64dbg attach 后目标先暂停属正常</div><div class="log-item">新增 AdvancedAntiDebugLab 项目（含 verify/day18_check.py）入学习.sln</div></div></div><div class="log-entry"><div class="log-date">2026-08-09</div><div class="log-items"><div class="log-item">Day 15: 硬件断点 (HWBP) — DR0-DR7 调试寄存器、执行/写入断点、反检测。软件断点=改代码字节(CC)，硬件断点=改 CPU 记事本(DR 寄存器)不改代码；写入断点抓到'改血量那条指令'(CE Find what writes 原理)；反作弊查 CC 防软件断点、读 DR 防硬件断点</div><div class="log-item">工程：HWBPLab 项目入 学习.sln，Debug/Release 编译+独立运行通过；普通 x64dbg 实操三连（执行/写入/软件断点）证据齐全；后台 Win32 调试 API 验证器复测通过；x64dbg headless 的 ntdll C0000005 已定位为环境噪音（不影响 GUI 实操）</div><div class="log-item">Day 16: 调试器原理（断点触发/异常分发/DebugPort/调试事件循环）。执行链：CPU 踩断点→内核→查 DebugPort→调试器最先→放行→VEH/SEH→WER 弹窗。DebugPort=门禁卡槽，平时 NULL、调试时非空；一个进程最多一个调试器。实操：独立运行+中途 attach，DebugPort NULL→0xFFFF 实时对比，0xE1234001 先到 x64dbg（first-chance）再放行给 VEH。坑：x64dbg 创建进程模式本机必现 ntdll C0000005（LoadLibraryW 线程），绕法=attach；Day 15'headless 特有'结论作废</div><div class="log-item">Day 17: 反调试基础（PEB.BeingDebugged/NtGlobalFlag 家族/IsDebuggerPresent）。三个检查点：IsDebuggerPresent（API，导入表留名）、PEB.BeingDebugged（直接读 GS:[0x60]+0x02，隐蔽）、堆 ForceFlags（heap+0x74，只认'被调试器创建'，attach 不触发）。实操：attach 后 1/1/0 vs 后台 DEBUG_PROCESS 创建 1/1/0x40000060。坑：NtGlobalFlag 堆偏移 0x68 与 KUSER_SHARED_DATA+0x320 本机不可靠，实测后改用堆头 +0x74</div></div></div><div class="log-entry"><div class="log-date">2026-08-06</div><div class="log-items"><div class="log-item">Day 14: VEH Hook + SEH 对比 — DS 前置与实操后复盘、Sol 工程/调试证据验收全部完成</div><div class="log-item">证据：Debug/Release Rebuild 与独立运行退出码 0；E0421401 由 VEH 处理返回 108，E0421402 按 VEH → SehFilter 顺序返回 200；Debug RVA 0x1240/0x1400 与 x64 .pdata/unwind 元数据已核对</div><div class="log-item">失败边界：普通 x64dbg GUI 在嵌套异常处理者软件断点人工续跑时出现非目标 C0000005，精确内部根因未验证；稳定路线改为新进程一次性检查点</div></div></div><div class="log-entry"><div class="log-date">2026-08-01</div><div class="log-items"><div class="log-item">Day 11: x64 汇编 + IAT Hook — 换 IAT 槽位地址实现 Hook，实验+调试验证+验收通过</div><div class="log-item">调试证据：RDX/R8/R9 寄存器传参 + 调用栈 main → MyMessageBoxA + 弹窗正文被篡改</div><div class="log-item">工程：IATHook 迁入 学习/Dll1/IATHook 并加入 学习.sln；修复构建脚本路径、OriginalFirstThunk 回退、VirtualProtect 错误检查；Release x64 构建 0 警告 0 错误</div></div></div><div class="log-entry"><div class="log-date">2026-07-31</div><div class="log-items"><div class="log-item">Day 8: APC 注入 (QueueUserAPC) — Alertable State 硬前提，实验 A/B 对比验证</div><div class="log-item">Day 9: 注入体系总结 — 六种方式对比、统一分析五问、线程劫持原理与反作弊证据链</div><div class="log-item">Day 10: 注入检测视角 — DEP/ASLR/CFG 缓解机制 + 反注入检测思路（概念推理验收，未做实时进程枚举实验）</div><div class="log-item">踩坑：LoadLibraryA 不能处理中文路径，改用 LoadLibraryW；MSVC UTF-8 源文件需 /utf-8</div><div class="log-item">新增 APCInjector + AlertableTarget 项目，统一输出到 学习/x64/Debug/</div><div class="log-item">笔记优化：前期基础与 Day 1-8 补齐复习锚点、验证证据、误区排查、逆向/防御视角和官方资料方向</div></div></div><div class="log-entry"><div class="log-date">2026-07-29</div><div class="log-items"><div class="log-item">Day 7: SetWindowsHookEx 钩子注入 — 编译→踩坑共享段→修复→全系统实测18000+次</div><div class="log-item">网站工具化: days.json + build.js 一键生成，告别编码问题</div><div class="log-item">TestGame 重写: Win32 GDI 射击游戏，全局变量暴露关键数据</div><div class="log-item">学习日志板块 + 实操记录板块上线</div></div></div><div class="log-entry"><div class="log-date">2026-07-28</div><div class="log-items"><div class="log-item">Day 1-4: PE 格式 — DOS头/NT头/COFF头/节表/导入表/导出表/重定位表</div><div class="log-item">Day 5: 手动映射注入 (Manual Map) — 7步实现，模块列表不可见</div><div class="log-item">Day 6: Shellcode 注入 — PEB走法 + MASM汇编 + 裸字节码</div></div></div><div class="log-entry"><div class="log-date">2026-07-27</div><div class="log-items"><div class="log-item">基础-1: CE 入门 — 精确搜索、模糊搜索、数据类型</div><div class="log-item">基础-2: 指针扫描 — 基址+多级偏移、动态vs静态指针</div><div class="log-item">基础-3: LoadLibrary DLL 注入 — 第一个注入器 + 锁血 DLL</div></div></div>
@@ -887,82 +888,118 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
     <div class="page" data-day="day31-34" data-short="Day 31-34">
       <h2>Day 31-34 — x64 汇编进阶 + SSE/AVX + 编译器优化识别</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
-      <h3>本课要解决什么</h3>
-<p>前 30 天打的是“看懂结构、注入、Hook、反调试”的地基；进入第二阶段，第一件事是回到最底层的机器语言：<b>x64 汇编进阶</b>。逆向的核心不是背指令，而是能回答三个问题：<b>参数怎么传进函数、结果怎么传出来、编译器把源码优化成了什么样子</b>。本课还要引入两类“一次算一堆数”的指令——SSE 与 AVX，它们是现代程序（尤其游戏）浮点运算的主力。目标不是背寄存器，而是<b>在调试器里亲手看到这些机制发生</b>，并能在真实游戏代码里认出它们。</p>
+      <h3>本块要解决什么</h3>
+<p>进入第二阶段，第一件事是回到最底层的机器语言：<b>x64 汇编进阶</b>。逆向的核心不是背指令，而是能回答三个问题：<b>参数怎么传进函数、结果怎么传出来、编译器把源码优化成了什么样子</b>。本块还要引入两类「一次算一堆数」的指令——<b>SSE 与 AVX</b>，它们是现代程序（尤其游戏）浮点运算的主力。目标不是背寄存器，而是<b>在调试器里亲手看到这些机制发生</b>，并能在真实游戏代码里认出它们。</p>
+
 <h3>30 秒复习入口</h3>
-<p><strong>一句话核心结论</strong>：x64 里整数参数走 RCX/RDX/R8/R9、结果回 RAX；浮点参数走 XMM0–XMM3、结果回 XMM0；第 5 个起进栈；SSE 的 addps 一次加 4 个 float、AVX 的 vaddps ymm 一次加 8 个；Release 会把无用计算删掉、把算式化简，但结果不变。</p>
-<p><strong>最小执行链</strong>：函数进门 sub rsp,28h(影子空间) → 前 4 参进寄存器(整数 RCX/RDX/R8/R9、浮点 XMM0–XMM3) → 第 5 参写 [rsp+20] → call 压返回地址 → 算完整数回 RAX / 浮点回 XMM0</p>
-<p><strong>最易混点</strong>：①整数参数坐通用寄存器、浮点参数坐 XMM，是两套座位，别混 ②写 32 位寄存器会自动清高 32 位，写内存的 dword 只动 4 字节、旁边旧值留着 ③优化只改“算法和指令条数”，不改“结果”</p>
+<p><strong>一句话核心结论</strong>：Windows x64 里整数参数走 RCX/RDX/R8/R9、结果回 RAX；浮点参数走 XMM0–XMM3、结果回 XMM0；第 5 个参数起进栈；SSE 的 addps 一次加 4 个 float、AVX 的 vaddps ymm 一次加 8 个；Release 会把无用计算删掉、把算式化简，但结果不变。</p>
+<p><strong>最小执行链</strong>：函数进门 sub rsp,28h（影子空间）→ 前 4 参进寄存器（整数 RCX/RDX/R8/R9、浮点 XMM0–XMM3）→ 第 5 参写 [rsp+20h] → call 压返回地址 → 算完整数回 RAX / 浮点回 XMM0</p>
+<p><strong>最易混点</strong>：①整数参数坐通用寄存器、浮点参数坐 XMM，是两套座位，别混 ②写 32 位寄存器会自动清高 32 位，写内存的 dword 只动 4 字节、旁边旧值留着 ③优化只改「算法和指令条数」，不改「结果」</p>
 <p><strong>证据锚点</strong>：Debug/Release 同函数对照（Debug 19 条 vs Release 3 条）；XMM0=41960000=18.75；XMM2=3D088889=0.0333；RAX=0x73=115（均已实测）</p>
-<p><strong>忘了先看哪里</strong>：先背“整数→RCX 家族、浮点→XMM 家族、第 5 参→栈、整数回 RAX、浮点回 XMM0”，再想 Debug 和 Release 是不是同一份结果</p>
+<p><strong>忘了先看哪里</strong>：先背「整数→RCX 家族、浮点→XMM 家族、第 5 参→栈、整数回 RAX、浮点回 XMM0」，再想 Debug 和 Release 是不是同一份结果</p>
 <p><strong>前后关联</strong>：为 Day 35-38 C++ 对象模型（成员偏移、vtable）和 Day 42-45 游戏数学（矩阵、World-to-Screen 的浮点/XMM）铺路；Day 11 的 x64 汇编与调用约定在这里深化</p>
-<h3>一句话核心结论</h3>
-<p>x64 调用约定把整数与浮点分成两条通道（整数 RCX/RDX/R8/R9→RAX，浮点 XMM0–XMM3→XMM0，第 5 参起进栈）；SSE/AVX 用更宽的寄存器一次并行处理多个浮点数；编译器在 Release 下会删除无用计算并化简表达式，只保证结果相同、不保证指令结构相同。识别这些规律，才能在反汇编里把“函数签名”和“计算逻辑”还原出来。</p>
-<h3>执行链：一个函数调用到底发生了什么</h3>
-<p>以五参数整数函数 <code>Day31IntegerFive(a,b,c,d,e)</code> 为例，在 x64 下从头到尾：</p>
+
+<h3>学习地图</h3>
+<p>本块按四个核心概念推进，建议顺序：先 A（调用约定）打地基，再 B（SSE/AVX）扩宽度，然后 C（优化识别）练眼力，最后 D（靶场应用）落到真实代码。</p>
 <ol>
-<li>调用方先 <code>sub rsp, 28h</code>，留出 40 字节<b>影子空间（shadow space）</b>，这是前 4 个参数的预留座位。</li>
-<li>前 4 个参数依次装进 <code>ecx/edx/r8d/r9d</code>（32 位写法，自动清高 32 位）。</li>
-<li>第 5 个参数没有寄存器名额，写进栈：<code>mov dword ptr [rsp+20h], e</code>。</li>
-<li><code>call</code> 把返回地址压栈（RSP 再减 8）。</li>
-<li>被调函数进门，读第 5 参用 <code>[rsp+28h]</code>（影子空间 32 字节 + 返回地址 8 字节 = 偏移 0x28）。</li>
-<li>算完，整数结果放进 <code>eax/rax</code> 返回；浮点结果放进 <code>xmm0</code> 返回。</li>
+<li><b>A. Windows x64 调用约定</b>——参数与返回值走哪条通道。</li>
+<li><b>B. SSE 与 AVX</b>——一次算多个浮点数的并行指令。</li>
+<li><b>C. 编译器优化识别</b>——Debug 与 Release 为什么长得不一样。</li>
+<li><b>D. ReverseStrikeLab 应用</b>——在真实靶场代码里认出前三点。</li>
 </ol>
-<p>浮点函数 <code>Day32FloatFive</code> 同一套规则，只是前 4 个参数坐的是 <code>xmm0–xmm3</code>，第 5 参同样上栈，结果回 <code>xmm0</code>。</p>
-<h3>对比表：整数通道 vs 浮点通道 vs 并行通道</h3>
+
+<h3>A. Windows x64 调用约定</h3>
+<p><b>核心结论</b>：调用约定规定了「参数放哪、结果放哪、栈怎么用」。Windows x64 下，整数和浮点走两条不同的「座位」通道。</p>
+<p><b>整数参数通道</b>：前 4 个整数/指针参数依次进 <code>RCX</code>、<code>RDX</code>、<code>R8</code>、<code>R9</code>；更多参数进栈。</p>
+<p><b>浮点参数通道</b>：前 4 个浮点参数依次进 <code>XMM0</code>、<code>XMM1</code>、<code>XMM2</code>、<code>XMM3</code>；更多参数进栈。注意整数和浮点各自独立计数——比如第一个参数是整数、第二个是浮点，则整数坐 RCX、浮点坐 XMM1（不是 XMM0），因为两条通道分别按序排座。</p>
+<p><b>返回值通道</b>：整数结果回 <code>RAX</code>，浮点结果回 <code>XMM0</code>。</p>
+<p><b>第 5 参数与栈</b>：寄存器只有 4 个名额，第 5 个起写进栈，调用方写在 <code>[rsp+20h]</code>。</p>
+<p><b>shadow space（影子空间）</b>：调用方先 <code>sub rsp,28h</code> 留出 40 字节，是给前 4 个参数的预留座位。即使没传满 4 个参数，这片空间也要留。</p>
+<p><b>调用方与被调方看到的栈偏移为什么差 8 字节</b>：<code>call</code> 会把返回地址压栈（RSP 再减 8）。所以调用方写的 <code>[rsp+20h]</code>，到了被调函数里要读 <code>[rsp+28h]</code>（影子空间 32 字节 + 返回地址 8 字节）。这一个「差 8」是读汇编时最容易算错的点。</p>
+<p><b>用户实测证据</b>：<code>Day31IntegerFive(1,2,3,4,17)</code> 返回 <code>RAX=0x73=115</code>；第 5 参 17 在调用方 <code>[rsp+20h]</code>、被调方 <code>[rsp+28h]</code>。<code>Day32FloatFive(1.25,2.5,3,4,8)</code> 返回 <code>XMM0=41960000=18.75</code>，第 5 参 8.0 在栈。</p>
+<p><b>适用范围与边界</b>：以上是 <b>Windows/MSVC x64</b> 的规则，不是所有 64 位平台的统一规则。System V AMD64（Linux 用）前 6 个参数进寄存器，规则不同，本块只作一句对照、不展开。</p>
+
+<h3>B. SSE 与 AVX</h3>
+<p><b>核心结论</b>：SSE/AVX 用更宽的寄存器「一次并行处理多个浮点数」，是标量运算之外的另一条并行通道。</p>
+<p><b>scalar 与 packed</b>：<code>addss</code>（scalar，一次 1 个数）与 <code>addps</code>（packed，一次 4 个数）只差一个字母，含义完全不同。scalar 只动最低那格，packed 把整条寄存器的几格一起算。</p>
+<p><b>寄存器宽度</b>：SSE 用 128 位的 <code>XMM</code>（4 个 float）；AVX 用 256 位的 <code>YMM</code>（8 个 float）。AVX 指令带 <code>v</code> 前缀（VEX 编码），如 <code>vaddps ymm</code>。</p>
+<p><b>用户实测证据</b>：<code>Day33SseAdd</code> 用 <code>addps</code> 一次算出 <code>11,22,33,44</code>；<code>Day33AvxAdd</code> 用 <code>vaddps ymm</code> 一次算出 8 个 9。程序自测 <code>summary=PASS</code>。</p>
+<p><b>最易混点</b>：把 <code>addss</code>（1 个）当成 <code>addps</code>（4 个）；把「写 32 位寄存器会清高 32 位」和「写内存 dword 只动 4 字节」两者混淆。</p>
+<p><b>适用范围与边界</b>：VEX/v 前缀只解释到「本块识别指令类型」所需的程度，不展开完整编码；SSE/AVX 是 x86 系扩展，其他指令集架构不适用。</p>
+
+<h3>C. 编译器优化识别</h3>
+<p><b>核心结论</b>：Debug 和 Release 的指令可以长得完全不同，但<b>结果必须相同</b>。逆向要习惯「优化后的非直译代码」。</p>
+<p><b>Debug 为什么接近源码步骤</b>：不优化，每句源码基本对应若干条直译指令，变量都落在内存里，好调试、但啰嗦。</p>
+<p><b>Release 为什么短</b>：删除无用计算、把表达式折叠成常量、用 <code>lea</code> 一条指令同时完成「乘法+加法+移位」等复合寻址，所以指令条数骤减。</p>
+<p><b>「结果相同」≠「指令结构相同」</b>：优化只改算法和指令条数，不改结果。看到 Release 里没有 Debug 里那堆指令，不代表它算错了。</p>
+<p><b>用户实测证据</b>：<code>Day34OptimizationProbe</code> 的 Debug 版 19 条指令、Release 版 3 条（<code>lea eax,[rcx+rcx*4]</code> → <code>lea eax,[rax*2+0x32]</code> → <code>ret</code>），结果都是 190。</p>
+<p><b>适用范围与边界</b>：不同编译器、版本、优化开关可能产生不同指令形态，<b>不能背固定形态</b>，只能掌握「优化保结果、改结构」的规律。</p>
+
+<h3>D. ReverseStrikeLab 应用</h3>
+<p><b>核心结论</b>：专用校准 Lab 负责干净取证，靶场负责「在真实游戏代码里认出同一套机制」。两段证据不能混写。</p>
+<p><b>RslUpdatePlayerMovement</b>：由 <code>StepGame</code> 每帧调用，<code>deltaSeconds</code> 经 XMM2 传入（<code>3D088889=0.0333</code>），内部有 <code>mulss/sqrtss/comiss/divss</code> 与多处条件分支——这是「浮点参数通道 + 并行/标量浮点运算」在真实移动代码里的样子。</p>
+<p><b>RslApplyDamage</b>：用整数参数 + 条件分支 + RAX 返回，护甲规则 <code>min(armor, scaled/2)</code>——这是「整数通道 + 分支 + 返回值」在伤害结算里的样子，<code>--self-test</code> 全 PASS。</p>
+<p><b>注意</b>：下文提到的 RVA 0x71E0、0x6460 都是<b>当次 Release 构建中的实测 RVA</b>，不是以后构建永久固定的地址，重编译后会变。</p>
+
+<h3>跨概念对照表</h3>
 <table>
 <tr><th>通道</th><th>参数寄存器</th><th>第 5 参</th><th>返回值</th><th>代表指令</th></tr>
-<tr><td>整数（标量）</td><td>RCX/RDX/R8/R9</td><td>栈 [rsp+28]</td><td>RAX</td><td>add / imul</td></tr>
-<tr><td>浮点（标量）</td><td>XMM0–XMM3</td><td>栈 [rsp+28]</td><td>XMM0</td><td>addss / mulss</td></tr>
+<tr><td>整数（标量）</td><td>RCX/RDX/R8/R9</td><td>栈 [rsp+28h]</td><td>RAX</td><td>add / imul</td></tr>
+<tr><td>浮点（标量）</td><td>XMM0–XMM3</td><td>栈 [rsp+28h]</td><td>XMM0</td><td>addss / mulss</td></tr>
 <tr><td>SSE（4 个并行）</td><td>—（内存指针）</td><td>—</td><td>XMM0</td><td>addps（packed）</td></tr>
 <tr><td>AVX（8 个并行）</td><td>—（内存指针）</td><td>—</td><td>YMM0</td><td>vaddps ymm</td></tr>
 </table>
-<p><b>标量 vs 打包</b>是另一个易混点：<code>addss</code>（scalar，一次 1 个数）与 <code>addps</code>（packed，一次 4 个数）只差一个字母，含义完全不同。</p>
-<h3>调试证据（已实测）</h3>
-<ul>
-<li>整数：<code>Day31IntegerFive(1,2,3,4,17)</code> 返回 <code>RAX=0x73=115</code>；第 5 参 17 在调用方 <code>[rsp+20]</code>、被调方 <code>[rsp+28]</code>。</li>
-<li>浮点：<code>Day32FloatFive(1.25,2.5,3,4,8)</code> 返回 <code>XMM0=41960000=18.75</code>；前 4 参在 XMM0–XMM3，第 5 参 8.0 在栈。</li>
-<li>SSE/AVX：<code>Day33SseAdd</code> 用 <code>addps</code> 一次算出 <code>11,22,33,44</code>；<code>Day33AvxAdd</code> 用 <code>vaddps ymm</code> 一次算出 8 个 9。程序自测 <code>summary=PASS</code>。</li>
-<li>优化：<code>Day34OptimizationProbe</code> 的 Debug 版 19 条指令、Release 版 3 条（<code>lea eax,[rcx+rcx*4]</code> → <code>lea eax,[rax*2+0x32]</code> → <code>ret</code>），结果都是 190。</li>
-<li>靶场：<code>RslUpdatePlayerMovement</code>（RVA 0x71E0）由 <code>StepGame</code> 每帧调用，<code>deltaSeconds</code> 经 XMM2 传入（<code>3D088889=0.0333</code>），内部有 <code>mulss/sqrtss/comiss/divss</code> 与多处条件分支。<code>RslApplyDamage</code>（RVA 0x6460）用整数参数 + 条件分支 + RAX 返回，护甲规则 <code>min(armor, scaled/2)</code>，<code>--self-test</code> 全 PASS。</li>
-</ul>
-<h3>证据等级边界</h3>
-<ul>
-<li><b>已实测</b>：上述所有寄存器值、指令序列、程序自测 PASS，均来自实际调试器/运行输出。</li>
-<li><b>课堂推理</b>：护甲“吸收一半、最多到护甲用完”是源码 <code>min(armor, scaled/2)</code> 与反汇编 <code>sar eax,1</code> 的对应解读（被 <code>damage=PASS</code> 验证）。</li>
-<li><b>仍需验证</b>：Debug 与 Release 之间编译器具体用了哪些优化规则的完整清单未逐一枚举；不同编译器/优化级别下的具体指令形态需另行验证。</li>
-</ul>
-<h3>失败实验与常见误区</h3>
+
+<h3>专用校准 Lab 证据</h3>
+<p>本块校准 Lab 是 <code>Day31_34X64OptimizationLab</code>（Debug/Release x64），四个观察点：整数调用约定、浮点调用约定、SSE/AVX 并行、Debug vs Release 优化。关键原始值：<code>RAX=0x73=115</code>、<code>XMM0=41960000=18.75</code>、<code>XMM2=3D088889=0.0333</code>、Debug 19 条 vs Release 3 条结果同为 190。这些值都来自当次输入和当次构建。</p>
+
+<h3>ReverseStrikeLab 应用证据</h3>
+<p><code>RslUpdatePlayerMovement</code>（当次 Release 实测 RVA 0x71E0）浮点移动/归一化/分支，deltaSeconds 经 XMM2 传入；<code>RslApplyDamage</code>（当次 Release 实测 RVA 0x6460）整数/分支/RAX 返回与护甲规则 <code>min(armor,scaled/2)</code>，均取证，<code>--self-test</code> 全 PASS。</p>
+
+<h3>失败实验与排错</h3>
 <ul>
 <li><b>现象</b>：x64dbg 的 XMM 寄存器窗口单步时显示半刷/乱码（如 XMM0 只刷新一半、XMM2 显示 0）。</li>
 <li><b>原因</b>：寄存器窗口刷新滞后，不是 CPU 算错。</li>
 <li><b>排查</b>：改用内存里真实写回的结果（dump 输出数组）或程序自测 <code>summary=PASS</code> 兜底，不要只信寄存器窗口。</li>
-<li><b>误区</b>：把 <code>addss</code>（1 个）当成 <code>addps</code>（4 个）；把“写 32 位寄存器会清高 32 位”和“写内存 dword 只动 4 字节”两者混淆。</li>
-<li><b>误区</b>：以为 Release 优化会改变结果——优化只改算法与指令条数，结果必须一致。</li>
+<li><b>误区</b>：把 <code>addss</code> 当 <code>addps</code>；把「写 32 位寄存器清高 32 位」和「写内存 dword 只动 4 字节」混淆；以为 Release 优化会改变结果。</li>
 </ul>
-<h3>逆向视角与防御视角</h3>
-<p><b>逆向</b>：认参数通道（整数 vs 浮点）能反推函数签名；认 SSE/AVX 的 <code>ps</code>/<code>ymm</code> 能判断“这段在并行处理一批浮点”；认 Release 的短函数与 <code>lea</code> 化简，能习惯优化后的“非直译”代码。</p>
-<p><b>防御</b>：编译器优化与 SIMD 让静态分析更难直读；完整性校验、反篡改需要理解这些“机器层重写”才能设计出能识别“被改过字节”的方案。攻击方同样能利用优化规律把壳或混淆藏在更紧凑的代码里。</p>
-<h3>实验环境</h3>
-<p>Windows x64；MSVC 14.x；<code>Day31_34X64OptimizationLab</code>（Debug/Release x64）；<code>ReverseStrikeLab</code> V1 Release 包（固定 raylib 6.0，自建单机靶场）；x64dbg；<code>dumpbin</code>。</p>
-<h3>已验证结论</h3>
-<p>整数/浮点两条调用约定通道；SSE/AVX 并行宽度；Debug 19 条 vs Release 3 条且结果同为 190；护甲规则 <code>min(armor, scaled/2)</code>。</p>
-<h3>仅为推测的结论</h3>
-<p>编译器优化规则的完整清单；不同 MSVC 版本下的指令形态差异。</p>
-<h3>调试证据</h3>
-<p>关键原始值：<code>RAX=0x73</code>、<code>XMM0=41960000</code>、<code>XMM2=3D088889</code>、<code>RVA 0x71E0 / 0x6460</code>，见上文“调试证据（已实测）”。</p>
-<h3>失败实验</h3>
-<p>x64dbg XMM 窗口刷新滞后导致的误判，已通过内存 dump 与程序自测兜底修正。</p>
-<h3>版本相关内容</h3>
-<p>SSE 用 128 位 XMM、AVX 用 256 位 YMM；AVX 指令带 <code>v</code> 前缀（VEX 编码）；MSVC x64 的调用约定与 System V x64（前 6 参进寄存器）不同，本课仅覆盖 Windows x64。</p>
-<h3>官方资料来源</h3>
-<p>Microsoft x64 calling convention 文档；Intel/AMD 手册的 SSE/AVX 指令集章节；Microsoft PE/COFF 与调试文档。</p>
+
+<h3>证据等级</h3>
+<ul>
+<li><b>已实测</b>：上述所有寄存器值、指令序列、程序自测 PASS，均来自实际调试器/运行输出。</li>
+<li><b>课堂推理</b>：护甲「吸收一半、最多到护甲用完」是源码 <code>min(armor, scaled/2)</code> 与反汇编 <code>sar eax,1</code> 的对应解读（被 <code>damage=PASS</code> 验证）。</li>
+<li><b>仍需验证</b>：Debug 与 Release 之间编译器具体用了哪些优化规则的完整清单未逐一枚举；不同编译器/优化级别下的具体指令形态需另行验证。</li>
+</ul>
+
+<h3>逆向分析视角</h3>
+<p>认参数通道（整数 vs 浮点）能反推函数签名；认 SSE/AVX 的 <code>ps</code>/<code>ymm</code> 能判断「这段在并行处理一批浮点」；认 Release 的短函数与 <code>lea</code> 化简，能习惯优化后的「非直译」代码。防御侧：编译器优化与 SIMD 让静态分析更难直读，理解这些「机器层重写」才能设计出能识别「被改过字节」的完整性校验方案。</p>
+
+<h3>3 分钟复习</h3>
+<ol>
+<li>整数参数坐 RCX/RDX/R8/R9，浮点坐 XMM0–XMM3，第 5 参上栈，整数回 RAX、浮点回 XMM0。</li>
+<li>addss 一次 1 个、addps 一次 4 个；XMM 128 位、YMM 256 位。</li>
+<li>Debug 直译啰嗦、Release 删无用计算/折叠/用 lea，但结果不变。</li>
+<li>靶场里 RslUpdatePlayerMovement 是浮点通道、RslApplyDamage 是整数通道。</li>
+</ol>
+
+<h3>自测题与简短答案</h3>
+<ol>
+<li><b>为什么整数第 1 参数看 RCX，而浮点第 1 参数看 XMM0？</b>——整数和浮点走两条独立通道，各自按序排座：整数第 1 个进 RCX，浮点第 1 个进 XMM0。</li>
+<li><b>为什么调用方写 [rsp+20h]，被调方可能读 [rsp+28h]？</b>——call 把返回地址压栈让 RSP 再减 8，所以同一位置在被调方视角偏移多了 8。</li>
+<li><b>addss 与 addps 的关键区别是什么？</b>——scalar 一次 1 个数、packed 一次 4 个数，只差一个字母。</li>
+<li><b>Release 指令更少是否代表计算结果可以不同？</b>——不可以。优化只改算法与指令条数，结果必须一致。</li>
+<li><b>看到 vaddps ymm 时，能推断它大概率在处理什么类型的数据？</b>——一批（8 个）float 的并行浮点运算，常见于游戏向量/矩阵计算。</li>
+</ol>
+
+<h3>实验环境和版本边界</h3>
+<p>Windows x64；MSVC 14.x；<code>Day31_34X64OptimizationLab</code>（Debug/Release x64）；<code>ReverseStrikeLab</code> V1 Release 包（固定 raylib 6.0，自建单机靶场）；x64dbg；dumpbin。本块调用约定仅覆盖 Windows/MSVC x64，System V AMD64 只作对照；RVA 0x71E0/0x6460 为当次 Release 构建实测值，随重编译变化。</p>
+
       <div class="practice-box">
         <h3>🛠 实操记录</h3>
         <table>
           <tr><th style="width:80px">使用工具</th><td>x64dbg + dumpbin + Day31_34X64OptimizationLab（Debug/Release）+ ReverseStrikeLab --self-test</td></tr>
           <tr><th>目标程序</th><td>专用 Lab 四个观察点（整数/浮点调用约定、SSE/AVX、Debug vs Release 优化）+ 靶场两个锚点（RslUpdatePlayerMovement / RslApplyDamage）</td></tr>
-          <tr><th>过程 & 结果</th><td>整数五参 Day31IntegerFive(1,2,3,4,17) 返回 RAX=0x73=115，第 5 参上栈；浮点 Day32FloatFive 返回 XMM0=41960000=18.75；SSE addps 得 11,22,33,44、AVX vaddps ymm 得 8 个 9；Debug 19 条 vs Release 3 条、结果同为 190；靶场 RslUpdatePlayerMovement 浮点移动/归一化/分支（StepGame 每帧调用，deltaSeconds=XMM2=0.0333）、RslApplyDamage 整数/分支/RAX 返回与护甲规则 min(armor,scaled/2) 均取证，--self-test 全 PASS</td></tr>
+          <tr><th>过程 & 结果</th><td>整数五参 Day31IntegerFive(1,2,3,4,17) 返回 RAX=0x73=115、第 5 参上栈；浮点 Day32FloatFive 返回 XMM0=41960000=18.75；SSE addps 得 11,22,33,44、AVX vaddps ymm 得 8 个 9；Debug 19 条 vs Release 3 条、结果同为 190；靶场 RslUpdatePlayerMovement 浮点移动/归一化/分支（StepGame 每帧调用，deltaSeconds=XMM2=0.0333）、RslApplyDamage 整数/分支/RAX 返回与护甲规则 min(armor,scaled/2) 均取证，--self-test 全 PASS（RVA 为当次 Release 构建实测值）</td></tr>
         </table>
       </div>
     </div>
@@ -970,87 +1007,261 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
     <div class="page" data-day="day35-38" data-short="Day 35-38">
       <h2>Day 35-38 — C++ 对象模型 + RTTI + STL 容器恢复</h2>
       <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
-      <h3>本课要解决什么</h3>
-<p>前一块（Day 31-34）讲清了 x64 汇编与调用约定，但真实游戏/程序大多是 C++ 写的。C++ 的"对象"在机器眼里到底是什么？本课回答三个问题：<b>对象的内存布局（字段偏移/对齐）、多态在机器层的真相（vptr/vtable）、以及程序怎么在运行时知道自己是什么类型（RTTI）</b>，并复习 STL 容器的内存长相（vector 三指针、string SSO）。逆向时认出一个"类"、恢复它的字段、判断它的真实类型，靠的就是这套对象模型。</p>
+      <h3>本块要解决什么</h3>
+<p>前一块（Day 31-34）讲清了 x64 汇编与调用约定，但真实游戏/程序大多是 C++ 写的。C++ 的「对象」在机器眼里到底是什么？本块回答三个问题：<b>对象的内存布局（字段偏移/对齐）、多态在机器层的真相（vptr/vtable）、以及程序怎么在运行时知道自己是什么类型（RTTI）</b>，并复习 STL 容器的内存长相（vector 三指针、string SSO）。逆向时认出一个「类」、恢复它的字段、判断它的真实类型，靠的就是这套对象模型。</p>
+
 <h3>30 秒复习入口</h3>
-<p><strong>一句话核心结论</strong>：C++ 对象 = 一块连续内存 + 一个指向自己的 this + 开头一个指向虚表(vtable)的 vptr；多态就是 vptr→vtable→按偏移取函数地址；RTTI 类型名藏在 vtable 前面、靠"读指针再读偏移"两级跳找到；vector 是 begin/end/capacity 三指针。</p>
+<p><strong>一句话核心结论</strong>：C++ 对象 = 一块连续内存 + 一个指向自己的 this + 开头一个指向虚表(vtable)的 vptr；多态就是 vptr→vtable→按偏移取函数地址；RTTI 类型名藏在 vtable 前面、靠「读指针再读偏移」两级跳找到；vector 是 begin/end/capacity 三指针。</p>
 <p><strong>最小执行链</strong>：对象开头读 vptr → vptr 指向 vtable → vtable 按偏移取虚函数地址 → call；找 RTTI = vptr−8 读指针(Complete Object Locator) → 读 RVA 偏移 → TypeDescriptor → 类型名；找 vector 元素数 = (end−begin)/元素大小</p>
-<p><strong>最易混点</strong>：①"字段偏移"(从哪开始) ≠ "对象总大小"(到哪结束)，差一个字段 ②vptr 的值=就是 vtable 地址，同一个数，不是"vptr 减偏移得到 vtable" ③RTTI 是"vptr−8 读指针再跳"，不是"虚函数地址减某值直接到类型名"</p>
+<p><strong>最易混点</strong>：①「字段偏移」(从哪开始) ≠ 「对象总大小」(到哪结束)，差一个字段 ②vptr 的值就是 vtable 地址，同一个数，不是「vptr 减偏移得到 vtable」 ③RTTI 是「vptr−8 读指针再跳」，不是「虚函数地址减某值直接到类型名」</p>
 <p><strong>证据锚点</strong>：Day35Boss 对象 24 字节、vptr 偏移 0、字段 8/12/16/20；vtable slot0/slot1 两函数地址；类型名 <code>.?AVDay35Boss@day35_38@@</code>；vector 三指针、end−begin=64=2×32（均已 attach 读内存实测）</p>
-<p><strong>忘了先看哪里</strong>：先背"vptr→vtable→函数地址"和"vptr−8→指针→RVA→类型名"两条链，再想 vector 的 begin/end 差值代表什么</p>
+<p><strong>忘了先看哪里</strong>：先背「vptr→vtable→函数地址」和「vptr−8→指针→RVA→类型名」两条链，再想 vector 的 begin/end 差值代表什么</p>
 <p><strong>前后关联</strong>：承接 Day 31-34 的 x64 调用约定（this 走 RCX）；为 Day 42-45 游戏数学（对象字段偏移应用）和 Day 46-49 调试器进阶（恢复对象结构）铺路</p>
-<h3>一句话核心结论</h3>
-<p>C++ 的对象模型在机器层可以拆成四件事：<b>this 指针</b>（对象方法的隐藏第 0 参数，永远走 RCX）、<b>对象布局</b>（字段按声明顺序排，区分"偏移"和"大小"）、<b>vptr/vtable</b>（多态的真相：对象开头存 vptr，vptr 指向虚表，虚表里装各虚函数地址）、<b>RTTI</b>（运行时类型信息，藏在 vtable 前面，靠指针+偏移两级跳找到类型名）。STL 容器则是这套对象模型的具体应用：vector = 三指针，string = 短串就地/长串外存。</p>
-<h3>执行链：一个多态调用到底发生了什么</h3>
-<p>以 <code>Day35Actor</code> 为基类、<code>Day35Boss</code> 覆写虚函数为例：</p>
+
+<h3>学习地图</h3>
+<p>本块按六个核心概念推进：A（this/布局）打地基 → B（vptr/vtable）看多态 → C（RTTI）认类型 → D（vector）E（string）看容器 → F（靶场真实结构）落应用。</p>
 <ol>
-<li>对象在构造时，编译器把本类 vtable 的地址写进对象开头的 <b>vptr</b>。</li>
-<li>调用虚函数时，机器先 <code>mov rax,[rcx]</code> 读对象开头的 vptr（rcx 是 this）。</li>
-<li>再 <code>jmp [rax+8]</code>：从 vtable 按固定偏移取出函数地址，跳过去。</li>
-<li>Boss 对象的 vptr 指向 Boss 表，普通 Actor 对象的 vptr 指向 Actor 表，所以同一个调用自动走到各自的版本。</li>
+<li><b>A. this 与对象布局</b>——对象的隐藏参数和内存长相。</li>
+<li><b>B. vptr/vtable 与虚调用</b>——多态的机器真相。</li>
+<li><b>C. RTTI</b>——运行时类型信息的两级跳。</li>
+<li><b>D. vector</b>——三指针容器。</li>
+<li><b>E. string SSO</b>——短串就地、长串外存。</li>
+<li><b>F. ReverseStrikeLab 真实结构</b>——靶场对象布局应用。</li>
 </ol>
-<p>这是"读 vptr → 查表 → 取地址 → 跳"的三段式，逆向时看到这种 <code>[rcx]</code> 后再 <code>[rax+偏移]</code> 的间接调用，基本就是虚函数。</p>
-<h3>对比表：四个易混的"指针类"概念</h3>
+
+<h3>A. this 与对象布局</h3>
+<p><b>核心结论</b>：非静态成员函数有一个隐藏的第 0 参数 <code>this</code>，指向对象本身；<code>this->field</code> 落到机器上就是 <code>[this+偏移]</code>。</p>
+<p><b>this 落在哪</b>：本课 Windows/MSVC x64 环境下，<code>this</code> 走 <code>RCX</code>（普通非静态成员调用的第一个参数位）。这是当前 ABI 环境事实，不是跨平台绝对规则。</p>
+<p><b>字段偏移 vs 对象总大小</b>：字段偏移是「从哪开始」，对象总大小是「到哪结束」。最后一个字段从 +20 开始，但要覆盖它自身 4 字节，所以对象总大小是 24，不是 20。</p>
+<p><b>声明顺序、对齐和 padding</b>：字段按声明顺序排，编译器会按对齐要求插入 padding 空字节，所以字段之间可能有空隙，总大小可能大于各字段大小之和。</p>
+<p><b>用户实测证据</b>：Day35Boss 对象 24 字节；vptr 偏移 0，objectId 偏移 8，health 偏移 12，armor 偏移 16，phase 偏移 20（attach 读内存 + --day35-38-evidence 输出一致）。</p>
+<p><b>适用范围与边界</b>：「this 永远在 RCX」必须限定为本课 Windows/MSVC x64 普通非静态成员调用环境，不能写成跨平台绝对规则。</p>
+
+<h3>B. vptr/vtable 与虚调用</h3>
+<p><b>核心结论</b>：多态在机器层就是「对象开头存 vptr，vptr 指向 vtable，vtable 里装各虚函数地址」。</p>
+<p><b>三段式执行链</b>：对象开头读 vptr（<code>mov rax,[rcx]</code>）→ vptr 指向 vtable → 按槽位偏移取虚函数地址（<code>jmp [rax+偏移]</code>）→ 间接 call/jmp。</p>
+<p><b>几个明确关系</b>：vptr 是对象里的一个指针字段；vptr 保存的值就是 vtable 地址；vtable 各槽位保存虚函数地址。三者不是一个东西，是「字段→表→表项」的关系。</p>
+<p><b>用户实测证据</b>：对象开头 8 字节反拼 = vptr = 0x7FF7E15AA060；vtable 开头两槽位 = Role / Threat 两个虚函数地址；虚调用结果 88。</p>
+<p><b>最易混点与边界</b>：vptr 的值就是 vtable 地址（同一个数），不是「vptr 减偏移得到 vtable」。ASLR 下绝对地址会变，稳定的是「关系与槽位」，不是某次地址——<code>0x7FF7E15AA060</code> 是当次 ASLR 会话值，不能照抄。</p>
+
+<h3>C. RTTI</h3>
+<p><b>核心结论</b>：RTTI（运行时类型信息）让程序在运行时知道自己是什么类型，逆向靠它读类型名认对象真身。</p>
+<p><b>完整定位链</b>：vtable 前的定位槽（<code>vptr−8</code>）→ Complete Object Locator → 读 RVA 偏移 → TypeDescriptor → 类型名字符串。</p>
+<p><b>用户实测证据</b>：vptr−8 槽读出 Complete Object Locator → 读 RVA 偏移 → TypeDescriptor → 类型名 <code>.?AVDay35Boss@day35_38@@</code>（内存 ASCII 直接可见）。</p>
+<p><b>最易混点与边界</b>：RTTI 是「vptr−8 读指针再跳」两级跳，不是「虚函数地址减某值直接到类型名」。「RTTI 挨着 vtable」只是便于复习的概括，正式定位必须走指针/RVA 链。当前证据属于 MSVC x64 ABI，不同编译器 ABI 不能直接套用。</p>
+
+<h3>D. vector</h3>
+<p><b>核心结论</b>：vector 是三个连续指针槽——begin、end、capacity。</p>
+<p><b>三个指针的含义</b>：begin=首元素地址；end=最后一个元素的<b>下一格</b>地址；capacity=已分配缓冲区的末尾地址。</p>
+<p><b>换算公式</b>：元素数 size=(end−begin)/sizeof(T)；容量 capacity=(capacity−begin)/sizeof(T)。end−begin 得到的是<b>字节数</b>，要除以元素大小才是元素个数。</p>
+<p><b>用户实测证据</b>：vector 三指针 begin/end/capacity 连续排布，end−begin=64 字节=2 元素×32 字节。</p>
+<p><b>边界</b>：Debug STL 可能存在额外调试状态（迭代器调试信息），不能把当前槽位偏移写成永恒常量。</p>
+
+<h3>E. string SSO</h3>
+<p><b>核心结论</b>：string 短串就地存（SSO，小字符串优化）、长串外存。</p>
+<p><b>短串为什么就地</b>：字符串很短时，直接存在对象自身的缓冲区里，内存里能直接看到字符内容。</p>
+<p><b>长串为什么外存</b>：字符串太长、超过就地容量时，对象里主要只看到一个指向外部堆缓冲区的指针，字符内容在别处。</p>
+<p><b>交叉判断</b>：用字符串长度、容量和「对象内/对象外地址」的关系交叉判断它走的是就地还是外存。</p>
+<p><b>用户实测证据</b>：短串 displayName "P1" 就地、长串 weapon.name 外存。</p>
+<p><b>边界</b>：SSO 阈值和具体布局属于当前 STL 实现事实，不是 C++ 标准固定值。</p>
+
+<h3>F. ReverseStrikeLab 真实结构</h3>
+<p><b>核心结论</b>：专用校准类（Day35Actor/Day35Boss）负责干净取证，靶场真实结构（PlayerState/BotState/WeaponDefinition）负责应用识别，两者不能混——不要把校准类伪装成游戏真实类。</p>
+<p><b>用户实测证据</b>：Release 下 PlayerState=128、displayName 偏移 56、weapons 偏移 88；BotState=152（内嵌 PlayerState）；WeaponDefinition=64。这些是当次构建布局事实，随版本变化。</p>
+
+<h3>跨概念对照表</h3>
 <table>
 <tr><th>概念</th><th>是什么</th><th>关系</th></tr>
-<tr><td>this</td><td>对象方法隐藏的第 0 参数，指向对象本身</td><td>永远走 RCX</td></tr>
+<tr><td>this</td><td>对象方法隐藏的第 0 参数，指向对象本身</td><td>本课环境走 RCX</td></tr>
 <tr><td>vptr</td><td>对象开头存的那个指针</td><td>它的值 = vtable 地址</td></tr>
 <tr><td>vtable</td><td>vptr 指向的那张表</td><td>表里装各虚函数地址</td></tr>
 <tr><td>RTTI 类型名</td><td>藏在 vtable 前面的字符串</td><td>vptr−8 读指针 → RVA → 类型名</td></tr>
+<tr><td>vector 三指针</td><td>begin/end/capacity</td><td>end−begin=字节数，除以元素大小=个数</td></tr>
 </table>
-<p><b>字段偏移 vs 对象大小</b>是另一个易混点：最后一个字段 phase 从 +20 开始，但对象要覆盖它自身 4 字节，所以对象总大小是 24，不是 20。</p>
-<h3>调试证据（已实测）</h3>
+
+<h3>专用校准 Lab 证据</h3>
+<p>校准 Lab 用 <code>Day35Actor/Day35Boss</code> 干净地展示 vptr/vtable/RTTI，再用 STL 容器展示 vector 三指针与 string SSO。关键原始值：vptr=0x7FF7E15AA060（当次 ASLR 会话值）、vtable slot0/slot1、类型名 <code>.?AVDay35Boss@day35_38@@</code>、vector end−begin=64、短串就地/长串外存。</p>
+
+<h3>ReverseStrikeLab 应用证据</h3>
+<p>真实靶场结构：PlayerState=128（displayName 偏移 56、weapons 偏移 88）、BotState=152（内嵌 PlayerState）、WeaponDefinition=64，均为当次构建布局事实。校准类负责干净取证、靶场结构负责应用识别。</p>
+
+<h3>失败实验与排错</h3>
 <ul>
-<li><b>对象布局</b>：Day35Boss 对象 24 字节；vptr 偏移 0，objectId 偏移 8，health 偏移 12，armor 偏移 16，phase 偏移 20（attach 读内存 + --day35-38-evidence 输出一致）。</li>
-<li><b>vptr/vtable</b>：对象开头 8 字节反拼 = vptr = 0x7FF7E15AA060；vtable 开头两槽位 = Role / Threat 两个虚函数地址；虚调用结果 88。</li>
-<li><b>RTTI</b>：vptr−8 槽读出 Complete Object Locator → 读 RVA 偏移 → TypeDescriptor → 类型名 <code>.?AVDay35Boss@day35_38@@</code>（内存 ASCII 直接可见）。</li>
-<li><b>STL</b>：vector 三指针 begin/end/capacity 连续排布，end−begin=64 字节=2 元素×32 字节；短串 displayName "P1" 就地、长串 weapon.name 外存。</li>
-<li><b>靶场真实结构</b>：Release 下 PlayerState=128、displayName 偏移 56、weapons 偏移 88；BotState=152；WeaponDefinition=64。</li>
+<li><b>现象</b>：当次旧入口中，x64dbg 改命令行/重启仍未稳定把参数交给目标，程序走图形路径、断点不命中。</li>
+<li><b>处理</b>：最终使用 PowerShell 带参数启动后 x64dbg attach 读内存完成取证。</li>
+<li><b>说明</b>：这段只能作为「历史失败实验」记录，不再作为今后的用户操作指南。此问题促成了长期规则——今后用户调试工程必须无参数可达并由 Sol 实际验证断点命中。</li>
+<li><b>误区</b>：把「字段偏移」和「对象总大小」混为一谈；把 vptr 当作用偏移算出来的、其实 vptr 的值就是 vtable 地址；把 RTTI 想成「虚函数地址减某值直接到类型名」、其实要两级跳。</li>
 </ul>
-<h3>证据等级边界</h3>
+
+<h3>证据等级</h3>
 <ul>
 <li><b>已实测</b>：上述 vptr/vtable/RTTI 链、字段偏移、vector 三指针、短/长 string 存储位置，均来自实际调试器 attach 读内存与程序自测输出。</li>
-<li><b>课堂推理</b>：把"从自建结构观察到的对象/容器布局方法"迁移到未知程序时，只能提出假设，没有实际调试证据前不能写成已确认结构。</li>
-<li><b>仍需验证</b>：其他编译器 ABI（本课只覆盖 MSVC x64）、32 位布局、以及 Debug/Release 之外更多 STL 实现差异。</li>
+<li><b>课堂推理</b>：把「从自建结构观察到的对象/容器布局方法」迁移到未知程序时，只能提出假设，没有实际调试证据前不能写成已确认结构。</li>
+<li><b>仍需验证</b>：其他编译器 ABI（本块只覆盖 MSVC x64）、32 位布局、以及 Debug/Release 之外更多 STL 实现差异。</li>
 </ul>
-<h3>失败实验与常见误区</h3>
-<ul>
-<li><b>现象</b>：x64dbg 设置命令行参数后，程序仍走图形界面、断点不命中。</li>
-<li><b>原因</b>：设参数后必须 Restart 才生效，直接 F9 跑的仍是旧进程（argc==1 → 走图形路径）。</li>
-<li><b>排查</b>：改用 PowerShell 直接带参数启动（停在等回车），再 x64dbg attach 读内存，绕开传参问题。</li>
-<li><b>误区</b>：把"字段偏移"和"对象总大小"混为一谈；把 vptr 当作用偏移算出来的、其实 vptr 的值就是 vtable 地址；把 RTTI 想成"虚函数地址减某值直接到类型名"、其实要两级跳。</li>
-</ul>
-<h3>逆向视角与防御视角</h3>
-<p><b>逆向</b>：看到 <code>[rcx]</code> 后跟 <code>[rax+偏移]</code> 的间接调用 = 虚函数；从 vtable 前 8 字节挖 RTTI 类型名可快速定类；从 vector 三指针差值反推数组元素数与元素大小。</p>
-<p><b>防御</b>：理解 vptr/vtable/RTTI 布局后，可据此设计对象完整性校验、检测虚表被篡改；但 vptr/vtable/RTTI 都是当前 MSVC ABI 实现事实，不是跨编译器通用布局，不能当成绝对规律。</p>
-<h3>实验环境</h3>
-<p>Windows x64；MSVC v145 (Visual Studio 18 Community)；C++20，RTTI 启用；ReverseStrikeLab 自建单机靶场（--day35-38-lab / --day35-38-evidence）；x64dbg attach 读内存。</p>
-<h3>已验证结论</h3>
-<p>对象布局（字段偏移 vs 总大小）、vptr→vtable→虚函数地址三段式、RTTI 两级跳（vptr−8 读指针 → RVA 偏移 → 类型名）、vector 三指针、string SSO。</p>
-<h3>仅为推测的结论</h3>
-<p>迁移到未知程序时的对象/容器布局假设；其他编译器 ABI 的对应布局。</p>
-<h3>调试证据</h3>
-<p>关键原始值：vptr=0x7FF7E15AA060、vtable slot0/slot1、类型名 <code>.?AVDay35Boss@day35_38@@</code>、vector begin/end/capacity、end−begin=64，见上文"调试证据（已实测）"。</p>
-<h3>失败实验</h3>
-<p>x64dbg 命令行传参不生效导致进程走图形路径、断点不命中，改用 PowerShell 带参数启动 + attach 读内存解决。</p>
-<h3>版本相关内容</h3>
-<p>Debug 与 Release 的 STL 对象大小和三指针槽偏移不同（Debug 多出迭代器调试状态）；vptr/vtable[-1]/Complete Object Locator/TypeDescriptor 布局都是当前 MSVC x64 ABI 事实，非跨编译器通用；Release Package 不带 PDB，但导出名可稳定定位。</p>
-<h3>官方资料来源</h3>
-<p>Microsoft C++ ABI / MSVC vtable 与 RTTI 布局文档；Itanium C++ ABI（作对照，本课只覆盖 MSVC）；Microsoft STL 实现文档。</p>
+
+<h3>逆向分析视角</h3>
+<p>看到 <code>[rcx]</code> 后跟 <code>[rax+偏移]</code> 的间接调用 = 虚函数；从 vtable 前 8 字节挖 RTTI 类型名可快速定类；从 vector 三指针差值反推数组元素数与元素大小。防御侧：理解 vptr/vtable/RTTI 布局后，可据此设计对象完整性校验、检测虚表被篡改；但这些布局都是当前 MSVC ABI 实现事实，不是跨编译器通用布局，不能当成绝对规律。</p>
+
+<h3>3 分钟复习</h3>
+<ol>
+<li>this 是隐藏的第 0 参数（本课环境走 RCX），this->field = [this+偏移]。</li>
+<li>vptr 是对象开头的指针、值=vtable 地址；vtable 槽位=虚函数地址；调用是 vptr→vtable→取地址→跳。</li>
+<li>RTTI = vptr−8 读指针 → RVA → TypeDescriptor → 类型名，两级跳。</li>
+<li>vector = begin/end/capacity 三指针；string 短串就地、长串外存。</li>
+</ol>
+
+<h3>自测题与简短答案</h3>
+<ol>
+<li><b>字段偏移 20 为什么不代表对象总大小也是 20？</b>——偏移是「从哪开始」，最后一个字段还要覆盖自身 4 字节，总大小是「到哪结束」，所以是 24。</li>
+<li><b>vptr 与 vtable 是同一个东西吗？它们是什么关系？</b>——不是。vptr 是对象里的指针字段，它保存的值就是 vtable 地址；vtable 是那张表，槽位存虚函数地址。</li>
+<li><b>虚调用为什么会出现 [rcx] 后再 [rax+槽位偏移]？</b>——[rcx] 读对象开头的 vptr，[rax+偏移] 从 vtable 按槽位取虚函数地址，两次间接寻址。</li>
+<li><b>RTTI 为什么不能从虚函数地址直接减固定值找到？</b>——RTTI 和虚函数地址之间隔着定位槽、Complete Object Locator、RVA 偏移等，不是固定偏移关系，要按指针/RVA 链走。</li>
+<li><b>vector 的 end-begin 为什么是字节数，如何换算元素数？</b>——end、begin 是指针，相减是地址差（字节数），要除以 sizeof(T) 才是元素个数。</li>
+<li><b>短 string 与长 string 的主要存储区别是什么？</b>——短串字符直接存在对象内部（就地），长串对象里主要存指向外部堆缓冲区的指针。</li>
+</ol>
+
+<h3>实验环境和版本边界</h3>
+<p>Windows x64；MSVC v145 (Visual Studio 18 Community)；C++20，RTTI 启用；ReverseStrikeLab 自建单机靶场（--day35-38-lab / --day35-38-evidence）；x64dbg attach 读内存。Debug 与 Release 的 STL 对象大小和三指针槽偏移不同（Debug 多出迭代器调试状态）；vptr/vtable[-1]/Complete Object Locator/TypeDescriptor 布局都是当前 MSVC x64 ABI 事实，非跨编译器通用；vptr=0x7FF7E15AA060 等绝对地址为当次 ASLR 会话值。</p>
+
       <div class="practice-box">
         <h3>🛠 实操记录</h3>
         <table>
-          <tr><th style="width:80px">使用工具</th><td>x64dbg(attach 读内存) + PowerShell(--day35-38-lab) + ReverseStrikeLab 自建靶场</td></tr>
+          <tr><th style="width:80px">使用工具</th><td>x64dbg(attach 读内存) + PowerShell + ReverseStrikeLab 自建靶场(--day35-38-lab/--day35-38-evidence)</td></tr>
           <tr><th>目标程序</th><td>最小多态校准(Day35Actor/Day35Boss 的 vptr/vtable/RTTI) + 靶场真实结构(PlayerState/BotState/WeaponDefinition) + STL(vector 三指针 / string SSO)</td></tr>
-          <tr><th>过程 & 结果</th><td>对象开头 8 字节=vptr 指向 vtable，vtable 两槽位=虚函数地址，RTTI 类型名 .?AVDay35Boss@day35_38@@；vector begin/end/capacity 三指针、end-begin=64 字节=2 元素×32；短串就地/长串外存；--day35-38-evidence 全 PASS</td></tr>
+          <tr><th>过程 & 结果</th><td>对象开头 8 字节=vptr 指向 vtable，vtable 两槽位=虚函数地址，RTTI 类型名 .?AVDay35Boss@day35_38@@；vector begin/end/capacity 三指针、end-begin=64 字节=2 元素×32；短串就地/长串外存；--day35-38-evidence 全 PASS（vptr=0x7FF7E15AA060 为当次 ASLR 会话值）</td></tr>
         </table>
       </div>
     </div>
 
-    <div class="nav-bar"><button id="pb" disabled>◀ 上一页</button><span class="pi" id="pi">基础-1 / 35</span><button id="nb">下一页 ▶</button></div>
+    <div class="page" data-day="day39-41" data-short="Day 39-41">
+      <h2>Day 39-41 — SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级</h2>
+      <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
+      <h3>本块要解决什么</h3>
+<p>前一块（Day 35-38）看清了对象在内存里的长相，但还有一个更基础的问题没碰：<b>程序跑崩、抛出异常时，机器是怎么「安全地收拾残局」的</b>？本块回答这件事的完整链路——异常来了先问谁、怎么一层层找接手、怎么把栈回卷干净，以及一段「在 main 之前就偷跑」的代码。</p>
+<p>四个主角：<b>SEH</b>（结构化异常处理）、<b>VEH</b>（向量化异常处理）、<b>x64 表驱动栈展开</b>、<b>TLS/Loader</b>。之所以要拆开讲，是因为「异常处理」不是「出错就跳 catch」这么简单，它其实分两件事——<b>先找处理者、再展开清理</b>；而且 x86 的经典栈上链和 x64 的表驱动机制是两套完全不同的实现，必须分开；TLS 回调则属于加载器的早期执行证据，是另一条暗线。</p>
+
+<h3>30 秒复习入口</h3>
+<p><strong>一句话核心结论</strong>：异常处理分两套——Win32/x86 用栈上「Prev+Handler」链（Prev=上一张牌地址、Handler=处理函数地址）逐层找接手；x64 用编译时写好的 .pdata 表查表展开；两者之前都先问 VEH（进程级总台），VEH 说「已处理」SEH 就不再问；TLS 回调在 main 之前先被加载器调用。</p>
+<p><strong>最小执行链</strong>：程序进某函数先挂异常处理牌(SEH) → 抛异常 RaiseException → 先问 VEH(总台名单) → VEH 不接 → 顺 SEH 链逐层找 handler（x64 则查 .pdata 表）→ 找到 catch → 从出错层一路栈展开(unwind)清到 catch 层 → 交控制权</p>
+<p><strong>最易混点</strong>：①Handler 是「处理函数的地址」不是「判断能否处理」；Prev 是「上一张牌的地址」不是「上一个函数」 ②栈展开是「逐层清理」不是「直接跳到 catch 不清理中间层」 ③x86 的 Prev 链不能套到 x64——x64 不再有栈上 Prev 链，别在 x64 里找 FS:[0] 那种牌子 ④TLS 本意是「每线程一份私人数据」，回调只是它顺带能登记的东西，两者别混</p>
+<p><strong>证据锚点</strong>：Win32 链 5 张牌、第一张 Prev=010FFAE0/Handler=00CA20B0(__except_handler4)；x64 VEH 先停、异常码 0xE0394101；.pdata 里带 __finally 的函数挂 __C_specific_handler、普通函数为 0；TLS 回调先于 main 停住（均已实测）</p>
+<p><strong>忘了先看哪里</strong>：先背「异常先 VEH 后 SEH、x86 串链 x64 查表、TLS 回调先于 main」这三句，再想栈展开是不是逐层清理</p>
+<p><strong>前后关联</strong>：承接 Day 14 的 VEH/SEH 基础与 Day 18 的 TLS 回调；为 Day 46-49 调试器进阶（异常/展开在调试器里的呈现）和 Day 54-57 多线程（TLS 每线程副本、线程安全）铺路</p>
+
+<h3>学习地图</h3>
+<p>本块先做架构总览（x86 与 x64 分家），再按四条主线推进：Win32 SEH 链 → VEH 两条路径 → x64 表驱动展开 → TLS/Loader，最后落到靶场变体识别。</p>
+<ol>
+<li><b>架构总览</b>——Win32 与 x64 先分家。</li>
+<li><b>Win32 SEH 经典链</b>——栈上 Prev+Handler。</li>
+<li><b>VEH 两条路径</b>——放行给 SEH / 已处理跳过 SEH。</li>
+<li><b>x64 表驱动展开</b>——.pdata 查表回卷。</li>
+<li><b>TLS 与 Loader</b>——main 之前偷跑 + 每线程副本。</li>
+<li><b>ReverseStrikeLab 应用识别</b>——靶场变体里的同类机制。</li>
+</ol>
+
+<h3>架构总览：Win32 与 x64 先分家</h3>
+<table>
+<tr><th></th><th>Win32/x86</th><th>x64</th></tr>
+<tr><td>链头/入口</td><td>FS:[0]</td><td>PE Exception Directory</td></tr>
+<tr><td>记录在哪</td><td>栈上异常注册记录</td><td>.pdata RUNTIME_FUNCTION</td></tr>
+<tr><td>找接手靠什么</td><td>Prev + Handler，顺 Prev 向外找</td><td>unwind/handler 数据，表驱动恢复</td></tr>
+<tr><td>展开怎么做</td><td>顺链一层层捋</td><td>查表按规则逐层精确回卷</td></tr>
+</table>
+<p><b>必须明确</b>：本块的「Prev+Handler 链」是 Win32 校准证据；x64 不使用编译器生成的经典栈上 Prev 链，不能在 x64 里伪造或寻找同样的链。</p>
+
+<h3>Win32 SEH 经典链</h3>
+<p><b>核心结论</b>：SEH（Structured Exception Handling）让系统在异常跨层往下冲时，能「找到谁接手」并安全交接。每进一个函数，就在它的栈帧里放一张「异常注册记录」，只有两个字段：<b>Prev</b>（上一张牌的地址）和 <b>Handler</b>（处理函数的地址）。</p>
+<p><b>执行链</b>：异常发生 → 从当前记录开始询问 → 沿 Prev 向外一层层找 → 找到处理者 → 再执行展开和清理。一张牌里的 Handler 通常是 <code>__except_handler4</code>——MSVC 编译器为你的 <code>__try/__except</code> 自动挂上的处理函数，不是你手写的。</p>
+<p><b>用户实测证据</b>：断在 <code>Day39_41SehChainCheckpoint</code>；FS:[0] 指向当前记录；第一个 DWORD 是 Prev、第二个 DWORD 是 Handler；用户顺 Prev 继续读取下一层（第一张 Prev=010FFAE0/Handler=00CA20B0，第二张 Prev=010FFD0C/Handler=00CA20B0）；后台/运行输出 chain_depth=5；x32dbg 无参数直接打开后断点可命中。</p>
+<p><b>最易混点与边界</b>：Handler 是「处理函数地址」不是「判断能否处理」；Prev 是「上一张牌地址」不是「上一个函数」。</p>
+
+<h3>VEH 两条真实路径</h3>
+<p><b>核心结论</b>：VEH（Vectored Exception Handler）是整个进程门口的总台，异常发生时<b>先于 SEH 被叫到</b>，按注册顺序逐个问名单里的处理者。</p>
+<p><b>路径一：VEH 放行给 SEH</b>：自定义异常 E0394101 → first-chance exception → Day39_41VehHandler 先命中 → VEH 返回 CONTINUE_SEARCH → SEH filter 后命中 → VEH_BEFORE_SEH=PASS。</p>
+<p><b>路径二：VEH 已处理</b>：自定义异常 E0394102 → VEH 命中 → 返回 CONTINUE_EXECUTION → SEH 命中次数为 0 → VEH_HANDLED_SKIPS_SEH=PASS。</p>
+<p><b>关键区分</b>：调试器的 first-chance 停点发生在 VEH 之前——用户在 kernelbase/RaiseException 停住后继续 F9，才进入 Day39_41VehHandler。「调试器先看到异常」与「程序内部 VEH 先于 SEH」是两个不同层级，不能混淆。</p>
+<p><b>用户实测证据</b>：断住 Day39_41VehHandler，读 RCX → EXCEPTION_POINTERS → ExceptionRecord，异常码 0xE0394101（源码 kFallbackCode）。</p>
+
+<h3>x64 表驱动展开</h3>
+<p><b>核心结论</b>：x64 不靠栈上 Prev 链，而是编译器<b>编译时</b>把「每个函数出异常该怎么展开」写进文件里的表，运行时查表精确回卷。</p>
+<p><b>执行链</b>：当前 RIP → PE Exception Directory → .pdata 中对应 RUNTIME_FUNCTION → BeginAddress/EndAddress/UnwindData → unwind/handler 数据 → __C_specific_handler → 回卷 Leaf/Middle → 到达外层处理者。</p>
+<p><b>实测证据</b>：Day39_41UnwindLeaf、Day39_41UnwindMiddle 两层 __finally 按 Leaf→Middle 顺序清理，X64_UNWIND_CLEANUP=PASS；dumpbin /unwindinfo 可见 UHANDLER；__C_specific_handler 存在；PE Exception Directory 与 .pdata 存在。带 __finally 的函数的展开规则挂了 __C_specific_handler，不带 __try 的普通函数为 0。</p>
+<p><b>重要边界</b>：当前构建确认存在 .pdata；unwind/handler 数据可能位于只读 .rdata 等区域。文档常把相关展开数据统称为 .xdata，但<b>不得声称当前 EXE 必然有一个独立命名为 .xdata 的节</b>，除非本次 PE 节表实际观察到了它。也不把「清理顺序 PASS」单独当作表结构证据，必须与 PE/unwind 表项交叉说明。</p>
+
+<h3>TLS 与 Loader</h3>
+<p><b>核心结论</b>：TLS（Thread Local Storage）本意是「每个线程一份、互不共享的私人数据」；它顺带能登记一个「在 main 之前就被加载器调用」的回调。</p>
+<p><b>1. TLS 回调先于 main</b>：用户实际断点顺序 Day39_41TlsCallback → 程序入口 → main；运行输出 <code>[loader] TLS callback before main</code>、<code>TLS_CALLBACK_BEFORE_MAIN=PASS</code>。</p>
+<p><b>2. 每线程 TLS 副本</b>：主线程与工作线程 TLS 地址不同；工作线程修改自己的 TLS 值后，主线程值不变；输出 <code>TLS_PER_THREAD=PASS</code>。</p>
+<p><b>Loader 顺序</b>：映射模块 → 解析导入 → TLS 回调 → 入口/main。</p>
+<p><b>边界</b>：这是本课自建用户态 EXE 的实测加载行为。TLS 回调可用于正常初始化，也可能被保护/恶意代码用于早期检查，但不把它写成「TLS 天生等于反调试」。</p>
+
+<h3>ReverseStrikeLab 应用识别</h3>
+<p><b>核心结论</b>：在真实靶场变体里重复识别同类机制，证明这些不是只在最小 Lab 里造的玩具。</p>
+<p><b>用户入口</b>：<code>ReverseStrikeLabDay39_41.exe</code> 无参数直接进入证据模式。锚点：RslDay39TlsCallback、RslDay39VehHandler、RslDay39UnwindLeaf。输出：TLS_CALLBACK_BEFORE_MAIN=PASS、VEH_BEFORE_SEH=PASS、X64_UNWIND_CLEANUP=PASS、RSL_DAY39_VARIANT=PASS。</p>
+<p><b>关系说明</b>：ReverseStrikeLab V1 仍是普通游戏基线；Day39Variant=true 生成独立变体；变体不是另一个新课程项目，而是长期靶场的当课观察版本；校准 Lab 先取得干净证据，靶场变体再做应用识别。</p>
+
+<h3>失败实验与排错</h3>
+<ul>
+<li>1. x32dbg/x64dbg 改命令行参数不稳定，最初无法把 --lab 传给被调试程序。</li>
+<li>2. 最初 x86 修复为无参数 lab，但 Sol 漏修 x64，用户指出后补修。</li>
+<li>3. 当前 x86/x64 校准程序均无参数进入 lab。</li>
+<li>4. ReverseStrikeLabDay39_41 也已无参数进入证据模式。</li>
+<li>5. 参数只留后台验收。</li>
+<li>6. first-chance exception 不是 VEH 没命中，再继续一次才能进入 handler。</li>
+<li>7. ASLR 导致绝对地址变化，按导出名或模块基址+RVA 定位。</li>
+<li>8. x32dbg 与 x64dbg 不能混用。</li>
+</ul>
+<p><b>工程经验</b>：这次遗漏值得写成有用教训——「独立命令行 PASS 和导出存在，不足以证明用户调试入口可用；必须真实验证直接打开 EXE 后断点命中。」</p>
+
+<h3>证据等级</h3>
+<ul>
+<li><b>已实测</b>：x86 FS:[0] Prev/Handler 链；chain_depth=5；TLS 回调先于 main；每线程 TLS 隔离；VEH 先于 SEH；VEH 已处理跳过 SEH；两层展开清理；.pdata/unwindinfo/UHANDLER/__C_specific_handler；ReverseStrikeLab 变体同类机制。</li>
+<li><b>课堂推理</b>：把 Runtime Function 表项、当前 RIP 和逐层恢复过程组合成完整解释；将校准方法迁移到未知程序时先提出假设。</li>
+<li><b>仍需验证</b>：不同编译器 ABI；不同 Windows/MSVC 版本的具体 unwind 编码；未实际观察到的独立 .xdata 节；未知商业程序中的具体对象或异常结构。</li>
+</ul>
+
+<h3>逆向分析视角</h3>
+<p>在栈里顺 Prev 链能还原整条 SEH 链；在 .pdata 里按函数 RVA 定位 RuntimeFunction 与 unwind 数据，能判断「这段有没有 __try/__finally」；发现 TLS 回调要先于 main 分析，别漏掉入口前的隐藏逻辑；VEH 是 Hook/反调试常用的「进程级插一脚」位置。防御侧：异常处理链和展开表都是「被保护程序如何收拾残局」的底层事实，理解后才能识别被篡改的 handler 指针或展开表。</p>
+
+<h3>3 分钟复习</h3>
+<ol>
+<li>异常先 VEH 后 SEH；VEH 返回「已处理」则 SEH 不再问。</li>
+<li>x86 栈上 Prev+Handler 链（链头 FS:[0]）；x64 查 .pdata 表驱动展开。</li>
+<li>栈展开是逐层清理，不是直接跳到 catch。</li>
+<li>TLS 回调在 main 之前先跑；TLS 变量每线程一份副本。</li>
+</ol>
+
+<h3>自测题与简短答案</h3>
+<ol>
+<li><b>为什么 Win32 的 FS:[0] Prev 链不能拿来解释 x64？</b>——x64 改用编译时写好的 .pdata/.xdata 表查表展开，不再在栈上串 Prev 链。</li>
+<li><b>VEH 返回 CONTINUE_SEARCH 后，下一步可能发生什么？</b>——名单里下一个 VEH 处理者继续看；全都不接才轮到 SEH。</li>
+<li><b>VEH 返回 CONTINUE_EXECUTION 后，为什么 SEH 不再命中？</b>——异常已被 VEH 处理，处理链到此结束，不再往下问。</li>
+<li><b>.pdata 在 x64 展开中负责提供什么索引关系？</b>——每个函数一条 RuntimeFunction，记录「函数起点→终点→展开规则地址」。</li>
+<li><b>为什么看到 __finally 清理顺序还不足以单独证明 .pdata 结构？</b>——清理顺序只是运行时结果，必须与 PE/unwind 表项交叉说明才能证明表结构。</li>
+<li><b>TLS 回调和 main 的先后顺序是什么？</b>——TLS 回调先，main 后。</li>
+<li><b>TLS 为什么能避免不同线程相互覆盖同一个变量副本？</b>——每个线程各有一份独立副本，互不共享。</li>
+<li><b>first-chance exception 与 VEH 命中哪个先被调试器观察到？</b>——first-chance 先被调试器看到，继续 F9 后才进入 VEH handler。</li>
+<li><b>ReverseStrikeLab V1 与 Day39 变体是什么关系？</b>——V1 是游戏基线；Day39Variant=true 生成独立观察变体，是长期靶场的当课版本。</li>
+</ol>
+
+<h3>实验环境和版本边界</h3>
+<p>Windows x64；MSVC v145；<code>Day39_41SehChainX86</code>（Win32）与 <code>Day39_41ExceptionTlsLab</code>（x64）两个最小校准 Lab（Debug/Release）；<code>ReverseStrikeLabDay39_41</code> 靶场变体；x32dbg / x64dbg；PE 解析脚本。栈地址随每次运行变化、代码地址随重编译变化，均只作本次证据；unwind/handler 数据所在节以当次 PE 节表实际观察为准。</p>
+
+      <div class="practice-box">
+        <h3>🛠 实操记录</h3>
+        <table>
+          <tr><th style="width:80px">使用工具</th><td>x32dbg(读 FS:[0] SEH 链) + x64dbg(断 TLS/VEH) + PE 解析脚本(.pdata/unwind 数据) + Day39_41SehChainX86 / Day39_41ExceptionTlsLab / ReverseStrikeLabDay39_41</td></tr>
+          <tr><th>目标程序</th><td>Win32 SEH 链(Prev+Handler) + x64 TLS 回调先于 main + VEH 先于 SEH + x64 .pdata 表驱动展开 + 靶场变体三个 RslDay39* 锚点</td></tr>
+          <tr><th>过程 & 结果</th><td>Win32 链 5 张牌、第一张 Prev=010FFAE0/Handler=00CA20B0；x64 TLS 回调先停、main 后停；VEH 先停、异常码 0xE0394101；.pdata 带 __finally 函数挂 __C_specific_handler、普通函数为 0；靶场变体四个 PASS（TLS_CALLBACK_BEFORE_MAIN/VEH_BEFORE_SEH/X64_UNWIND_CLEANUP/RSL_DAY39_VARIANT）</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="nav-bar"><button id="pb" disabled>◀ 上一页</button><span class="pi" id="pi">基础-1 / 36</span><button id="nb">下一页 ▶</button></div>
 </div></div>
 <script>
-(function(){var p=document.querySelectorAll(".page");var n=document.querySelectorAll(".sidebar nav a");var b=document.getElementById("pb");var x=document.getElementById("nb");var t=document.getElementById("pi");var j=document.getElementById("jump");var jb=document.getElementById("jb");var mt=document.getElementById("mt");var sb=document.querySelector(".sidebar");var F=3;var U=[{"kind":"foundation"},{"kind":"foundation"},{"kind":"foundation"},{"kind":"day","startDay":1,"endDay":1},{"kind":"day","startDay":2,"endDay":2},{"kind":"day","startDay":3,"endDay":3},{"kind":"day","startDay":4,"endDay":4},{"kind":"day","startDay":5,"endDay":5},{"kind":"day","startDay":6,"endDay":6},{"kind":"day","startDay":7,"endDay":7},{"kind":"day","startDay":8,"endDay":8},{"kind":"day","startDay":9,"endDay":9},{"kind":"day","startDay":10,"endDay":10},{"kind":"day","startDay":11,"endDay":11},{"kind":"day","startDay":12,"endDay":12},{"kind":"day","startDay":13,"endDay":13},{"kind":"day","startDay":14,"endDay":14},{"kind":"day","startDay":15,"endDay":15},{"kind":"day","startDay":16,"endDay":16},{"kind":"day","startDay":17,"endDay":17},{"kind":"day","startDay":18,"endDay":18},{"kind":"day","startDay":19,"endDay":19},{"kind":"day","startDay":20,"endDay":20},{"kind":"day","startDay":21,"endDay":21},{"kind":"day","startDay":22,"endDay":22},{"kind":"day","startDay":23,"endDay":23},{"kind":"day","startDay":24,"endDay":24},{"kind":"day","startDay":25,"endDay":25},{"kind":"day","startDay":26,"endDay":26},{"kind":"day","startDay":27,"endDay":27},{"kind":"day","startDay":28,"endDay":28},{"kind":"day","startDay":29,"endDay":29},{"kind":"day","startDay":30,"endDay":30},{"kind":"phase2","startDay":31,"endDay":34},{"kind":"phase2","startDay":35,"endDay":38}];var c=0;var l=p.length;
+(function(){var p=document.querySelectorAll(".page");var n=document.querySelectorAll(".sidebar nav a");var b=document.getElementById("pb");var x=document.getElementById("nb");var t=document.getElementById("pi");var j=document.getElementById("jump");var jb=document.getElementById("jb");var mt=document.getElementById("mt");var sb=document.querySelector(".sidebar");var F=3;var U=[{"kind":"foundation"},{"kind":"foundation"},{"kind":"foundation"},{"kind":"day","startDay":1,"endDay":1},{"kind":"day","startDay":2,"endDay":2},{"kind":"day","startDay":3,"endDay":3},{"kind":"day","startDay":4,"endDay":4},{"kind":"day","startDay":5,"endDay":5},{"kind":"day","startDay":6,"endDay":6},{"kind":"day","startDay":7,"endDay":7},{"kind":"day","startDay":8,"endDay":8},{"kind":"day","startDay":9,"endDay":9},{"kind":"day","startDay":10,"endDay":10},{"kind":"day","startDay":11,"endDay":11},{"kind":"day","startDay":12,"endDay":12},{"kind":"day","startDay":13,"endDay":13},{"kind":"day","startDay":14,"endDay":14},{"kind":"day","startDay":15,"endDay":15},{"kind":"day","startDay":16,"endDay":16},{"kind":"day","startDay":17,"endDay":17},{"kind":"day","startDay":18,"endDay":18},{"kind":"day","startDay":19,"endDay":19},{"kind":"day","startDay":20,"endDay":20},{"kind":"day","startDay":21,"endDay":21},{"kind":"day","startDay":22,"endDay":22},{"kind":"day","startDay":23,"endDay":23},{"kind":"day","startDay":24,"endDay":24},{"kind":"day","startDay":25,"endDay":25},{"kind":"day","startDay":26,"endDay":26},{"kind":"day","startDay":27,"endDay":27},{"kind":"day","startDay":28,"endDay":28},{"kind":"day","startDay":29,"endDay":29},{"kind":"day","startDay":30,"endDay":30},{"kind":"phase2","startDay":31,"endDay":34},{"kind":"phase2","startDay":35,"endDay":38},{"kind":"phase2","startDay":39,"endDay":41}];var c=0;var l=p.length;
 function label(i){return p[i].dataset.short}
 function s(i){for(var k=0;k<l;k++)p[k].classList.remove("active");for(var k2=0;k2<n.length;k2++)n[k2].classList.remove("active");p[i].classList.add("active");n[i].classList.add("active");b.disabled=i===0;x.disabled=i===l-1;t.textContent=label(i)+" / "+l}
 function done(){if(window.innerWidth<=768)sb.classList.remove("open");window.scrollTo(0,0)}

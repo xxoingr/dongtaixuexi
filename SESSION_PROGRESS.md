@@ -3,7 +3,7 @@ schema: cc-dash/session@1
 project: windows-reverse-learning  
 session_id: s_2026-07-30_day8-apc  
 started: 2026-07-30T00:00:00+08:00  
-last_updated: 2026-08-30T16:38:35+08:00
+last_updated: 2026-08-31T00:00:00+08:00
 status: in-progress
 ---  
 
@@ -67,12 +67,23 @@ status: in-progress
 
 进度: 38/60 — 第一阶段 30/30 完成，第二阶段 Day 31-34、Day 35-38 完成（8/30）
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
-教学阶段: DS 理论前置
+教学阶段: DS 闭环维护
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 39-41 SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级 — Day 35-38 已正式完成并闭环；进入第二阶段下一块，等待 DS 理论前置，不提前展开后续 Day。
-下一步: DS 开始 Day 39-41 理论前置（SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级），一次讲一个概念并确认理解；理论前置完成后按固定链路输出《给 Sol 的实操工程请求》。
+正在: Day 39-41 SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级 — 五块实操取证与复盘全部完成；进入 DS 网站闭环。Sol 已审计第二阶段现有两篇正式文章并定稿前三篇统一优化方向，Day 保持 in-progress 直至文章升级、构建和发布全部完成。
+下一步: DS 按 Sol 网站优化方向卡结构化升级 Day 31-34、Day 35-38，并新增 Day 39-41 详细文章；node build.js 与页面门全部通过、线上发布核对后才把 Day 39-41 标记 done。
 
-## Decisions  
+## Decisions
+
+- <!-- at:2026-08-31T20:00:00+08:00 --> Day 39-41 已完成五块用户取证与复盘，用户通知 Sol 进入网站指导节点。Sol 审计 days.json：现有 phase2 只有 Day31-34（html 5440 字符）和 Day35-38（4911 字符），事实较丰富，不推倒重写；主要缺口是章节层级不够细、结论/证据/失败段重复、缺少逐概念恢复路径和 3 分钟自测。方向定稿：两篇结构化扩写并去重，新增 Day39-41 第三篇，按 x86 SEH 链、VEH 两路径、x64 表驱动展开、TLS/Loader 四主线组织；当前 MSVC 构建只确认 .pdata 与 unwind/handler 数据，不强称存在独立命名的 .xdata 节。t_phase_c、41/60 和下一课程只能在三篇文章、构建、发布与线上核对全部通过后更新。
+- <!-- at:2026-08-31T19:40:00+08:00 --> 用户确认第二阶段 3-4 天合并块需要比单 Day 文章更充分，Sol 定稿为“一块一篇自包含详细主文章＋必要时附录”：六项 30 秒入口只作顶部索引，正文按概念分章并覆盖执行链、用户实测证据、边界、误区、对照、排错和 3 分钟自测；附录不计 Day、不重复入口。Day 31-34 与 Day 35-38 将回溯优化但不改变 done、课程结论或既有证据，安排在 Day 39-41 实操/复盘完成后的闭环维护中与本块文章一起审核，不打断当前取证。
+- <!-- at:2026-08-31T19:30:00+08:00 --> 补充救场纠错完成：Sol 上次只修 Win32 无参数入口，遗漏了同课 x64 Day39_41ExceptionTlsLab，违反刚固化的调试器入口门槛。本次先新增红灯验收并复现无参数 usage/64，再把 x64 无参数分支改为 RunEvidence(true)，保留 --lab/--self-test/非法参数合同；Debug/Release 重建、DAY39_41_VERIFY 全量回归通过。x64dbg headless 以无参数启动，依次越过系统/TLS/入口/首次异常停点后真实命中 Day39_41VehHandler，日志 DAY39_X64_VEH_BREAKPOINT_HIT，testassert 通过。横向复查还同步修正 ReverseStrikeLabDay39_41 无参数默认证据模式，原 V1 无参数游戏入口及 Release 包回归通过。Day 保持 in-progress，交回 DS 继续实操。
+- <!-- at:2026-08-31T19:18:51+08:00 --> 触发 Sol 补充救场：x64 校准段中，Day39_41ExceptionTlsLab.exe 的 main 仍要求 `--lab`/`--self-test` 参数（无参数走 usage 退出码 64），违反已立长期规则「调试器用户入口稳定性门槛」（用户工程默认无参数即可进入 lab 并可断）。已确认事实：① 无参数运行仅输出 `[loader] TLS callback before main` + usage 后退出（退出码 64），VEH/SEH/unwind 逻辑未执行；② `--lab` 运行输出全部 PASS（TLS_CALLBACK_BEFORE_MAIN / TLS_PER_THREAD / VEH_BEFORE_SEH / VEH_HANDLED_SKIPS_SEH / X64_UNWIND_CLEANUP）退出码 0；③ 用户已成功取证 x64「TLS 回调先于 main」（Day39_41TlsCallback 先停、入口断点次之、main 最后）。唯一缺口：Sol 上次只把 Win32 版改成无参数进 lab，x64 版漏改，需对称补修并真实验证「直接打开 EXE→下断→运行命中 Day39_41VehHandler」。教学阶段 DS 实操教学，Day 保持 in-progress。
+
+- <!-- at:2026-08-31T19:10:00+08:00 --> 用户要求把本次启动入口教训覆盖到以后所有项目，已写入长期规则“调试器用户入口稳定性门槛”：x32dbg/x64dbg 用户工程默认无参数即可进入 lab 并可断；参数只留后台；Sol 交回前必须真实验证“直接打开 EXE→稳定下断→运行命中”，不能再以独立命令行成功或导出存在代替用户入口验收。确需参数/attach 时必须交付已复现的一键方式。该规则长期生效，不改变课程内容和 DS/Sol 分工。
+- <!-- at:2026-08-31T19:00:00+08:00 --> Day 39-41 x32dbg 传参救场完成：旧 GUI 的“改变命令行→重启”未把 --lab 交给调试进程，外部 Start-Process 拼接参数又使 x32dbg 异常退出；因此把 Win32 校准程序的无参数分支改为默认 lab，保留 --lab、--self-test 与非法参数返回 64。Debug/Release 重建与全量验收通过；x32dbg 自带 headless 引擎以无参数真实启动目标并命中 Day39_41SehChainCheckpoint，证明 GUI 直接打开 EXE 后无需参数即可稳定到达断点。教学阶段恢复 DS 实操教学，Day 保持 in-progress。
+- <!-- at:2026-08-31T18:40:47+08:00 --> 触发 Sol 救场：Day 39-41 Win32 SEH 链校准实操中，x32dbg（`C:\Users\Administrator\Desktop\x64dbug\release\x32\x32dbg.exe`）无法把 `--lab` 参数传给被调试程序 Day39_41SehChainX86.exe，导致程序始终走 argc!=2 分支直接退出（退出码 64），断点 Day39_41SehChainCheckpoint 永不命中。已确认事实：① 程序本身正常——命令行直接 `Day39_41SehChainX86.exe --lab` 输出 `head=00AFF68C chain_depth=5 / X86_SEH_CHAIN=PASS / READY_FOR_DEBUGGER` 退出码 0；不带参数输出 usage 退出码 64。② 断点设置正确——PE 导出表唯一导出符号即 Day39_41SehChainCheckpoint，x32dbg 断点地址 00B41041 已启用。③ 失败方法——GUI「改变命令行」填 --lab 后重启无效；命令行 `Start-Process x32dbg.exe "exe" --lab` 方式带参启动 x32dbg 自身崩溃（ExitCode 0xC000041D）。唯一缺口：缺一个能稳定把 --lab 传给程序的 x32dbg 启动/传参方式（或等价替代方案）。教学阶段 DS 实操教学，Day 保持 in-progress，等 Sol 救场。
+
+- <!-- at:2026-08-31T00:00:00+08:00 --> Day 39-41 Sol 工程准备完成：新增同目录双架构最小校准 Lab——Win32 真实读取 FS:[0] 并遍历 Prev + Handler；x64 实测 VEH→SEH、VEH 已处理跳过 SEH、两层 __finally 展开清理、TLS 回调早于 main 与每线程 TLS 副本。ReverseStrikeLab V1 未被污染，另以 Day39Variant=true 构建独立 ReverseStrikeLabDay39_41.exe 应用变体。Debug/Release 运行、非法参数、导出、x64 PE Exception/TLS 目录与 unwindinfo、原 V1/Day35-38 回归均通过；教学阶段转 DS 实操教学，Day 仍 in-progress。
 
 - <!-- at:2026-08-30T18:24:10+08:00 --> Day 35-38 正式完成并闭环：DS 按已定稿 phase2 结构在 days.json 新增唯一 day35-38 合并块对象（status=done）及一篇含六项复习入口的正式文章（对象布局/vptr/vtable/RTTI/vector/string），node build.js 验证通过（35 文章单元、35 复习入口、进度口径 30/30·8/30·38/60、无绝对化表述、无 Day 39+ 页面），仅暂存 SESSION_PROGRESS.md/days.json/index.html 三文件并提交 f3931e1 推送，线上 Pages 已核对（HTTP 200、38/60 进度、Day 35-38 页面存在）。t_phase_b 标记完成，plan 20/36→21/36，进度 38/60，当前课程转 Day 39-41，教学阶段 DS 理论前置。未提前展开或完成 Day 39-41。
 - <!-- at:2026-08-30T17:00:00+08:00 --> Day 35-38 两段实操与 DS 实操后复盘完成：DS 引导用户实操取证——x64dbg 命令行传参反复不生效（进程始终走 argc==1 图形路径），改为 PowerShell 带 `--day35-38-lab` 启动停在等回车 + x64dbg attach 读内存取证。用户亲手读内存验证：对象开头 8 字节=vptr(指向 vtable)、vtable 两槽位=虚函数地址、RTTI 类型名 `.?AVDay35Boss@day35_38@@`、vector begin/end/capacity 三指针及 end-begin=64 字节=2 元素。复盘理解确认通过（vptr→vtable→虚函数地址；RTTI=vptr-8 读指针→COL→RVA 偏移→TypeDescriptor→类型名；vector 三指针反推元素数）。教学阶段转 DS 闭环维护，Day 保持 in-progress 等待网站闭环。
