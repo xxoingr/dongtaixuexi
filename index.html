@@ -893,7 +893,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 
 <h3>30 秒复习入口</h3>
 <p><strong>一句话核心结论</strong>：Windows x64 里整数参数走 RCX/RDX/R8/R9、结果回 RAX；浮点参数走 XMM0–XMM3、结果回 XMM0；第 5 个参数起进栈；SSE 的 addps 一次加 4 个 float、AVX 的 vaddps ymm 一次加 8 个；Release 会把无用计算删掉、把算式化简，但结果不变。</p>
-<p><strong>最小执行链</strong>：函数进门 sub rsp,28h（影子空间）→ 前 4 参进寄存器（整数 RCX/RDX/R8/R9、浮点 XMM0–XMM3）→ 第 5 参写 [rsp+20h] → call 压返回地址 → 算完整数回 RAX / 浮点回 XMM0</p>
+<p><strong>最小执行链</strong>：函数进门 sub rsp,28h（20h 影子空间 + 8 字节对齐）→ 前 4 参进寄存器（整数 RCX/RDX/R8/R9、浮点 XMM0–XMM3）→ 第 5 参写 [rsp+20h] → call 压返回地址 → 算完整数回 RAX / 浮点回 XMM0</p>
 <p><strong>最易混点</strong>：①整数参数坐通用寄存器、浮点参数坐 XMM，是两套座位，别混 ②写 32 位寄存器会自动清高 32 位，写内存的 dword 只动 4 字节、旁边旧值留着 ③优化只改「算法和指令条数」，不改「结果」</p>
 <p><strong>证据锚点</strong>：Debug/Release 同函数对照（Debug 19 条 vs Release 3 条）；XMM0=41960000=18.75；XMM2=3D088889=0.0333；RAX=0x73=115（均已实测）</p>
 <p><strong>忘了先看哪里</strong>：先背「整数→RCX 家族、浮点→XMM 家族、第 5 参→栈、整数回 RAX、浮点回 XMM0」，再想 Debug 和 Release 是不是同一份结果</p>
@@ -911,10 +911,10 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <h3>A. Windows x64 调用约定</h3>
 <p><b>核心结论</b>：调用约定规定了「参数放哪、结果放哪、栈怎么用」。Windows x64 下，整数和浮点走两条不同的「座位」通道。</p>
 <p><b>整数参数通道</b>：前 4 个整数/指针参数依次进 <code>RCX</code>、<code>RDX</code>、<code>R8</code>、<code>R9</code>；更多参数进栈。</p>
-<p><b>浮点参数通道</b>：前 4 个浮点参数依次进 <code>XMM0</code>、<code>XMM1</code>、<code>XMM2</code>、<code>XMM3</code>；更多参数进栈。注意整数和浮点各自独立计数——比如第一个参数是整数、第二个是浮点，则整数坐 RCX、浮点坐 XMM1（不是 XMM0），因为两条通道分别按序排座。</p>
+<p><b>浮点参数通道</b>：前 4 个浮点参数依次进 <code>XMM0</code>、<code>XMM1</code>、<code>XMM2</code>、<code>XMM3</code>；更多参数进栈。Windows x64 前四个参数按参数序号占位：第 n 个参数若为整数/指针，使用对应通用寄存器；若为浮点，使用对应 XMMn。不同类型不会分别向前压缩计数。</p>
 <p><b>返回值通道</b>：整数结果回 <code>RAX</code>，浮点结果回 <code>XMM0</code>。</p>
 <p><b>第 5 参数与栈</b>：寄存器只有 4 个名额，第 5 个起写进栈，调用方写在 <code>[rsp+20h]</code>。</p>
-<p><b>shadow space（影子空间）</b>：调用方先 <code>sub rsp,28h</code> 留出 40 字节，是给前 4 个参数的预留座位。即使没传满 4 个参数，这片空间也要留。</p>
+<p><b>shadow space（影子空间）</b>：调用方先 <code>sub rsp,28h</code> 预留 40 字节，其中 20h（32 字节）是 shadow/home space（前 4 个参数的预留座位），额外 8 字节用于满足调用点的栈对齐要求。即使没传满 4 个参数，shadow space 也要留。</p>
 <p><b>调用方与被调方看到的栈偏移为什么差 8 字节</b>：<code>call</code> 会把返回地址压栈（RSP 再减 8）。所以调用方写的 <code>[rsp+20h]</code>，到了被调函数里要读 <code>[rsp+28h]</code>（影子空间 32 字节 + 返回地址 8 字节）。这一个「差 8」是读汇编时最容易算错的点。</p>
 <p><b>用户实测证据</b>：<code>Day31IntegerFive(1,2,3,4,17)</code> 返回 <code>RAX=0x73=115</code>；第 5 参 17 在调用方 <code>[rsp+20h]</code>、被调方 <code>[rsp+28h]</code>。<code>Day32FloatFive(1.25,2.5,3,4,8)</code> 返回 <code>XMM0=41960000=18.75</code>，第 5 参 8.0 在栈。</p>
 <p><b>适用范围与边界</b>：以上是 <b>Windows/MSVC x64</b> 的规则，不是所有 64 位平台的统一规则。System V AMD64（Linux 用）前 6 个参数进寄存器，规则不同，本块只作一句对照、不展开。</p>
@@ -1088,8 +1088,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <h3>失败实验与排错</h3>
 <ul>
 <li><b>现象</b>：当次旧入口中，x64dbg 改命令行/重启仍未稳定把参数交给目标，程序走图形路径、断点不命中。</li>
-<li><b>处理</b>：最终使用 PowerShell 带参数启动后 x64dbg attach 读内存完成取证。</li>
-<li><b>说明</b>：这段只能作为「历史失败实验」记录，不再作为今后的用户操作指南。此问题促成了长期规则——今后用户调试工程必须无参数可达并由 Sol 实际验证断点命中。</li>
+<li><b>说明</b>：这段只能作为「历史失败实验」记录，不再作为今后的用户操作指南。此问题促成的经验是——用户调试入口应默认无参数可达。</li>
 <li><b>误区</b>：把「字段偏移」和「对象总大小」混为一谈；把 vptr 当作用偏移算出来的、其实 vptr 的值就是 vtable 地址；把 RTTI 想成「虚函数地址减某值直接到类型名」、其实要两级跳。</li>
 </ul>
 
@@ -1171,7 +1170,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <p><b>必须明确</b>：本块的「Prev+Handler 链」是 Win32 校准证据；x64 不使用编译器生成的经典栈上 Prev 链，不能在 x64 里伪造或寻找同样的链。</p>
 
 <h3>Win32 SEH 经典链</h3>
-<p><b>核心结论</b>：SEH（Structured Exception Handling）让系统在异常跨层往下冲时，能「找到谁接手」并安全交接。每进一个函数，就在它的栈帧里放一张「异常注册记录」，只有两个字段：<b>Prev</b>（上一张牌的地址）和 <b>Handler</b>（处理函数的地址）。</p>
+<p><b>核心结论</b>：SEH（Structured Exception Handling）让系统在异常跨层往下冲时，能「找到谁接手」并安全交接。在本课 MSVC Win32/x86 中需要注册异常处理信息的受保护函数/作用域，编译器会在栈帧里放一张「异常注册记录」，只有两个字段：<b>Prev</b>（上一张牌的地址）和 <b>Handler</b>（处理函数的地址）。</p>
 <p><b>执行链</b>：异常发生 → 从当前记录开始询问 → 沿 Prev 向外一层层找 → 找到处理者 → 再执行展开和清理。一张牌里的 Handler 通常是 <code>__except_handler4</code>——MSVC 编译器为你的 <code>__try/__except</code> 自动挂上的处理函数，不是你手写的。</p>
 <p><b>用户实测证据</b>：断在 <code>Day39_41SehChainCheckpoint</code>；FS:[0] 指向当前记录；第一个 DWORD 是 Prev、第二个 DWORD 是 Handler；用户顺 Prev 继续读取下一层（第一张 Prev=010FFAE0/Handler=00CA20B0，第二张 Prev=010FFD0C/Handler=00CA20B0）；后台/运行输出 chain_depth=5；x32dbg 无参数直接打开后断点可命中。</p>
 <p><b>最易混点与边界</b>：Handler 是「处理函数地址」不是「判断能否处理」；Prev 是「上一张牌地址」不是「上一个函数」。</p>
@@ -1204,15 +1203,14 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <h3>失败实验与排错</h3>
 <ul>
 <li>1. x32dbg/x64dbg 改命令行参数不稳定，最初无法把 --lab 传给被调试程序。</li>
-<li>2. 最初 x86 修复为无参数 lab，但 Sol 漏修 x64，用户指出后补修。</li>
-<li>3. 当前 x86/x64 校准程序均无参数进入 lab。</li>
-<li>4. ReverseStrikeLabDay39_41 也已无参数进入证据模式。</li>
-<li>5. 参数只留后台验收。</li>
-<li>6. first-chance exception 不是 VEH 没命中，再继续一次才能进入 handler。</li>
-<li>7. ASLR 导致绝对地址变化，按导出名或模块基址+RVA 定位。</li>
-<li>8. x32dbg 与 x64dbg 不能混用。</li>
+<li>2. 当前 x86/x64 校准程序均无参数进入 lab。</li>
+<li>3. ReverseStrikeLabDay39_41 也已无参数进入证据模式。</li>
+<li>4. 参数只留后台验收。</li>
+<li>5. first-chance exception 不是 VEH 没命中，再继续一次才能进入 handler。</li>
+<li>6. ASLR 导致绝对地址变化，按导出名或模块基址+RVA 定位。</li>
+<li>7. x32dbg 与 x64dbg 不能混用。</li>
 </ul>
-<p><b>工程经验</b>：这次遗漏值得写成有用教训——「独立命令行 PASS 和导出存在，不足以证明用户调试入口可用；必须真实验证直接打开 EXE 后断点命中。」</p>
+<p><b>工程经验</b>：用户调试入口默认无参数可达；独立运行 PASS 和导出存在不能替代真实调试器断点命中验证。</p>
 
 <h3>证据等级</h3>
 <ul>
@@ -1234,7 +1232,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 
 <h3>自测题与简短答案</h3>
 <ol>
-<li><b>为什么 Win32 的 FS:[0] Prev 链不能拿来解释 x64？</b>——x64 改用编译时写好的 .pdata/.xdata 表查表展开，不再在栈上串 Prev 链。</li>
+<li><b>为什么 Win32 的 FS:[0] Prev 链不能拿来解释 x64？</b>——.pdata 提供 RUNTIME_FUNCTION 索引，再定位 unwind/handler 数据；相关数据常统称 .xdata，但当前构建未证明存在独立命名的 .xdata 节。</li>
 <li><b>VEH 返回 CONTINUE_SEARCH 后，下一步可能发生什么？</b>——名单里下一个 VEH 处理者继续看；全都不接才轮到 SEH。</li>
 <li><b>VEH 返回 CONTINUE_EXECUTION 后，为什么 SEH 不再命中？</b>——异常已被 VEH 处理，处理链到此结束，不再往下问。</li>
 <li><b>.pdata 在 x64 展开中负责提供什么索引关系？</b>——每个函数一条 RuntimeFunction，记录「函数起点→终点→展开规则地址」。</li>
