@@ -893,7 +893,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 
 <h3>30 秒复习入口</h3>
 <p><strong>一句话核心结论</strong>：Windows x64 里整数参数走 RCX/RDX/R8/R9、结果回 RAX；浮点参数走 XMM0–XMM3、结果回 XMM0；第 5 个参数起进栈；SSE 的 addps 一次加 4 个 float、AVX 的 vaddps ymm 一次加 8 个；Release 会把无用计算删掉、把算式化简，但结果不变。</p>
-<p><strong>最小执行链</strong>：函数进门 sub rsp,28h（20h 影子空间 + 8 字节对齐）→ 前 4 参进寄存器（整数 RCX/RDX/R8/R9、浮点 XMM0–XMM3）→ 第 5 参写 [rsp+20h] → call 压返回地址 → 算完整数回 RAX / 浮点回 XMM0</p>
+<p><strong>最小执行链</strong>：调用方在 call 前 sub rsp,28h（20h 影子空间 + 8 字节对齐）→ 前 4 个参数按参数序号放入对应寄存器 → 第 5 个参数写入 [rsp+20h] → call 压入返回地址 → 被调函数执行 → 整数结果回 RAX / 浮点结果回 XMM0</p>
 <p><strong>最易混点</strong>：①整数参数坐通用寄存器、浮点参数坐 XMM，是两套座位，别混 ②写 32 位寄存器会自动清高 32 位，写内存的 dword 只动 4 字节、旁边旧值留着 ③优化只改「算法和指令条数」，不改「结果」</p>
 <p><strong>证据锚点</strong>：Debug/Release 同函数对照（Debug 19 条 vs Release 3 条）；XMM0=41960000=18.75；XMM2=3D088889=0.0333；RAX=0x73=115（均已实测）</p>
 <p><strong>忘了先看哪里</strong>：先背「整数→RCX 家族、浮点→XMM 家族、第 5 参→栈、整数回 RAX、浮点回 XMM0」，再想 Debug 和 Release 是不是同一份结果</p>
@@ -1232,7 +1232,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 
 <h3>自测题与简短答案</h3>
 <ol>
-<li><b>为什么 Win32 的 FS:[0] Prev 链不能拿来解释 x64？</b>——.pdata 提供 RUNTIME_FUNCTION 索引，再定位 unwind/handler 数据；相关数据常统称 .xdata，但当前构建未证明存在独立命名的 .xdata 节。</li>
+<li><b>为什么 Win32 的 FS:[0] Prev 链不能拿来解释 x64？</b>——因为 x64 不再使用 Win32/x86 那种栈上 Prev 链；.pdata 提供 RUNTIME_FUNCTION 索引，再定位 unwind/handler 数据。相关数据常统称 .xdata，但当前构建未证明存在独立命名的 .xdata 节。</li>
 <li><b>VEH 返回 CONTINUE_SEARCH 后，下一步可能发生什么？</b>——名单里下一个 VEH 处理者继续看；全都不接才轮到 SEH。</li>
 <li><b>VEH 返回 CONTINUE_EXECUTION 后，为什么 SEH 不再命中？</b>——异常已被 VEH 处理，处理链到此结束，不再往下问。</li>
 <li><b>.pdata 在 x64 展开中负责提供什么索引关系？</b>——每个函数一条 RuntimeFunction，记录「函数起点→终点→展开规则地址」。</li>
