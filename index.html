@@ -1323,14 +1323,45 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
   → NDC (x,y,z)        ← 规范化，约 -1..1
   → viewport 映射
   → Screen Pixel (x,y)  ← 能直接画框</code></pre>
-<p>记住「离点近的先作用」：世界坐标先被 View 作用、再被 Projection 作用，顺序不能反。反了就是把「相机空间」当「世界空间」再用投影矩阵算，结果全错。</p>
+<p>在本课列向量写法下，按实际作用顺序先做 View、再做 Projection；若引擎采用不同向量或转置展示约定，必须先确认矩阵约定，不能只背乘号左右位置。反了就是把「相机空间」当「世界空间」再用投影矩阵算，结果全错。</p>
+<p><b>同一冻结帧完整数值走链</b>（相机无旋转、敌人站在视野正前方；矩阵为 A 类用户 x64dbg 亲手读数的舍入显示值，Camera/Clip/NDC 为 B 类后台以运行时 float 完整精度复核）：</p>
+<pre><code>World 齐次坐标 (x,y,z,1) = (0, 1.65, 0, 1)                  [A 用户读到 0/1.65/0]
+
+ViewMatrix（列向量写法，按行显示 16 个 float）               [A 用户读到]
+  [ 1   0   0   -0    ]
+  [ 0   1   0   -1.65 ]
+  [ 0   0   1   -5    ]
+  [ 0   0   0    1    ]
+
+Camera = View × World = (0, 0, -5, 1)                        [B 后台复核]
+
+ProjectionMatrix（调试器按小数显示，以下为舍入后的 A 类用户读数）：
+  [ 0.974279  0        0          0         ]
+  [ 0         1.73205  0          0         ]
+  [ 0         0       -1.000025  -0.100001 ]
+  [ 0         0       -1          0         ]
+
+说明：矩阵小数为显示精度下的近似值；后台使用运行时 float 完整精度复核。
+
+Clip ≈ Projection × Camera
+     ≈ (0, 0, 4.900124, 5)                                  [B 后台复核]
+
+NDC ≈ Clip ÷ w
+    ≈ (0, 0, 0.980025)                                      [B 后台复核]
+
+viewport 代入（1280×720）：
+  screenX = (ndcX + 1)/2 × 1280 = 640
+  screenY = (1 - ndcY)/2 × 720 = 360
+
+Screen = (640,360)                                           [A 用户读到 640/360]</code></pre>
+<p>复核：x/y 与 viewport 链回到 (640,360)，与用户屏幕读数一致；矩阵、Clip 与 NDC 的小数展示经过舍入，复核时以运行时 float 完整精度为准。中心点的 screen.x/screen.y 一致不能单独证明 Clip.z 的末位精度。</p>
 
 <h3>G. 跨空间对照表</h3>
 <table>
 <tr><th>空间</th><th>数据形态</th><th>谁产生</th><th>典型范围/单位</th><th>下一步操作</th><th>常见误读</th></tr>
 <tr><td>World</td><td>3 个 float</td><td>游戏逻辑/实体</td><td>世界单位</td><td>×View</td><td>以为能直接画</td></tr>
 <tr><td>Camera/View</td><td>3 个 float</td><td>×ViewMatrix</td><td>以相机为原点</td><td>×Projection</td><td>以为已含镜头参数</td></tr>
-<tr><td>Clip</td><td>4 个 float(x,y,z,w)</td><td>×ProjectionMatrix</td><td>裁剪盒内，w=深度</td><td>÷w</td><td>把 w 当欧氏距离</td></tr>
+<tr><td>Clip</td><td>4 个 float(x,y,z,w)</td><td>×ProjectionMatrix</td><td>未归一化；x/y/z 与 ±w 共同决定是否位于裁剪体内；本课 clip.w 与带符号相机前向深度成比例</td><td>÷w</td><td>把 w 当欧氏距离</td></tr>
 <tr><td>NDC</td><td>3 个 float</td><td>÷w</td><td>约 -1..1</td><td>viewport 映射</td><td>当作像素</td></tr>
 <tr><td>Screen</td><td>2 个 float(像素)</td><td>viewport 映射</td><td>像素，原点左上</td><td>画框</td><td>忘 y 轴翻转</td></tr>
 </table>
