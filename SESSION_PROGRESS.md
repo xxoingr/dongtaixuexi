@@ -3,7 +3,7 @@ schema: cc-dash/session@1
 project: windows-reverse-learning  
 session_id: s_2026-07-30_day8-apc  
 started: 2026-07-30T00:00:00+08:00  
-last_updated: 2026-08-31T00:00:00+08:00
+last_updated: 2026-09-01T18:49:21+08:00
 status: in-progress
 ---  
 
@@ -57,7 +57,7 @@ status: in-progress
 - [x] <!-- id:t_phase_a dep:t_integration --> Day 31-34: x64 汇编进阶 + SSE/AVX + 编译器优化识别  
 - [x] <!-- id:t_phase_b dep:t_phase_a --> Day 35-38: C++ 对象模型 + RTTI + STL 容器恢复  
 - [x] <!-- id:t_phase_c dep:t_phase_b --> Day 39-41: SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级  
-- [ ] <!-- id:t_phase_d dep:t_phase_c --> Day 42-45: 游戏数学 + 相机/矩阵/World-to-Screen  
+- [x] <!-- id:t_phase_d dep:t_phase_c --> Day 42-45: 游戏数学 + 相机/矩阵/World-to-Screen
 - [ ] <!-- id:t_phase_e dep:t_phase_d --> Day 46-49: 调试器进阶 + Trace/Dump/自动化脚本  
 - [ ] <!-- id:t_phase_f dep:t_phase_e --> Day 50-53: 版本 Diff + 特征码定位 + CE 进阶  
 - [ ] <!-- id:t_phase_g dep:t_phase_f --> Day 54-57: Windows 多线程 + 同步机制 + Hook 稳定性  
@@ -65,14 +65,18 @@ status: in-progress
 
 ## Current Status  
 
-进度: 41/60 — 第一阶段 30/30 完成，第二阶段 Day 31-34、Day 35-38、Day 39-41 完成（11/30）
+进度: 45/60 — 第一阶段 30/30 完成，第二阶段 Day 31-34、Day 35-38、Day 39-41、Day 42-45 完成（15/30）
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
 教学阶段: DS 理论前置
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 39-41 SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级 — 已正式完成并闭环（五块实操取证、复盘、三篇 phase2 文章结构化升级、构建发布与线上核对全部通过）；当前课程转 Day 42-45，等待 DS 理论前置，不提前展开后续 Day。
-下一步: DS 开始 Day 42-45 理论前置（游戏数学 + 相机/矩阵/World-to-Screen），一次讲一个概念并确认理解；理论前置完成后按固定链路输出《给 Sol 的实操工程请求》。
+正在: Day 42-45 游戏数学 + 相机/矩阵/World-to-Screen — 已正式完成并闭环（理论前置、用户 x64dbg 取证、复盘巩固、days.json 新增 day42-45 文章、构建发布与线上核对全部通过）；当前课程转 Day 46-49，等待 DS 理论前置，不提前展开后续 Day。
+下一步: DS 开始 Day 46-49 理论前置（调试器进阶 + Trace/Dump/自动化脚本），一次讲一个概念并确认理解；理论前置完成后按固定链路输出《给 Sol 的实操工程请求》。
 
 ## Decisions
+
+- <!-- at:2026-09-01T20:00:00+08:00 --> Day 42-45 正式完成并闭环：DS 完成理论前置（向量/坐标系/矩阵/点积/三种变换/View/Projection/World-to-Screen 全景），引导用户无参数打开 ReverseStrikeLabDay42_45.exe 完成图形取证（转相机仅 ViewMatrix 变、ProjectionMatrix 不变），并 x64dbg 断 RslDay42_45EvidenceCheckpoint 从 RCX 证据结构亲手读出 camera(0,1.65,5)/target(0,1.65,0)/up(0,1,0)/FOV=60、ViewMatrix 最后一列(-0,-1.65,-5)、Projection 对角线 0.974279/1.73205、敌人(0,1.65,0)、屏幕(640,360)=1280×720 正中心，首尾呼应证明全链跑通。Sol 按审核卡完成五处术语纠偏与扩写标准定稿，DS 据此写入 days.json（day42-45 六项复习入口 + 跨空间对照表 + 三档证据 + 8 题自测答案）。node build.js 验证通过（37 文章单元、45/60、第二阶段 15/30 块 4/8），days.json JSON 与 build.js 语法检查通过。t_phase_d 标记完成，plan 22/36→23/36，进度 45/60，当前课程转 Day 46-49，教学阶段 DS 理论前置。未提前展开或完成 Day 46-49。
+
+- <!-- at:2026-09-01T18:49:21+08:00 --> Day 42-45 Sol 工程准备完成：在既有 ReverseStrikeLab 内新增隔离 `Day42Variant=true` 构建，产出 x64 Debug/Release `ReverseStrikeLabDay42_45.exe`；无参数直接进入自建用户态图形取证场景。逐帧 288 字节证据结构统一保存 Camera3D、64 字节 View/Projection、ViewProjection、敌人世界坐标、clip/NDC/屏幕坐标，绿色框来自既有 RslWorldToScreenProbe，黄色十字来自 raylib 参考链。Debug/Release 自测与 60 帧图形 smoke 通过（60/60 帧刷新、最大误差 6.10352e-05 像素、动态位移 342.492 像素）；x64dbg 无参数真实启动命中 RslDay42_45EvidenceCheckpoint，RCX 为非空证据指针。V1 Debug/统一 Release/独立包、Day35-38、Day39-41 全回归通过。教学阶段转 DS 实操教学，Day 与进度保持 in-progress/41-60。
 
 - <!-- at:2026-08-31T21:30:00+08:00 --> Day 39-41 正式完成并闭环：DS 按 Sol 20:00 优化方向卡，将 Day 31-34、Day 35-38 结构化扩写去重（分概念章节 + 3 分钟复习 + 自测），并新增 Day 39-41 正式文章（按 A-K 结构：架构总览/SEH/VEH 两路径/x64 表驱动展开/TLS-Loader/靶场变体/失败排错/证据等级/9 题自测）；三块 practice 统一结构并补版本边界（RVA 当次构建值、vptr 当次 ASLR 值、旧命令行问题归为历史失败实验）。node build.js 验证通过（36 文章单元、36 复习入口、进度口径 30/30·11/30·41/60），git diff --check 与 node --check 通过，第九项 13 条自验 ALL PASS，无 Day 42-45 页面、无独立 .xdata 节声称、改命令行仅在失败语境。仅暂存 SESSION_PROGRESS.md/days.json/index.html 三文件提交 a29dfd8 推送，线上 Pages 已核对（HTTP 200、41/60 进度、三篇可访问）。t_phase_c 标记完成，plan 21/36→22/36，进度 41/60，当前课程转 Day 42-45，教学阶段 DS 理论前置。未提前展开或完成 Day 42-45。
 
