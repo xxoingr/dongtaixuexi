@@ -78,7 +78,7 @@ pre code{background:none;padding:0;color:inherit}
   ├ ▶Day 35-38: C++ 对象模型 + RTTI + STL 容器恢复<span class="done"> ✅</span>
   ├ ▶Day 39-41: SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级<span class="done"> ✅</span>
   ├ ▶Day 42-45: 游戏数学 + 相机/矩阵/World-to-Screen<span class="done"> ✅</span>
-  ├ ▶Day 46-49: 调试器进阶 + Trace/Dump/自动化脚本<span class="planned"> ⏳</span>
+  ├ ▶Day 46-49: 调试器进阶 + Trace/Dump/自动化脚本<span class="done"> ✅</span>
   ├ ▶Day 50-53: 版本 Diff + 特征码定位 + CE 进阶<span class="planned"> ⏳</span>
   ├ ▶Day 54-57: Windows 多线程 + 同步机制 + Hook 稳定性<span class="planned"> ⏳</span>
   ├ ▶Day 58-60: 第二次综合项目 + 完整逆向报告<span class="planned"> ⏳</span>
@@ -121,8 +121,9 @@ pre code{background:none;padding:0;color:inherit}
     <a href="#" data-day="day35-38" class="done"><span class="dot"></span>Day 35-38 — C++ 对象模型 + RTTI + STL 容器恢复</a>
     <a href="#" data-day="day39-41" class="done"><span class="dot"></span>Day 39-41 — SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级</a>
     <a href="#" data-day="day42-45" class="done"><span class="dot"></span>Day 42-45 — 游戏数学 + 相机/矩阵/World-to-Screen</a>
+    <a href="#" data-day="day46-49" class="done"><span class="dot"></span>Day 46-49 — 调试器进阶 + Trace/Dump/自动化脚本</a>
 </nav>
-<div class="progress">第一阶段 30/30 · 第二阶段 15/30（块 4/8）· 总体 45/60<div class="bar"><div class="fill" style="width:75%"></div></div></div>
+<div class="progress">第一阶段 30/30 · 第二阶段 19/30（块 5/8）· 总体 49/60<div class="bar"><div class="fill" style="width:82%"></div></div></div>
 <div class="log-section">
 <div class="log-title">📅 学习日志</div>
 <div class="log-entry"><div class="log-date">2026-08-31</div><div class="log-items"><div class="log-item">Day 42-45: 游戏数学 + 相机/矩阵/World-to-Screen 理论+实操验收+网站闭环完成。核心结论：世界坐标→×View(换视角)→×Projection(套画框+藏深度w)→÷w(近大远小)→NDC→viewport映射→屏幕像素，才能画框；矩阵是引擎每帧内存动态数据</div><div class="log-item">证据(x64dbg 断 RslDay42_45EvidenceCheckpoint，RCX=证据结构288B)：相机 position(0,1.65,5)/target(0,1.65,0)/up(0,1,0)/FOV=60；ViewMatrix 最后一列(-0,-1.65,-5)=本次未旋转时相机位置取反；Projection 对角线 0.974279(f/aspect)/1.73205(√3=cot30°)；敌人(0,1.65,0)→屏幕(640,360)=1280×720 正中心</div><div class="log-item">坑：float 小端序要倒读(33 33 D3 3F→0x3FD33333=1.65)；dump 切 float 显示；读内存先核对地址(曾误读 B0 而非 A0 差16字节)；View/Projection 连乘顺序不能反；÷w 得 NDC 不是像素、还要 viewport；screenY 要翻转；w≤0 判不可投影</div><div class="log-item">理论映射：平移在第4列(本课 raylib 列向量约定)、旋转在左上3×3；「点乘矩阵」实为矩阵乘向量(每行与(x,y,z,1)点积)；View 最后一列=相机位置取反仅本次未旋转特例；真实逆向要自己找实体+矩阵地址(不照抄 RCX 偏移)</div><div class="log-item">网站闭环：days.json 新增 phase2 块 day42-45(六项复习入口+跨空间对照表+三档证据+自测8题答案)；进度 45/60，plan 23/36，转 Day 46-49</div></div></div><div class="log-entry"><div class="log-date">2026-08-27</div><div class="log-items"><div class="log-item">Day 31-34: x64 汇编进阶 + SSE/AVX + 编译器优化识别 理论+实操验收+网站闭环完成。核心结论：x64 两条调用约定通道(整数 RCX/RDX/R8/R9→RAX、浮点 XMM0–XMM3→XMM0、第5参起上栈)；SSE 的 addps 一次加4个 float、AVX 的 vaddps ymm 一次加8个；Release 删无用计算、化简算式、结果不变</div><div class="log-item">证据(专用Lab Day31_34X64OptimizationLab)：整数 Day31IntegerFive(1,2,3,4,17) 返回 RAX=0x73=115(第5参调用方[rsp+20]/被调方[rsp+28])；浮点 Day32FloatFive(1.25,2.5,3,4,8) 返回 XMM0=41960000=18.75；SSE addps 得 11,22,33,44、AVX vaddps ymm 得 8个9；Day34OptimizationProbe Debug 19条 vs Release 3条(lea 化简为 input*10+50)结果同为190</div><div class="log-item">证据(靶场 ReverseStrikeLab)：RslUpdatePlayerMovement(RVA 0x71E0)由 StepGame 每帧调用，deltaSeconds 经 XMM2 传入=3D088889=0.0333，内部 mulss/sqrtss/comiss/divss 浮点移动+归一化+条件分支；RslApplyDamage(RVA 0x6460)整数参数+条件分支+RAX返回，护甲规则 min(armor,scaled/2) 已确认；--self-test 全 PASS</div><div class="log-item">坑：x64dbg 的 XMM 寄存器窗口单步时显示半刷/乱码(XMM0只刷一半、XMM2显示0)不是CPU算错，改用内存dump或程序自测 summary=PASS 兜底；写32位寄存器自动清高32位、写内存dword只动4字节两者不同；每次重载程序 ASLR 随机地址、断点要重新下；mulss=标量1个、addps=打包4个，一字之差含义不同</div><div class="log-item">理论映射：认参数/返回值通道可反推函数签名；认 ps/ymm 判断并行浮点；认 Release 短函数+lea 化简习惯优化后的非直译代码；护甲'吸收一半、最多到用完'是 min(armor,scaled/2) 的机器对应(sar eax,1)</div><div class="log-item">网站闭环：第二阶段网站结构由 Sol 定稿，days.json 新增 phase2 合并块数组(不拆空壳日)、build.js 支持合并块导航/覆盖日跳转/三段式进度；Day 31-34 合并块文章含一个六项复习入口；进度 34/60，plan 20/36，转 Day 35-38</div></div></div><div class="log-entry"><div class="log-date">2026-08-24</div><div class="log-items"><div class="log-item">Day 29: 反外挂分析 — 特征码/行为检测/分层设防/威胁建模/服务器侧校验 理论+实操验收完成。核心结论：反外挂=分层设防，特征码认长相、行为检测认动作、服务器独立维护/校验关键状态，多层互补叠加提高攻击者绕过成本</div><div class="log-item">证据：Day29LayeredAntiCheatLab(中文CS风格自建训练靶场，不读真实进程)用户亲手扫三个终端——已知特征:特征码命中(偏移2 DE AD BE EF)/行为正常/拦截；变化特征:特征码未命中/行为警报/拦截(行为层补抓)；正常样本:特征码未命中/行为正常/放行；流水线 SIGNATURE→BEHAVIOR→VERDICT；day29_check.py 输出 PASS</div><div class="log-item">坑：射击命中≠反外挂证据(正式证据是终端三层扫描)；必须靠近终端再按E；Esc只开暂停菜单不直接退出；单层可被绕(加壳绕特征码/改动作绕行为)故须多层互补；层数多≠一定强(堆同类检测无效)</div><div class="log-item">理论映射：威胁建模=先换位列攻击路径→薄弱点→防御再有的放矢；服务器侧校验=服务器独立维护/校验权威状态，客户端本地改动不能自动改变服务器认可的结果(MC服务器版类比)；特征码怕加壳/改特征，行为检测怕误伤正常程序</div><div class="log-item">工程：LayeredAntiCheatLab 项目(Day29LayeredAntiCheatLab.exe，中文GUI训练靶场，复用raylib，程序化场景与原创枪械，不读真实进程)Sol 后台验收(Debug/Release构建+运行、三目标分层检测、UI状态机、射击/换弹/暂停/退出、四张截图)</div></div></div><div class="log-entry"><div class="log-date">2026-08-24</div><div class="log-items"><div class="log-item">Day 30: 综合闭环项目 — 第一阶段收官。核心结论：PE→注入→Hook→检测→保护→反外挂评估 是一条完整攻防链，任何单层都可被绕、可靠防御靠可验证/可关联/互相补位的整体设计=以攻促防</div><div class="log-item">六环串链：PE(程序骨架与Loader)→注入(载荷进目标上下文)→Hook(改变后续执行路径，改表或改函数入口字节)→检测(从模块/内存/线程/异常/时间/行为找痕迹)→保护(提高理解/修改/稳定绕过成本)→反外挂评估(威胁模型评估客户端/内核/服务器覆盖与补位)</div><div class="log-item">三处纠偏(Sol审核)：①Hook 非'改箭头不改函数'，Inline Hook 直接改函数入口字节；②保护非'绝对防住'而是'提高绕过成本'；③补全 Day10(DEP/ASLR/CFG)/14/15(VEH/HWBP)/19(Patch出口打地鼠)/27/28(游戏结构+数据格式)入总链</div><div class="log-item">用户口述锚点：PE骨架地图/注入载荷进上下文/Hook改后面走哪条路/检测找痕迹/保护提成本/评估看每层能防什么漏什么怎么补位</div><div class="log-item">本课无新增工程或调试证据，仅综合串讲前29天知识；正式文章采用 Sol 优化稿+用户口述学习痕迹，进度 30/30 第一阶段收官</div></div></div><div class="log-entry"><div class="log-date">2026-08-23</div><div class="log-items"><div class="log-item">Day 28: 游戏数据分析 — 存档格式/网络协议/资源文件/IDA-Ghidra 理论+实操验收完成。核心结论：分析二进制=按字段偏移/大小/字节序把原始字节翻译成人话；小端序=低位字节放前、倒过来拼</div><div class="log-item">证据：Day28BinaryDataAnalysisLab(自建字节)——存档 gold 偏移8 占4字节 raw=40 E2 01 00 value=123456(小端序倒拼 00 01 E2 40=0x0001E240)；协议包 opcode=0x1001/payload_length=5/player_id=42/action=7；--tampered-save 改 gold 首字节 0x40→0x41 触发 CHECKSUM_MISMATCH 拒绝；day28_check.py 输出 PASS</div><div class="log-item">坑：小端序不能从左到右读(40 E2 01 00 要倒拼才是 123456)；offset 是字段相对整段起点不跟 end 混用；checksum 只演示格式校验非真实游戏算法；本工程不碰真实游戏/流量/解包、不装 IDA/Ghidra；--lab 等 Enter 是教学停留点不是卡死</div><div class="log-item">理论映射：静态分析(IDA/Ghidra 不运行读机器码) vs 动态分析(运行/断点/抓包)互补；网络包等运行时才出的数据要靠动态；本课 IDA/Ghidra 只保留理论边界未实际安装操作</div><div class="log-item">工程：BinaryDataAnalysisLab 项目(Day28BinaryDataAnalysisLab.exe，自建字节，不碰真实游戏/网络/IDA)Sol 后台验收(Debug/Release 构建+运行、--save/--packet/--lab/--tampered-save/非法参数路径、三个导出锚点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-22</div><div class="log-items"><div class="log-item">Day 27: 游戏逆向实战 — Unity/UE基础 + STL容器识别(vector/string) + 对象结构恢复 理论+实操验收完成。核心结论：搞清引擎=拿到'内存对象怎么摆'的规律地图；STL 容器有固定长相(vector=3指针、string 短串就地长串外存)，认长相=从地址堆认出有意义的东西</div><div class="log-item">证据：Day27GameMemoryLayoutLab(自建迷你Demo，不碰真实游戏)——vector object_size=24 begin/end/capacity 三指针 bytes_used=20=5×4 reserved_slots=8；短串 Mage data_inside_object=true INLINE_SSO、长串 Legendary_Player_From_Day27 EXTERNAL_HEAP raw_pointer_matches_data=true；PlayerRecord 字段偏移 0/4/8/16；summary 四项全 true；day27_check.py 输出 PASS</div><div class="log-item">坑：所有地址每次运行都变(ASLR)只比顺序/差值/归属不比绝对地址；end 不是最后一个元素是它的下一格；vector 24 字节三指针是当前 MSVC x64 实现非所有编译器保证(须固定 _ITERATOR_DEBUG_LEVEL=0)；string SSO 阈值随版本变不能硬记 15；短串对象开头是字符不是指针(只有长串对象起始第一机器字才是字符缓冲区指针)；对象尾部有对齐填充(PlayerRecord 最后字段偏移16但总大小24)</div><div class="log-item">理论映射：引擎决定对象/容器布局规律，Unity/UE 本课只保留理论映射(没验证真实 Unity/UE 游戏对象)</div><div class="log-item">工程：GameMemoryLayoutLab 项目(Day27GameMemoryLayoutLab.exe，自建迷你 Demo，不接触真实游戏/外部进程/内存扫描器)Sol 后台验收(Debug/Release 构建+运行、非法参数、三个导出锚点、--lab 稳定停点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-21</div><div class="log-items"><div class="log-item">Day 25: 过滤器驱动概念 — Minifilter/NDIS/WFP 理论+实操验收完成。核心结论：过滤器驱动=卡必经之路、先过目再放行的'检查站'，机制中性、善恶取决于写驱动的人（不是天生保护、也不是被 Hook 才变坏）</div><div class="log-item">证据：Day25FilterCheckpointLab(纯用户态)3 请求都先 checkpoint_seen 再处置——notes.txt PASS 原样到达、malware.exe BLOCK 不达终点(只有 destination_blocked)、draft.tmp MODIFY 改写 draft.safe 后终点收到 draft.safe；summary pass=1 block=1 modify=1 delivered=2；day25_check.py 输出 PASS</div><div class="log-item">坑：BLOCK 关键证据是'没有 destination_received'(终点没收到)不只 decision=BLOCK；MODIFY 关键证据是'终点收到的 payload 是改写后的 draft.safe'不只 before/after 文字；malware.exe/draft.tmp 是教学字符串非真实文件；本实验非真 Minifilter/NDIS/WFP(没注册文件系统回调/没碰网卡/没注册 WFP Callout)</div><div class="log-item">理论映射：Minifilter=卡文件读写必经之路；NDIS=卡网卡旁底层原始数据包(不认识上层应用)；WFP=卡更上层可按程序+地址+端口拦；三者的共同核心=请求先过检查站再决定放行/拦截/改写</div><div class="log-item">工程：FilterCheckpointLab 项目(Day25FilterCheckpointLab.exe，纯用户态，不写驱动)Sol 后台验收(Debug/Release 构建+运行、未知请求/非法参数路径、两个导出锚点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-21</div><div class="log-items"><div class="log-item">Day 26: 内核对象管理 — ObRegisterCallbacks/进程线程保护 理论+实操验收完成。核心结论：用户态访问内核对象拿到的永远是句柄(号码牌)不是对象本身；ObRegisterCallbacks=卡在'打开进程/线程句柄'门前的检查站，进程保护=在句柄这道门提前设卡、把想动进程的人挡在拿到句柄之前</div><div class="log-item">证据：Day26ObjectHandleProtectionLab(纯用户态)两条路径——trusted_monitor 先 checkpoint_seen(BEFORE_HANDLE_ISSUE)→decision=ALLOW→handle_issued handle=0xD260→object_access SUCCESS；untrusted_tool 同 checkpoint_seen→decision=DENY→handle_not_issued→object_access FAILED reason=NO_HANDLE；summary allowed=1 denied=1 handles_issued=1 successful_access=1；day26_check.py 输出 PASS</div><div class="log-item">坑：拒绝的关键证据是 handle_not_issued + reason=NO_HANDLE(失败在'没拿到句柄'不是'拿到后访问被拦'，DENY 在 handle_issued 之前)；0xD260 是教学模拟号码牌非真实 HANDLE；ProtectedGame.exe/trusted_monitor/untrusted_tool 是实验固定身份非真实进程；本实验非真实 ObRegisterCallbacks(没驱动注册、没过滤真实内核句柄)</div><div class="log-item">理论关联：与 Day 25 过滤器同思路(检查站)，Day 25 卡文件/网络、Day 26 卡进程/线程句柄；本课收口内核基础阶段 Day 21-26</div><div class="log-item">工程：ObjectHandleProtectionLab 项目(Day26ObjectHandleProtectionLab.exe，纯用户态，不写驱动)Sol 后台验收(Debug/Release 构建+运行、允许/拒绝/未知访问者/非法参数路径、两个导出锚点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-20</div><div class="log-items"><div class="log-item">Day 23: SSDT Hook 原理 — 内核级 Hook/KD 调试/VTL0/VTL1 理论+实操验收完成。核心结论：SSDT Hook=把内核'全市共享总电话簿'里某服务号指向的地址换成自己的地址；改的是表里的'地址箭头'不是函数本身；因表全系统共享，一次改动影响全系统所有用该服务号的程序（对比 IAT 只影响单程序）</div><div class="log-item">证据：Day23SSDTHookSimulationLab（纯用户态模拟 SSDT 函数指针表）改表前 dispatch service=0x23 target=0x7FF690EC1780→handler=ORIGINAL result=123；hook_action old=0x7FF690EC1780 new=0x7FF690EC1720；改表后同样 service=0x23→handler=HOOKED result=-23；same_service=true target_changed=true original_unchanged=true；day23_check.py 输出 PASS</div><div class="log-item">坑：不比较不同运行绝对地址（ASLR 基址变化）；打印地址非真 SSDT 地址（只是本进程用户态函数地址）；本实验是 Ring3 复现查表改表机制、非真实 SSDT Hook；双击普通模式窗口秒关、取证用 --lab 停在 EVIDENCE_READY</div><div class="log-item">理论边界：改 SSDT 得先站 Ring0（驱动=门票非作弊手法）；SSDT 在内核、普通 Ring3 调试器被权限墙挡住、须 KD/WinDbg；VTL0/VTL1=比 Ring0 更高的隔离房间，VTL0 的 Ring0 也看不到 VTL1</div><div class="log-item">工程：SSDTHookSimulationLab 项目（Day23SSDTHookSimulationLab.exe，纯用户态，不写驱动不改真 SSDT）Sol 后台验收（Debug/Release 构建+运行、改表前后对比、非法参数路径、三个导出锚点）</div></div></div><div class="log-entry"><div class="log-date">2026-08-20</div><div class="log-items"><div class="log-item">Day 24: 驱动通信 + 对象生命周期 — IOCTL/共享内存/引用计数/IRQL与锁 理论+实操验收完成。核心结论：驱动通信=驱动开接待窗口、用户程序递指令单(控制码+输入/输出缓冲区)；对象生命周期靠引用计数记账(借+1还-1降到0才回收)</div><div class="log-item">证据：Day24DriverCommunicationLifecycleLab(纯用户态)三条链——ioctl code=0x800 input 7,5→output 12；shared_views writer/reader 两个不同地址读到同一内容 match=true；引用计数 1→2→1→0 归零 reclaimed=true；irql_lock=THEORY_ONLY；day24_check.py 输出 PASS</div><div class="log-item">坑：writer/reader 地址不同是正常(不同虚拟地址映射同一块内存，看内容 match=true 不看地址)；0x800 是自定义模拟控制码非真实 IOCTL；'内存泄漏'≠'数据泄露'(忘减引用=对象不回收占内存)；reclaimed=true 是模拟标志非内核对象真实销毁；irql_lock=THEORY_ONLY 是主动声明没模拟</div><div class="log-item">理论边界：IRQL 和内核锁不能用普通用户态变量真实复现，本实验只演示通信/共享区域/引用记账</div><div class="log-item">工程：DriverCommunicationLifecycleLab 项目(Day24DriverCommunicationLifecycleLab.exe，纯用户态，不写驱动不调真实 DeviceIoControl)Sol 后台验收(Debug/Release 构建+运行、未知控制码/非法参数路径、四个导出锚点)</div></div></div><div class="log-entry"><div class="log-date">2026-08-17</div><div class="log-items"><div class="log-item">Day 22: 内核回调机制 — PsSetCreateProcessNotifyRoutine + 驱动入口 理论+实操验收完成。核心结论：回调=先登记联系方式、事件发生时对方反过来调用你（方向与普通调用相反）；杀软靠它第一时间知道进程创建。链：DriverEntry(报到)→PsSetCreateProcessNotifyRoutine(注册回调/留电话)→内核按地址反过来调回调(进程创建进行到一半被叫、须快速返回)→DriverUnload(注销别留空号否则蓝屏)</div><div class="log-item">证据：真驱动被 UEFI Secure Boot 阻止无法加载，改纯用户态等价演示——WMI 订阅程序先打印 state=WAITING，另窗口起 cmd.exe 后被动收到 ProcessStart name=cmd.exe pid=26688 parent=15144 与 PING.EXE pid=17456 parent=26688（父生子 pid 链），进程消失被动收到 ProcessStop；day22_user_check.py 输出 PASS</div><div class="log-item">坑：靶子退出太快会漏事件（WMI WITHIN 1 每秒采样，须用 cmd+ping 让靶子活约 2 秒）；pid 会被复用（26688 从 cmd.exe 变 git.exe，记 pid≠记进程）；其他进程事件穿插属正常；Win32_ProcessStartTrace 需管理员（0x80041003），改用不需管理员的 WMI intrinsic event；双击运行 Ctrl+C 后 STOPPED 行闪一帧看不到（非必需证据）</div><div class="log-item">工程：KernelProcessEventLab 项目（Day22KernelProcessEventLab.exe，纯用户态 WMI 异步订阅，IWbemObjectSink::Indicate 接收回调）Sol 后台验收；真驱动源码归档于 KernelCallbackLab，从 学习.sln 移除、Secure Boot 保持开启</div></div></div><div class="log-entry"><div class="log-date">2026-08-16</div><div class="log-items"><div class="log-item">Day 21: 内核架构基础 — Ring0/Ring3/系统调用 syscall/SSDT 理论+实操验收完成。核心结论：用户态(Ring3)权限最低，高危操作经 ntdll 的系统调用桩递申请单由内核(Ring0)代劳；SSDT=内核的服务号→代码地址对照表，与 IAT 同类（IAT 改单程序、SSDT 改全系统=SSDT Hook 种子）</div><div class="log-item">证据：--lab 打印 mode=Ring3(USER)/api=ntdll!NtQuerySystemInformation/syscall_opcode=0F 05；attach 后 Ctrl+G 到入口见 mov r10,rcx/mov eax,0x36(服务号)/syscall/ret；F2 断点命中 INT3@DC62=入口+0x12 即 syscall 处；--no-wait 输出 ntstatus=0x00000000 + transition=Ring3->syscall->Ring0->Ring3 + done</div><div class="log-item">坑：不带 --lab 程序结束太快来不及 attach；不能硬记地址/服务号（ASLR+Windows 版本变化，0x36 只是当前系统实测值，优先用导出名定位）；用户态调试器看不到 Ring0 内核代码（syscall 后直接回到用户态指令，是正常权限隔离）；只停在程序包装层不够，必须进 ntdll 看到 syscall</div><div class="log-item">工程：KernelArchitectureLab 项目（Day21KernelArchitectureLab.exe，纯用户态，不写驱动不改 SSDT）Sol 后台验收（Debug/Release 构建+运行、标准 Win32 调试 API 命中 ntdll!NtQuerySystemInformation、入口+0x12=0F 05 syscall）</div></div></div><div class="log-entry"><div class="log-date">2026-08-15</div><div class="log-items"><div class="log-item">Day 20: 软件保护综述 — 加壳/混淆/自修改/反篡改/VM保护五大概念 理论+实操验收完成。核心结论：保护不是让人破不了，而是让破起来不划算；五招叠加、木桶原理、重点保护（VM 只保关键段，全包会卡到没法用）；验证结果混进功能数据可防掐出口</div><div class="log-item">证据：字符串对比——x64dbg 搜 DAY20_PLAIN_MARKER 命中（00007FF655DB52D0）、搜 DAY20_PROTECTED_MARKER 搜不到（EXE 二进制无原文），--lab 运行时打印 protected=DAY20_PROTECTED_MARKER（XOR 0x5A 现场还原）；反篡改——attach 改 payload 第一字节 31→30 后 integrity=TAMPERED + reaction=BLOCKED（退出码 20），不改对照 integrity=OK + feature_value=171 + done（退出码 0）</div><div class="log-item">坑：在系统断点（ntdll）处搜字符串会搜到系统字符串（CSPORT/ApiPort），先 Ctrl+G 跳程序自己的函数再搜；双击 EXE 闪退属正常，留窗口用 cmd 跑 --lab；XOR 只是教学级混淆、完整性检查可被 patch 出口绕过（复盘确认攻击者打的是对账后的岔路口，不是检测本身）</div><div class="log-item">工程：ProtectionOverviewLab 项目（Day20ProtectionOverviewLab.exe）Sol 按方案 A 制作并后台验收（Debug/Release 构建、正常/篡改/非法参数三路径、明文存在与保护串静态消失自动核查、四导出锚点 Win32 调试 API 命中）</div></div></div><div class="log-entry"><div class="log-date">2026-08-14</div><div class="log-items"><div class="log-item">Day 19: 绕过反调试 — 手动 Patch/ScyllaHide 原理/反反调试思维 理论+实操验收完成。Patch 改的是检测结果的使用处（出口）不是检测本身：nop 抹掉逃跑动作（检测照跑）、jmp 无视检测结果；反调试像打地鼠（分层+接力），正确姿势=先摸清检测点全图一次堵全</div><div class="log-item">证据：x64dbg 三处 Patch 逐处核对（1225 jne→90 90、122E je→EB 18 jmp 1248、1297 jbe→EB 18 jmp 12B1）；F9 后控制台 15 轮全部通过没有逃跑 done；DebugPort=0xFFFFFFFFFFFFFFFF/PEB=1 照查不逃；FatalExit 断点命中时调用栈为 CRT 正常收尾（exit→_wassert→FatalExit）无逃跑帧</div><div class="log-item">坑：nop 只写 1 字节会挤乱下一条指令（75 09 是 2 字节，CPU 按字节流读指令），用 Ctrl+E 二进制编辑写满字节；x64dbg TLS 回调自动断点与 GamePP 注入 GPP64.dll 交互致 ntdll C0000005 噪音（Sol 救场关闭 TLS Callback 自动断点后消失，正式 x64dbg.ini 已修复并留备份）</div><div class="log-item">工程：AntiAntiDebugLab 项目（Day19AntiAntiDebugLab.exe，10 秒 attach 窗口）Sol 后台预制验收三检查点通过</div></div></div><div class="log-entry"><div class="log-date">2026-08-12</div><div class="log-items"><div class="log-item">Day 18: 高级反调试 — RDTSC 计时/TLS 回调/NtQueryInformationProcess(DebugPort) 理论+实操验收完成</div><div class="log-item">证据：独立运行 TLS 0/0 + RDTSC 基线 55~210 万 + DebugPort=0；attach 后 DebugPort=0xFFFFFFFFFFFFFFFF、PEB=1（attach 也亮，与 Day 17 堆标志对照）；断点卡在两次 rdtsc 之间复查 RDTSC 590 亿量级（正常基线仅几十万到两百多万）；后台 DEBUG_PROCESS 验证器跨进程复核一致</div><div class="log-item">坑：软件断点下在循环顶会反复命中（看着像 F9 没反应）；双击运行的控制台窗口随 done 自动关闭；x64dbg attach 后目标先暂停属正常</div><div class="log-item">新增 AdvancedAntiDebugLab 项目（含 verify/day18_check.py）入学习.sln</div></div></div><div class="log-entry"><div class="log-date">2026-08-09</div><div class="log-items"><div class="log-item">Day 15: 硬件断点 (HWBP) — DR0-DR7 调试寄存器、执行/写入断点、反检测。软件断点=改代码字节(CC)，硬件断点=改 CPU 记事本(DR 寄存器)不改代码；写入断点抓到'改血量那条指令'(CE Find what writes 原理)；反作弊查 CC 防软件断点、读 DR 防硬件断点</div><div class="log-item">工程：HWBPLab 项目入 学习.sln，Debug/Release 编译+独立运行通过；普通 x64dbg 实操三连（执行/写入/软件断点）证据齐全；后台 Win32 调试 API 验证器复测通过；x64dbg headless 的 ntdll C0000005 已定位为环境噪音（不影响 GUI 实操）</div><div class="log-item">Day 16: 调试器原理（断点触发/异常分发/DebugPort/调试事件循环）。执行链：CPU 踩断点→内核→查 DebugPort→调试器最先→放行→VEH/SEH→WER 弹窗。DebugPort=门禁卡槽，平时 NULL、调试时非空；一个进程最多一个调试器。实操：独立运行+中途 attach，DebugPort NULL→0xFFFF 实时对比，0xE1234001 先到 x64dbg（first-chance）再放行给 VEH。坑：x64dbg 创建进程模式本机必现 ntdll C0000005（LoadLibraryW 线程），绕法=attach；Day 15'headless 特有'结论作废</div><div class="log-item">Day 17: 反调试基础（PEB.BeingDebugged/NtGlobalFlag 家族/IsDebuggerPresent）。三个检查点：IsDebuggerPresent（API，导入表留名）、PEB.BeingDebugged（直接读 GS:[0x60]+0x02，隐蔽）、堆 ForceFlags（heap+0x74，只认'被调试器创建'，attach 不触发）。实操：attach 后 1/1/0 vs 后台 DEBUG_PROCESS 创建 1/1/0x40000060。坑：NtGlobalFlag 堆偏移 0x68 与 KUSER_SHARED_DATA+0x320 本机不可靠，实测后改用堆头 +0x74</div></div></div><div class="log-entry"><div class="log-date">2026-08-06</div><div class="log-items"><div class="log-item">Day 14: VEH Hook + SEH 对比 — DS 前置与实操后复盘、Sol 工程/调试证据验收全部完成</div><div class="log-item">证据：Debug/Release Rebuild 与独立运行退出码 0；E0421401 由 VEH 处理返回 108，E0421402 按 VEH → SehFilter 顺序返回 200；Debug RVA 0x1240/0x1400 与 x64 .pdata/unwind 元数据已核对</div><div class="log-item">失败边界：普通 x64dbg GUI 在嵌套异常处理者软件断点人工续跑时出现非目标 C0000005，精确内部根因未验证；稳定路线改为新进程一次性检查点</div></div></div><div class="log-entry"><div class="log-date">2026-08-01</div><div class="log-items"><div class="log-item">Day 11: x64 汇编 + IAT Hook — 换 IAT 槽位地址实现 Hook，实验+调试验证+验收通过</div><div class="log-item">调试证据：RDX/R8/R9 寄存器传参 + 调用栈 main → MyMessageBoxA + 弹窗正文被篡改</div><div class="log-item">工程：IATHook 迁入 学习/Dll1/IATHook 并加入 学习.sln；修复构建脚本路径、OriginalFirstThunk 回退、VirtualProtect 错误检查；Release x64 构建 0 警告 0 错误</div></div></div><div class="log-entry"><div class="log-date">2026-07-31</div><div class="log-items"><div class="log-item">Day 8: APC 注入 (QueueUserAPC) — Alertable State 硬前提，实验 A/B 对比验证</div><div class="log-item">Day 9: 注入体系总结 — 六种方式对比、统一分析五问、线程劫持原理与反作弊证据链</div><div class="log-item">Day 10: 注入检测视角 — DEP/ASLR/CFG 缓解机制 + 反注入检测思路（概念推理验收，未做实时进程枚举实验）</div><div class="log-item">踩坑：LoadLibraryA 不能处理中文路径，改用 LoadLibraryW；MSVC UTF-8 源文件需 /utf-8</div><div class="log-item">新增 APCInjector + AlertableTarget 项目，统一输出到 学习/x64/Debug/</div><div class="log-item">笔记优化：前期基础与 Day 1-8 补齐复习锚点、验证证据、误区排查、逆向/防御视角和官方资料方向</div></div></div><div class="log-entry"><div class="log-date">2026-07-29</div><div class="log-items"><div class="log-item">Day 7: SetWindowsHookEx 钩子注入 — 编译→踩坑共享段→修复→全系统实测18000+次</div><div class="log-item">网站工具化: days.json + build.js 一键生成，告别编码问题</div><div class="log-item">TestGame 重写: Win32 GDI 射击游戏，全局变量暴露关键数据</div><div class="log-item">学习日志板块 + 实操记录板块上线</div></div></div><div class="log-entry"><div class="log-date">2026-07-28</div><div class="log-items"><div class="log-item">Day 1-4: PE 格式 — DOS头/NT头/COFF头/节表/导入表/导出表/重定位表</div><div class="log-item">Day 5: 手动映射注入 (Manual Map) — 7步实现，模块列表不可见</div><div class="log-item">Day 6: Shellcode 注入 — PEB走法 + MASM汇编 + 裸字节码</div></div></div><div class="log-entry"><div class="log-date">2026-07-27</div><div class="log-items"><div class="log-item">基础-1: CE 入门 — 精确搜索、模糊搜索、数据类型</div><div class="log-item">基础-2: 指针扫描 — 基址+多级偏移、动态vs静态指针</div><div class="log-item">基础-3: LoadLibrary DLL 注入 — 第一个注入器 + 锁血 DLL</div></div></div>
@@ -1445,10 +1446,172 @@ Screen = (640,360)                                           [A 用户读到 640
       </div>
     </div>
 
-    <div class="nav-bar"><button id="pb" disabled>◀ 上一页</button><span class="pi" id="pi">基础-1 / 37</span><button id="nb">下一页 ▶</button></div>
+    <div class="page" data-day="day46-49" data-short="Day 46-49">
+      <h2>Day 46-49 — 调试器进阶 + Trace/Dump/自动化脚本</h2>
+      <div class="day-meta"><span class="tag tag-done">✅ 已完成</span></div>
+      <h3>本块要解决什么</h3>
+<p>前面每一课取证都是「人肉模式」：手动下断点、停下、看一眼寄存器、记下来。本块回答的问题是：<b>怎么让调试器从「人肉盯着看」升级成「自动记录证据」</b>。三个主角：<b>Trace</b>（把程序走过的关键路径按顺序记成脚印时间线）、<b>Dump</b>（把某一时刻的内存原样保存成文件）、<b>自动化脚本</b>（把「下断点→记录→拍快照→继续」写成一串命令一次跑完）。本块同时解决一个更基础的问题：<b>证据怎么才能可重复、可复核</b>——取证的目标不是「我看到了」，而是「明天再跑一遍还能看到同样的东西」。</p>
+
+<h3>30 秒复习入口</h3>
+<p><strong>一句话核心结论</strong>：Trace 是记录员（记连续事件的脚印）、Dump 是照相机（拍某一时刻的内存快照）、脚本是流水线（把下断点/记录/拍快照按顺序自动跑完）；三者共同的底座是<b>检查点</b>——按导出名稳定定位的固定站牌，ASLR 只改地址、不改符号。</p>
+<p><strong>最小执行链</strong>：定目标（证明什么）→ 定位（哪个检查点/函数）→ bp（按导出名下断）→ run（运行到命中）→ 记录 + Dump（采集现场）→ run（继续下一站）→ 核对（按账本解读证据）。</p>
+<p><strong>最易混点</strong>：①不要把「单步执行」误称 Trace——Trace 记录的是<b>连续事件与字段变化</b>，不是每一步指令 ②Dump 是<b>瞬时快照</b>不是过程录像，且存的是<b>原始字节</b>，没有账本（偏移/大小/字节序）就读不懂 ③Trace 的 RDX=记录编号（第几条）、Dump 的 RDX=字节数（倒多少）——同一个寄存器，不同检查点含义不同 ④反汇编窗口的地址上下排列 ≠ 执行顺序，执行顺序看调用链 ⑤x64dbg 状态栏「第一次异常 (80000004, EXCEPTION_SINGLE_STEP)」是软件断点命中的标准显示，不是程序出错。</p>
+<p><strong>证据锚点</strong>：图形窗口 4 条记录（START/LIVE/LIVE/RESULT，hp 100→72、ammo 30→29、flags 0x01→0x02→0x04→0x08）；evidence size=100、magic=0x34364C52、version=1、records=4、checksum=0x710B0072 (VALID)；Dump 文件 100 字节；x64dbg 三检查点：RslDay46TraceCheckpoint（RCX=证据指针非空、RDX=0→1→2→3）、RslDay46DumpCheckpoint（RCX=字节首地址、RDX=0x64=100）、RslDay46AutomationCheckpoint（RCX=最终证据结构非空）；内存开头 8 字节=52 4C 36 34+01 00 00 00（hex）=magic+version（小端）。</p>
+<p><strong>忘了先看哪里</strong>：先背「Trace=脚印、Dump=快照、脚本=流水线、检查点=站牌」，再想三个检查点各自的 RCX/RDX 含义。</p>
+<p><strong>前后关联</strong>：承接 Day 42-45（同一帧矩阵/坐标取证靠人肉读数）与 Day 35-38（对象结构=读数据的账本）；为 Day 50-53 版本 Diff/特征码/CE 进阶铺路（自动取证的可重复性正是一切对比与回归的基础）。</p>
+
+<h3>学习地图</h3>
+<p>本块按「先懂概念、再上手工具、最后串成流程」推进，共四小课：</p>
+<ol>
+<li><b>第 1/4 小课（Day 46）Trace</b>——记录员：选择性记录 + 命令断点（不暂停、只记录）。</li>
+<li><b>第 2/4 小课（Day 47）Dump</b>——照相机：瞬时快照、原始字节、要配账本。</li>
+<li><b>第 3/4 小课（Day 48）自动化脚本</b>——流水线：bp→run→记录+快照→run，顺序不可乱。</li>
+<li><b>第 4/4 小课（Day 49）串起来</b>——取证五步：定目标→定位→选记录范围→选快照范围→核对。</li>
+</ol>
+
+<h3>A. Trace：调试器的「记录员」</h3>
+<p><b>核心结论</b>：Trace 把程序运行中<b>关键事件按顺序记下来</b>，生成一条可回看的脚印时间线。它和「人肉下断点看寄存器」的区别是：不用预先想好盯哪个寄存器、不用自己记一串数据。</p>
+<p><b>为什么必须「选择性」</b>：程序一秒执行几百万条指令，全记会慢到没法用、数据多到没法看。所以要先指定范围/条件（只记录某模块的调用、某函数的参数、满足条件的时刻）——像记录员被要求「只记射门和扑救」。</p>
+<p><b>实现机制：命令断点（Log 断点）</b>：普通断点命中后<b>暂停</b>；命令断点命中后<b>只执行一条指定命令（最常见是记录 log）就继续</b>，程序不停。多个这样的记录点沿关键路径排开，就是 Trace 的机械实现——它只是普通断点的「不拦人」版本。</p>
+<p><b>用户实测证据</b>：图形窗口左侧 4 条确定性记录：#0 phase=START hp=100 ammo=30 Flags=0x01；#1 phase=LIVE hp=100 ammo=29 Flags=0x02；#2 phase=LIVE hp=72 ammo=29 Flags=0x04；#3 phase=RESULT hp=72 ammo=29 Flags=0x08。时间顺序里的变化（开火掉弹药/中弹掉血/flags 位逐位累积）全部记在同一张流水账里。</p>
+
+<h3>B. Dump：内存的「照相机」</h3>
+<p><b>核心结论</b>：Dump 把<b>某一时刻</b>的一段内存<b>按原样</b>拷到文件里——字节对字节，一个不多一个不少。Trace 管时间段，Dump 管瞬间。</p>
+<p><b>原始字节 ≠ 人话</b>：Dump 文件里不会写「这是血量 100」，只有光秃秃的字节。要读懂必须靠<b>账本</b>：偏移（从哪开始）、大小（占几字节）、字节序（小端低位在前）。同一段字节，账本不同答案完全不同。</p>
+<p><b>时机与范围</b>：程序一直在跑、内存一直在变，必须<b>停稳了再拍</b>（配断点/检查点）；范围按目的选——整进程（大而全）/单模块（中等）/一小段数据（小而准）。时机错=证据过期，范围错=不够用或拖慢操作。</p>
+<p><b>用户实测证据</b>：图形窗口按 D 后导出 %TEMP%\ReverseStrikeLab_Day46_49.dump，文件大小<b>正好 100 字节</b>（资源管理器属性核实）；右侧 LIVE memory evidence 面板显示 evidence@（ASLR 地址，每次运行变）、size=100 bytes、magic=0x34364C52、version=1、records=4、checksum=0x710B0072 (VALID)。程序启动时也会自动写一次 Dump（所以窗口一打开就显示 DUMP WRITTEN，不一定要按 D）。</p>
+
+<h3>C. 自动化脚本：调试器的「流水线」</h3>
+<p><b>核心结论</b>：脚本 = 把一条条调试器命令按顺序写进文本文件，一次加载、按顺序自动执行——把「手动点的每个按钮」提前录下来回放。</p>
+<p><b>典型取证流程</b>：bp（下断点=先定位在哪停）→ run（运行到命中）→ 记录 + Dump（采集现场）→ run（继续下一站）→ 下一检查点……跑完一遍，同时拿到「时间线 + 快照集」。</p>
+<p><b>顺序纪律</b>：先定位后采集、采集完再继续，顺序不能乱。到检查点那一刻「记录」和「Dump」都是对同一现场做采集，谁先谁后不严格；真正不能换的是「先下断再跑」「先采集再继续」。</p>
+<p><b>为什么要它</b>：手动操作步骤多、容易漏、每次重来；脚本可重复、不漏步、还能原样发给别人复现——这也是本课程所有后台验收都靠脚本的原因。注意：脚本不会思考，它严格按你写的顺序执行，所以写脚本前必须先把人肉流程跑通、确认每一步。</p>
+<p><b>本块自动化证据</b>：Sol 已在后台用 x64dbg 自动脚本（verify\day46_49_breakpoint_check.txt）真实命中三个检查点并通过全部断言（见「实操证据汇总」），这是「脚本一次跑完、断言自动核对」的后台演示。</p>
+
+<h3>D. 检查点：固定站牌</h3>
+<p><b>核心结论</b>：检查点（Checkpoint）= 程序里一个<b>稳定的、调试器能按名字找到</b>的位置，脚本每到一站就「记录+拍快照+继续」。</p>
+<p><b>为什么用导出名/符号而不是写死地址</b>：地址被 ASLR 随机化、重编译后也会变（Day 21 的教训：不能硬记地址/服务号，优先用导出名定位）；导出名/符号永远不变，按名找人，取证才稳定可重复。</p>
+<p><b>本块三个检查点</b>（均从源码 future_labs.cpp 导出）：</p>
+<ul>
+<li><b>RslDay46TraceCheckpoint</b>（入口 mov dword ptr [rsp+10],edx）：<b>RCX=Day46Evidence 结构指针，RDX=recordIndex（0–3）</b>——「正在处理第几条记录」。</li>
+<li><b>RslDay46DumpCheckpoint</b>（入口 mov qword ptr [rsp+10],rdx）：<b>RCX=字节首地址，RDX=大小（size_t）</b>——「要导出多少字节」。</li>
+<li><b>RslDay46AutomationCheckpoint</b>：<b>RCX=最终证据结构</b>——4 条记录全部生成完之后的完整 100 字节结构。</li>
+</ul>
+
+<h3>E. Day46Evidence 结构账本（100 字节）</h3>
+<p><b>核心结论</b>：这块 100 字节结构就是「账本」的实物——知道每个偏移是什么，读内存才有意义。</p>
+<table>
+<tr><th>偏移</th><th>字段</th><th>大小</th><th>含义</th></tr>
+<tr><td>0</td><td>magic</td><td>4 字节</td><td>身份牌 0x34364C52（ASCII "46LR"），小端存储为 52 4C 36 34</td></tr>
+<tr><td>4</td><td>version</td><td>4 字节</td><td>版本号 =1</td></tr>
+<tr><td>8</td><td>activeRecord</td><td>4 字节</td><td>当前选中的记录号</td></tr>
+<tr><td>12</td><td>recordCount</td><td>4 字节</td><td>记录数 =4</td></tr>
+<tr><td>16~95</td><td>records[4]</td><td>80 字节</td><td>4 条 Day46TraceRecord，每条 20 字节（sequence/phase/health/ammunition/flags 各 4 字节）</td></tr>
+<tr><td>96</td><td>checksum</td><td>4 字节</td><td>内容校验和（对内容按固定规则算出；把 activeRecord 归零再算，保证规范化）</td></tr>
+</table>
+<p><b>用户实测核对</b>：RslDay46TraceCheckpoint 停住后命令 dump rcx，内存开头 8 字节显示为十进制无符号字节 <code>82 76 54 52 | 01 00 00 00</code>。换算成十六进制：<code>52 4C 36 34 | 01 00 00 00</code>——正好是 <b>magic=0x34364C52 的小端字节序 + version=1</b>。账本第一行核对成功：偏移 0 是 magic、偏移 4 是 version，一个不多一个不少。</p>
+<p><b>小端序回顾</b>：0x34364C52 的四个字节按地址从低到高存成 52 4C 36 34（低地址存低位字节）；读的时候「从后往前拼」得到 0x34364C52。Day 28 存档分析（40 E2 01 00=123456）同一规则。</p>
+
+<h3>F. 执行顺序与触发时机</h3>
+<p><b>核心结论</b>：检查点<b>只在特定事件路径上被调用</b>，不是一直在触发——断点只是路障，要等车（执行）经过才拦。</p>
+<p><b>源码执行顺序</b>（future_labs.cpp）：EmitDay46Trace()：for index 0..3 { 设 activeRecord=index；RslDay46TraceCheckpoint(&evidence, index) } → RslDay46AutomationCheckpoint(&evidence) → WriteDay46Dump()：RslDay46DumpCheckpoint(&evidence, sizeof(evidence)) → 打开窗口 → 窗口循环里：按 SPACE 时 activeRecord=(activeRecord+1)%4 并再次调用 RslDay46TraceCheckpoint；按 D 时再走 WriteDay46Dump。</p>
+<p><b>两个触发时机</b>：①程序启动生成 4 条记录时（Trace 连续 4 次→Automation 1 次→Dump 1 次，都在窗口打开之前）；②窗口循环里按 SPACE（触发 TraceCheckpoint）/按 D（触发 DumpCheckpoint）。所以「为什么要按空格才会停」——程序平时在「画帧→等按键」的循环里转圈，那圈里没有检查点代码；按 SPACE 才让程序走「切换记录」路径经过检查点。</p>
+<p><b>最易混点：地址顺序 ≠ 执行顺序</b>：反汇编窗口里 Automation 的地址排在 Dump 下面，但执行顺序是 Trace×4→Automation→Dump（Automation 在 Dump 之前）。地址是链接布局，执行顺序看调用链（call graph）。</p>
+
+<h3>G. x64dbg 实操取证记录</h3>
+<p><b>使用 Debug 产物</b>：C:\Users\Administrator\Desktop\学习\Dll1\x64\Debug\ReverseStrikeLabDay46_49.exe（无参数直接进 lab，可断）；Release 产物只作图形窗口用户入口。</p>
+<p><b>断点设置</b>：在命令框输入 bp RslDay46TraceCheckpoint（导出名可直接解析）；断点窗口（Alt+B）可见地址/模块/启用状态/命中数。断点地址 00007FF76715A000（当次 Debug ASLR 会话值）对应模块基址 00007FF767150000 的 RVA 0xA000；RslDay46DumpCheckpoint 在 RVA 0xA050、RslDay46AutomationCheckpoint 在 RVA 0xA0A0。这些 RVA 是<b>当次构建实测值</b>，重编译会变，定位永远用导出名。</p>
+<p><b>用户亲手读数（三检查点全命中）</b>：</p>
+<table>
+<tr><th>检查点</th><th>RIP</th><th>RCX</th><th>RDX</th></tr>
+<tr><td>RslDay46TraceCheckpoint</td><td>00007FF76715A000（RVA 0xA000）</td><td>证据结构指针（非空，如 000000303B4FEDB0 / 000000EC6CB3F020 / 00000084866FEFD0，随会话变）</td><td>0→1→2→3（记录号，亲眼看到 0、1、3 依次变化）</td></tr>
+<tr><td>RslDay46DumpCheckpoint</td><td>00007FF76715A050（RVA 0xA050）</td><td>字节首地址 00000084866FEFD0（非空）</td><td>0x64 = 十进制 100</td></tr>
+<tr><td>RslDay46AutomationCheckpoint</td><td>00007FF76715A0A0（RVA 0xA0A0）</td><td>最终证据结构 0000004531EFF530（非空）</td><td>——（本检查点只看 RCX）</td></tr>
+</table>
+<p><b>用户亲眼看到的现象</b>：调用堆栈窗口首行 <code>$=9 00007FF76715A000 &lt;reversestrikelabday46_49.RslDay46TraceCheckpoint&gt;</code>（正停在检查点函数调用中）；断点窗口命中计数从 0 累计（启动生成记录调用 4 次）；状态栏「第一次异常于 … (80000004, EXCEPTION_SINGLE_STEP)」为软件断点命中后的标准显示；寄存器值均为十六进制（0x64=100 是十进制 100）；图形窗口在暂停时冻结（「卡死」是正常现象）。</p>
+<p><b>图 形窗口证据</b>：#0~#3 四条记录 + 右侧 evidence@/size=100/magic=0x34364C52/version=1/records=4/checksum=0x710B0072 (VALID)/DUMP WRITTEN；SPACE 切换记录、D 写 Dump、ESC 退出。</p>
+
+<h3>H. 跨概念对照表</h3>
+<table>
+<tr><th>概念</th><th>是什么</th><th>管什么</th><th>本块证据</th></tr>
+<tr><td>Trace</td><td>记录员</td><td>连续事件的脚印时间线（选择性、按条件记）</td><td>4 条记录字段变化；TraceCheckpoint 的 RDX=记录号 0→3</td></tr>
+<tr><td>Dump</td><td>照相机</td><td>某一时刻内存的原样快照（原始字节，需账本）</td><td>100 字节文件；DumpCheckpoint 的 RDX=0x64=100</td></tr>
+<tr><td>自动化脚本</td><td>流水线</td><td>把 bp→run→记录+快照→run 串起来自动执行</td><td>Sol 后台脚本命中三检查点+断言通过；用户手工复现同一序列</td></tr>
+<tr><td>检查点</td><td>固定站牌</td><td>按导出名稳定定位的取证位置（不受 ASLR 影响）</td><td>三个 RslDay46* 导出锚点，源码行号可见（future_labs.cpp:164/168/172）</td></tr>
+<tr><td>命令断点</td><td>不拦人的断点</td><td>命中后执行命令（如 log）就继续，程序不停</td><td>Trace 的实现机制（普通断点的「不拦人」版本）</td></tr>
+</table>
+<p><b>RDX 在不同检查点的含义对照</b>：TraceCheckpoint 的 RDX=记录编号（第几条）；DumpCheckpoint 的 RDX=字节大小（倒多少）。同一寄存器，含义由检查点函数签名决定——看函数定义（参数列表）才知道。</p>
+
+<h3>I. 失败实验与排错</h3>
+<ul>
+<li><b>现象</b>：按 F9 后程序一路跑到窗口、断点「没停」。</li>
+<li><b>原因</b>：检查点只在特定事件路径被调用；程序平时在「画帧→等按键」循环里转圈，不经过检查点代码。放行后在窗口<b>按 SPACE/D 触发事件</b>才会命中。</li>
+<li><b>现象</b>：按 SPACE 后仍不命中。</li>
+<li><b>原因</b>：焦点在 x64dbg 上，按键被调试器接走；<b>先鼠标点一下图形窗口</b>再按 SPACE。</li>
+<li><b>现象</b>：状态栏显示「第一次异常于 … (80000004, EXCEPTION_SINGLE_STEP)」。</li>
+<li><b>说明</b>：这是软件断点命中后 x64dbg 把 INT3 换回原字节、单步恢复时产生的标准事件显示，<b>不是程序出错</b>。</li>
+<li><b>现象</b>：检查点命中 4 次但以为「没停」。</li>
+<li><b>原因</b>：启动生成记录时 EmitDay46Trace 连续调用 4 次 TraceCheckpoint（命中计数=4）；每次命中都暂停，只是图形窗口先弹出、暂停画面看起来像「程序打开了」。</li>
+<li><b>现象</b>：寄存器 RDX 显示 64，以为不对。</li>
+<li><b>说明</b>：x64dbg 寄存器是<b>十六进制</b>显示，0x64=十进制 100（Dump 的大小），完全正确。</li>
+<li><b>现象</b>：图形窗口看起来「卡死」不动。</li>
+<li><b>说明</b>：Debug 断点暂停时图形窗口暂时无响应是正常现象（冻结的屏幕），放行即恢复。</li>
+<li><b>现象</b>：按 F12 没有暂停、弹音量调节。</li>
+<li><b>原因</b>：外设键盘（狼蛛 AULA）F 区处于媒体键模式/非 Windows 模式；<b>按 Fn+W 切回 Windows 模式</b>（本机实测生效），F12 恢复为标准键。本机 G HUB 只控制鼠标，不控制该键盘。</li>
+<li><b>现象</b>：程序重启后 ASLR 变了，旧断点地址还在但模块换了。</li>
+<li><b>正确做法</b>：x64dbg 断点按模块+偏移存储，重开自动重定位；写死绝对地址的脚本必须按符号/导出名重定位。</li>
+</ul>
+
+<h3>J. 实操证据汇总与证据等级</h3>
+<p><b>A. 用户亲手取证</b>：图形窗口 4 条记录与字段变化（START/LIVE/LIVE/RESULT、hp 100→72、ammo 30→29、flags 0x01→0x02→0x04→0x08）；Dump 文件 100 字节（属性核实）；checksum=0x710B0072 (VALID)：三检查点 RCX/RDX 寄存器读数；内存开头 8 字节（十进制 82 76 54 52 01 00 00 00 = hex 52 4C 36 34 01 00 00 00 = magic+version）；调用堆栈首行=$RslDay46TraceCheckpoint；命中计数 4。</p>
+<p><b>B. Sol 后台验收</b>：Debug/Release 警告视为错误构建通过；无参数图形入口、20/60 帧隐藏 smoke、失败参数、独立 self-test 通过；固定事件链 START&gt;LIVE&gt;HIT&gt;RESULT；证据结构 100 字节、Dump 100 字节回读一致、checksum 有效；Release 运行目录无同名 PDB；x64dbg headless 命中 RslDay46TraceCheckpoint（RCX 非空 + recordIndex 0-3）、RslDay46DumpCheckpoint（RCX/RDX）、RslDay46AutomationCheckpoint（RCX 非空）并全部断言通过；V1 与 Day 31-34/35-38/39-41/42-45 回归通过。</p>
+<p><b>C. 课堂推理/真实逆向边界</b>：本块证据全部来自自建用户态安全工程（ReverseStrikeLab Day46Variant）；没有连接商业游戏、网络服务、驱动或反作弊，代码是 Sol/DS 的答案库。真实商业程序里的 Trace/Dump/脚本用法同思路，但检查点函数、结构布局、事件链必须逐程序逐版本验证；「外挂用脚本批量换内存/Dump 整包」是机制说明，不是本课对任何商业程序的实测。</p>
+
+<h3>K. 逆向分析视角</h3>
+<p>本块只讲识别与使用依据，不提前展开 Day 50-53 的 Diff/特征码操作。识别要点：看到「按导出名下断、RunScript 自动命中断言」=可复现取证的标准打法；Trace 输出（时间线+字段快照）是还原程序行为最直接的证据；Dump 的原始字节+结构账本让「证据可离线复核」；检查点的存在让证据链能跨会话、跨机器重放。防御侧：反篡改/完整性校验常把「内容校验和」放在结构尾部（本块 checksum 即为一例），攻击者改内容不改校验和就会被抓住；调试器脚本与自动化取证让防御方也能批量复核，攻防双方都在抢「可复现证据」的能力。</p>
+
+<h3>L. 3 分钟复习</h3>
+<ol>
+<li>Trace=记录员（事件脚印）、Dump=照相机（瞬时快照）、脚本=流水线（自动执行）、检查点=固定站牌（导出名定位）。</li>
+<li>Trace 的 RDX=记录号（0~3），Dump 的 RDX=大小（0x64=100），Automation 的 RCX=最终结构。</li>
+<li>Dump 前先停稳（配断点/检查点）；读 Dump 前先准备账本（偏移/大小/字节序）。</li>
+<li>脚本沿「先定位（bp）→ 后采集（log/dump）→ 再继续（run）」的顺序，不能乱。</li>
+<li>地址会变（ASLR/重编译），导出名/符号不变——一切定位用名字。</li>
+</ol>
+
+<h3>M. 自测题与简短答案</h3>
+<ol>
+<li><b>Trace 和「单步执行」有什么区别？</b>——单步是每步指令停下看；Trace 是让调试器按条件连续记录事件与字段变化，得到一条时间线，不打断程序。</li>
+<li><b>为什么 Trace 要有「选择性」？</b>——全记会让程序慢到无法使用、数据多到没法看，只记录指定范围/条件才有价值。</li>
+<li><b>命令断点（Log 断点）和普通断点最大的区别？</b>——普通断点命中后暂停；命令断点命中后只执行指定命令（如记录）就继续，程序不停。</li>
+<li><b>Dump 存的是过程还是瞬间？原始字节为什么读不懂？</b>——某一时刻的瞬时快照，且是原始字节；没有账本（偏移/大小/字节序）就无法把字节翻译成字段值。</li>
+<li><b>为什么 Dump 前要先把程序停稳？</b>——程序运行时内存持续变化，停稳了拍到的才是目标时刻的证据，否则是「过期内存」。</li>
+<li><b>TraceCheckpoint 的 RDX 和 DumpCheckpoint 的 RDX 分别是什么？</b>——记录编号（第几条 0~3）和字节大小（0x64=100）；含义由检查点函数签名决定。</li>
+<li><b>为什么检查点用导出名定位而不是写死地址？</b>——ASLR 与重编译都会改变地址，导出名/符号稳定不变，按名定位才可重复。</li>
+<li><b>反汇编里 Automation 在 Dump 下面，为什么执行却先 Automation？</b>——地址顺序是链接布局，执行顺序看调用链：EmitDay46Trace（Trace×4→Automation）→ WriteDay46Dump（Dump）。</li>
+<li><b>内存里 52 4C 36 34 为什么对应 magic=0x34364C52？</b>——小端序：低地址存低位字节，读取时从后往前拼。</li>
+<li><b>checksum 是地址吗？VALID 说明什么？</b>——不是地址，是「按固定规则对内容算出的总数」；VALID=本次重算与本子上的数一致=内容没被改过（只改导出文件不影响程序内存里的原件）。</li>
+</ol>
+
+<h3>N. 实验环境、版本边界与官方资料</h3>
+<p><b>实验环境</b>：Windows x64；MSVC v145 / C++20；raylib 6.0；ReverseStrikeLabDay46_49 Debug/Release（Day46Variant）；x64dbg；%TEMP%\ReverseStrikeLab_Day46_49.dump；本机外设键盘为狼蛛 AULA（VID_258A），G HUB 仅控制鼠标。冻结产物 SHA-256：Debug=07988E7BC49739D78B3A6370AAC21CAD02872D8DABEFD271DBF529967FD0B7BE；Release=B8A7ED2BAD78C973C5A268FB9CC83B1FD948DF02BE9B2E32FCDAC6DF9247EC9E（与 ReverseStrikeLab\docs\prebuilt_handoffs\PACKAGE_MANIFEST.sha256 一致）。</p>
+<p><b>版本边界</b>：RVA 0xA000/0xA050/0xA0A0、evidence 地址、RCX/RDX 值均为当次 Debug ASLR 会话实测值；Day46Evidence 100 字节布局（magic/version/activeRecord/recordCount/records[4]/checksum）为本次 MSVC 构建事实；checksum=0x710B0072 为当次运行值。地址会随 ASLR/重编译变化，可复核证据是「结构大小、字段语义、事件索引」而非绝对地址。</p>
+<p><b>官方资料方向</b>：x64dbg 官方文档与内置命令参考（bp/run/log 命令、命令断点、脚本与 RunScript）；Microsoft Learn 的 Windows x64 调用约定（寄存器参数/影子空间，衔接 Day 31-34）；Day46Evidence 结构定义与三个检查点导出源码位于 ReverseStrikeLab\src\future_labs.hpp / future_labs.cpp（答案库，仅当课教学必要入口公开）。</p>
+
+      <div class="practice-box">
+        <h3>🛠 实操记录</h3>
+        <table>
+          <tr><th style="width:80px">使用工具</th><td>ReverseStrikeLabDay46_49.exe(无参数图形取证) + x64dbg(Debug 断 RslDay46TraceCheckpoint/RslDay46DumpCheckpoint/RslDay46AutomationCheckpoint) + %TEMP%\ReverseStrikeLab_Day46_49.dump</td></tr>
+          <tr><th>目标程序</th><td>4 条确定性 Trace 记录(字段变化) + 100 字节证据结构(magic/version/recordCount/checksum) + Dump 文件 100 字节 + 三检查点 RCX/RDX 寄存器 + 内存账本核对(magic+version 小端序)</td></tr>
+          <tr><th>过程 & 结果</th><td>SPACE 逐条观察 4 条记录(START/LIVE/LIVE/RESULT，hp 100→72、ammo 30→29、flags 0x01→0x02→0x04→0x08)；D 导出 100 字节 Dump；checksum=0x710B0072 (VALID)；RslDay46TraceCheckpoint：RIP=RVA 0xA000、RCX=证据指针非空、RDX=0→1→2→3；RslDay46DumpCheckpoint：RIP=RVA 0xA050、RCX=字节首地址非空、RDX=0x64=100；RslDay46AutomationCheckpoint：RIP=RVA 0xA0A0、RCX=最终证据结构非空；内存开头 8 字节(十进制 82 76 54 52 01 00 00 00)=magic 0x34364C52+version=1(小端序)</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="nav-bar"><button id="pb" disabled>◀ 上一页</button><span class="pi" id="pi">基础-1 / 38</span><button id="nb">下一页 ▶</button></div>
 </div></div>
 <script>
-(function(){var p=document.querySelectorAll(".page");var n=document.querySelectorAll(".sidebar nav a");var b=document.getElementById("pb");var x=document.getElementById("nb");var t=document.getElementById("pi");var j=document.getElementById("jump");var jb=document.getElementById("jb");var mt=document.getElementById("mt");var sb=document.querySelector(".sidebar");var F=3;var U=[{"kind":"foundation"},{"kind":"foundation"},{"kind":"foundation"},{"kind":"day","startDay":1,"endDay":1},{"kind":"day","startDay":2,"endDay":2},{"kind":"day","startDay":3,"endDay":3},{"kind":"day","startDay":4,"endDay":4},{"kind":"day","startDay":5,"endDay":5},{"kind":"day","startDay":6,"endDay":6},{"kind":"day","startDay":7,"endDay":7},{"kind":"day","startDay":8,"endDay":8},{"kind":"day","startDay":9,"endDay":9},{"kind":"day","startDay":10,"endDay":10},{"kind":"day","startDay":11,"endDay":11},{"kind":"day","startDay":12,"endDay":12},{"kind":"day","startDay":13,"endDay":13},{"kind":"day","startDay":14,"endDay":14},{"kind":"day","startDay":15,"endDay":15},{"kind":"day","startDay":16,"endDay":16},{"kind":"day","startDay":17,"endDay":17},{"kind":"day","startDay":18,"endDay":18},{"kind":"day","startDay":19,"endDay":19},{"kind":"day","startDay":20,"endDay":20},{"kind":"day","startDay":21,"endDay":21},{"kind":"day","startDay":22,"endDay":22},{"kind":"day","startDay":23,"endDay":23},{"kind":"day","startDay":24,"endDay":24},{"kind":"day","startDay":25,"endDay":25},{"kind":"day","startDay":26,"endDay":26},{"kind":"day","startDay":27,"endDay":27},{"kind":"day","startDay":28,"endDay":28},{"kind":"day","startDay":29,"endDay":29},{"kind":"day","startDay":30,"endDay":30},{"kind":"phase2","startDay":31,"endDay":34},{"kind":"phase2","startDay":35,"endDay":38},{"kind":"phase2","startDay":39,"endDay":41},{"kind":"phase2","startDay":42,"endDay":45}];var c=0;var l=p.length;
+(function(){var p=document.querySelectorAll(".page");var n=document.querySelectorAll(".sidebar nav a");var b=document.getElementById("pb");var x=document.getElementById("nb");var t=document.getElementById("pi");var j=document.getElementById("jump");var jb=document.getElementById("jb");var mt=document.getElementById("mt");var sb=document.querySelector(".sidebar");var F=3;var U=[{"kind":"foundation"},{"kind":"foundation"},{"kind":"foundation"},{"kind":"day","startDay":1,"endDay":1},{"kind":"day","startDay":2,"endDay":2},{"kind":"day","startDay":3,"endDay":3},{"kind":"day","startDay":4,"endDay":4},{"kind":"day","startDay":5,"endDay":5},{"kind":"day","startDay":6,"endDay":6},{"kind":"day","startDay":7,"endDay":7},{"kind":"day","startDay":8,"endDay":8},{"kind":"day","startDay":9,"endDay":9},{"kind":"day","startDay":10,"endDay":10},{"kind":"day","startDay":11,"endDay":11},{"kind":"day","startDay":12,"endDay":12},{"kind":"day","startDay":13,"endDay":13},{"kind":"day","startDay":14,"endDay":14},{"kind":"day","startDay":15,"endDay":15},{"kind":"day","startDay":16,"endDay":16},{"kind":"day","startDay":17,"endDay":17},{"kind":"day","startDay":18,"endDay":18},{"kind":"day","startDay":19,"endDay":19},{"kind":"day","startDay":20,"endDay":20},{"kind":"day","startDay":21,"endDay":21},{"kind":"day","startDay":22,"endDay":22},{"kind":"day","startDay":23,"endDay":23},{"kind":"day","startDay":24,"endDay":24},{"kind":"day","startDay":25,"endDay":25},{"kind":"day","startDay":26,"endDay":26},{"kind":"day","startDay":27,"endDay":27},{"kind":"day","startDay":28,"endDay":28},{"kind":"day","startDay":29,"endDay":29},{"kind":"day","startDay":30,"endDay":30},{"kind":"phase2","startDay":31,"endDay":34},{"kind":"phase2","startDay":35,"endDay":38},{"kind":"phase2","startDay":39,"endDay":41},{"kind":"phase2","startDay":42,"endDay":45},{"kind":"phase2","startDay":46,"endDay":49}];var c=0;var l=p.length;
 function label(i){return p[i].dataset.short}
 function s(i){for(var k=0;k<l;k++)p[k].classList.remove("active");for(var k2=0;k2<n.length;k2++)n[k2].classList.remove("active");p[i].classList.add("active");n[i].classList.add("active");b.disabled=i===0;x.disabled=i===l-1;t.textContent=label(i)+" / "+l}
 function done(){if(window.innerWidth<=768)sb.classList.remove("open");window.scrollTo(0,0)}
