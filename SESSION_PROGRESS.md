@@ -58,21 +58,23 @@ status: in-progress
 - [x] <!-- id:t_phase_b dep:t_phase_a --> Day 35-38: C++ 对象模型 + RTTI + STL 容器恢复  
 - [x] <!-- id:t_phase_c dep:t_phase_b --> Day 39-41: SEH/VEH 深入 + x64 栈展开 + TLS/Loader 高级  
 - [x] <!-- id:t_phase_d dep:t_phase_c --> Day 42-45: 游戏数学 + 相机/矩阵/World-to-Screen
-- [ ] <!-- id:t_phase_e dep:t_phase_d --> Day 46-49: 调试器进阶 + Trace/Dump/自动化脚本  
+- [x] <!-- id:t_phase_e dep:t_phase_d --> Day 46-49: 调试器进阶 + Trace/Dump/自动化脚本  
 - [ ] <!-- id:t_phase_f dep:t_phase_e --> Day 50-53: 版本 Diff + 特征码定位 + CE 进阶  
 - [ ] <!-- id:t_phase_g dep:t_phase_f --> Day 54-57: Windows 多线程 + 同步机制 + Hook 稳定性  
 - [ ] <!-- id:t_phase_h dep:t_phase_g --> Day 58-60: 第二次综合项目 + 完整逆向报告  
 
 ## Current Status  
 
-进度: 45/60 — 第一阶段 30/30 完成，第二阶段 Day 31-34、Day 35-38、Day 39-41、Day 42-45 完成（15/30）
+进度: 49/60 — 第一阶段 30/30 完成，第二阶段 Day 31-34、Day 35-38、Day 39-41、Day 42-45、Day 46-49 完成（19/30）
 路线: Day 8-60 主路线保持不变；固定链路为 DS 理论前置 -> Sol 工程准备与后台验收 -> DS 用户实操教学/复盘/网站闭环；Day 46-60 四块工程已由 Sol 提前冻结并验收，匹配未改动产物时理论后直接读取预制卡进入 DS 实操教学，省略重复工程请求/交回往返；Sol 另负责学习计划大方向、高难救场和每 3-5 课定期抽查
-教学阶段: DS 实操教学
+教学阶段: DS 理论前置
 实操模型: Sol 负责实操工程制作与后台验收；DS 负责基础理论、用户实操教学、复盘与日常闭环；Sol 另负责大方向、救场和抽查
-正在: Day 46-49 调试器进阶 + Trace/Dump/自动化脚本 — 理论前置完成并逐概念确认理解（Trace=记录员/选择性记录/命令断点实现；Dump=瞬时快照/原始字节需账本/停稳再拍；脚本=菜谱流水线/先定位后采集；检查点=按导出名稳定定位）；Sol 预制卡启用，冻结产物 SHA-256 核对一致；当前进入 DS 用户实操取证，不提前展开后续 Day。
-下一步: DS 按 `C:\Users\Administrator\Desktop\学习\Dll1\ReverseStrikeLab\docs\prebuilt_handoffs\DAY46_49.txt` 引导实操：先 Release 图形入口（SPACE 逐条观察 → D 导出 Dump → 报告文件大小与 checksum 状态），确认后再进 x64dbg Debug 产物核对三个检查点（RslDay46TraceCheckpoint / RslDay46DumpCheckpoint / RslDay46AutomationCheckpoint 的 RCX/RDX 断言）；用户取证、复盘、文章、构建发布与线上核对仍按原闭环逐块完成。
+正在: Day 46-49 调试器进阶 + Trace/Dump/自动化脚本 — 已正式完成并闭环（理论前置 4 小课、用户图形取证与三个检查点 x64dbg 寄存器证据、Dump 100 字节、复盘理解确认、days.json 文章定稿与构建发布、线上核对全部通过）；当前课程转 Day 50-53，等待 DS 理论前置，不提前展开后续 Day。
+下一步: DS 开始 Day 50-53 理论前置（版本 Diff + 特征码定位 + CE 进阶），一次讲一个概念并确认理解；理论前置完成后直接读取 `C:\Users\Administrator\Desktop\学习\Dll1\ReverseStrikeLab\docs\prebuilt_handoffs\DAY50_53.txt`，核对冻结产物（ReverseStrikeLabDay50_53_V1/V2.exe）SHA-256 未变并将教学阶段改为 `DS 实操教学`，不再生成重复的《给 Sol 的实操工程请求》。
 
 ## Decisions
+
+- <!-- at:2026-09-09T21:00:00+08:00 --> Day 46-49 正式完成并闭环：DS 理论前置（Trace=记录员/选择性记录/命令断点实现；Dump=瞬时快照/原始字节需账本/停稳再拍；脚本=菜谱流水线/先定位后采集；检查点=按导出名稳定定位；小端序回顾）→ Sol 预制卡直接启用（文档与冻结产物 SHA-256 核对一致：Debug 07988E7B…、Release B8A7ED2B…）→ 用户亲手实操取证（图形 4 条记录 START/LIVE/LIVE/RESULT，hp 100→72、ammo 30→29、flags 0x01→0x02→0x04→0x08；D 导出 %TEMP%\ReverseStrikeLab_Day46_49.dump=100 字节；checksum=0x710B0072 (VALID)；x64dbg 三检查点全命中：RslDay46TraceCheckpoint RCX=证据指针非空/RDX=0→1→2→3、RslDay46DumpCheckpoint RCX=字节首地址/RDX=0x64=100、RslDay46AutomationCheckpoint RCX=最终证据结构非空；内存账本核对 82 76 54 52 01 00 00 00（十进制显示）=magic 0x34364C52+version=1 的小端字节序；调用堆栈与命中计数 4 亦取证）→ 老师式复盘两问通过（Trace RDX=记录编号 vs Dump RDX=字节大小；三检查点对号入座三件套）→ days.json 新增 day46-49 合并块（A-N 章节：本块解决什么/六项 30 秒复习入口/学习地图/Trace/Dump/脚本/检查点/100 字节结构账本表/执行顺序与触发时机/x64dbg 取证记录/跨概念对照表/10 条失败排错/证据等级/逆向视角/3 分钟复习/10 题自测/实验环境版本边界）→ node build.js 验证 38 文章单元、49/60、第二阶段 19/30 块 5/8 → 提交 b8e0abd 推送（仅暂存 SESSION_PROGRESS.md/days.json/index.html 三文件）→ 线上 Pages 核对通过（HTTP 200、49/60、Day 46-49 页面含 RslDay46TraceCheckpoint）。t_phase_e 标记完成，plan 23/36→24/36，进度 49/60，当前课程转 Day 50-53，教学阶段 DS 理论前置。未提前展开或完成 Day 50-53。环境备注：本次 Reasonix 宿主 read-evidence 守卫拦截 bash 对 days.json 的读写，build+git 提交改由用户在本机 PowerShell 执行完成（用户自行运行 node build.js/git add/commit/push），此环境事件不构成学习证据；文章首发后按常规留待 Sol 八项质量门审核与每 3-5 课抽查，若需返修按 Day 42-45 先例定点修正替换线上。另：本课实操中用户外设狼蛛 AULA 键盘 F 区处于媒体键模式，按 Fn+W 切回 Windows 模式后 F12 恢复标准键。
 
 - <!-- at:2026-09-09T13:35:00+08:00 --> 用户授权的 Day 46-60 实操工程批量预制与直接交接规则已落盘：ReverseStrikeLab 内已准备 Day 46-49、50-53、54-57、58-60 四块独立 x64 Debug/Release 产物、逐块预制卡、冻结 SHA-256 清单、统一验收器和 x64dbg 自动断点脚本。每块仍必须先由 DS 完成理论前置；产物与清单一致时 DS 直接读对应卡进入实操教学，不再让用户往返传工程请求。日常教学问题由 DS 处理；工程/产物/检查点/证据链大问题，或同一症状同一方法两次失败、约 20 分钟无新增证据、下一步只能靠猜时才自动转 Sol。此次只改变后续交接方式，不构成学习证据：status 仍 in-progress，plan 仍 23/36，进度仍 45/60，Day 46-60 四项仍未完成，教学阶段仍为 DS 理论前置。
 
