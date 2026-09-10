@@ -3,7 +3,7 @@ schema: cc-dash/session@1
 project: windows-reverse-learning  
 session_id: s_2026-07-30_day8-apc  
 started: 2026-07-30T00:00:00+08:00  
-last_updated: 2026-09-10T23:49:31+08:00
+last_updated: 2026-09-11T02:44:25+08:00
 status: in-progress
 ---  
 
@@ -40,17 +40,17 @@ status: in-progress
 
 **阶段四：内核基础 (21-26)**  
 - [x] <!-- id:t_kernel_arch dep:t_protection --> Day 21: 内核架构基础 — Ring0/Ring3/系统调用(syscall)/SSDT
-- [ ] <!-- id:t_kernel_callback dep:t_kernel_arch --> Day 22: 内核回调机制 — PsSetCreateProcessNotifyRoutine + 驱动入口  
-- [ ] <!-- id:t_kernel_ssdt dep:t_kernel_callback --> Day 23: SSDT Hook原理 — 内核级Hook/KD调试/VTL0/VTL1概念  
-- [ ] <!-- id:t_kernel_comm dep:t_kernel_ssdt --> Day 24: 驱动通信 + 对象生命周期 — IOCTL/共享内存/引用计数/IRQL与锁  
-- [ ] <!-- id:t_kernel_filter dep:t_kernel_comm --> Day 25: 过滤器驱动 — Minifilter(文件)/NDIS/WFP(网络)概念  
-- [ ] <!-- id:t_kernel_ob dep:t_kernel_filter --> Day 26: 内核对象管理 — ObRegisterCallbacks/进程线程保护  
+- [x] <!-- id:t_kernel_callback dep:t_kernel_arch --> Day 22: 内核回调机制 — PsSetCreateProcessNotifyRoutine + 驱动入口
+- [x] <!-- id:t_kernel_ssdt dep:t_kernel_callback --> Day 23: SSDT Hook原理 — 内核级Hook/KD调试/VTL0/VTL1概念
+- [x] <!-- id:t_kernel_comm dep:t_kernel_ssdt --> Day 24: 驱动通信 + 对象生命周期 — IOCTL/共享内存/引用计数/IRQL与锁
+- [x] <!-- id:t_kernel_filter dep:t_kernel_comm --> Day 25: 过滤器驱动 — Minifilter(文件)/NDIS/WFP(网络)概念
+- [x] <!-- id:t_kernel_ob dep:t_kernel_filter --> Day 26: 内核对象管理 — ObRegisterCallbacks/进程线程保护
 
 **阶段五：综合实战 (27-30)**  
-- [ ] <!-- id:t_game_reverse dep:t_kernel_ob --> Day 27: 游戏逆向实战 — Unity/UE基础 + STL容器识别(vector/string) + 对象结构恢复  
-- [ ] <!-- id:t_game_data dep:t_game_reverse --> Day 28: 游戏数据分析 — 存档格式/网络协议/资源文件分析 + 静态分析工具(IDA/Ghidra)  
-- [ ] <!-- id:t_anti_cheat dep:t_game_data --> Day 29: 反外挂分析 — 检测引擎架构/特征码/行为检测/威胁建模/服务器侧校验  
-- [ ] <!-- id:t_integration dep:t_anti_cheat --> Day 30: 综合闭环项目 — 完整分析报告: PE→注入→Hook→检测→保护→反外挂评估  
+- [x] <!-- id:t_game_reverse dep:t_kernel_ob --> Day 27: 游戏逆向实战 — Unity/UE基础 + STL容器识别(vector/string) + 对象结构恢复
+- [x] <!-- id:t_game_data dep:t_game_reverse --> Day 28: 游戏数据分析 — 存档格式/网络协议/资源文件分析 + 静态分析工具(IDA/Ghidra)
+- [x] <!-- id:t_anti_cheat dep:t_game_data --> Day 29: 反外挂分析 — 检测引擎架构/特征码/行为检测/威胁建模/服务器侧校验
+- [x] <!-- id:t_integration dep:t_anti_cheat --> Day 30: 综合闭环项目 — 完整分析报告: PE→注入→Hook→检测→保护→反外挂评估
 
 ### 第二阶段：Day 31-60（GPT-5.5 建议，Day 30 后执行）
 
@@ -74,6 +74,7 @@ status: in-progress
 
 ## Decisions
 
+- <!-- at:2026-09-11T02:44:25+08:00 --> 全站翻新第 4 步第一批外壳修复由 Sol 代执行并完成本地验收：`build.js` 在原生成器上修复跳转正则，加入课程与知识点深链接、浏览器前进/后退恢复、移动端路线/日志折叠与课程目录开关、正文居中、重点复习区块样式、表格局部滚动和键盘焦点；所有 39 篇页面带完整课程元数据，108 张表格全部进入局部滚动容器，重复 ID 与断链均为 0。`node --check build.js` 通过，连续两次 `node build.js` 均输出 30/30 · 23/30（块 6/8）· 53/60 · 39 篇且 `index.html` SHA-256 同为 `0BE9B6E96E039F01243FC061450DAB27608881A7820E90CD7617457A42D65FEC`；Playwright Chromium 实测 12 / Day 12 / 基础-2 / 31-34 / 50 / 50-53 / Day 50 跳转、Day 54-57 未发布提示、课程页与 day50-53-k1 深链接、浏览器后退全部通过，1280/768/390 三档无整页横向溢出，390px 下文章入口 301px、路线和日志默认收起，控制台无 error/warn。同步把已有正式完成记录支撑的 Day 22-30 九个 Plan 项校正为 `[x]`；本批未改 `days.json`、未改变 53/60 与 Day 54-57 的 `DS 理论前置`，不构成新学习证据，尚未推送。
 - <!-- at:2026-09-10T23:47:55+08:00 --> Day 50-53 正式完成并闭环：Sol 第五次八门审核结论「通过」——八门全部通过、无补强位置（覆盖门/讲透门/证据门/可复核门/失败门/复习门/一致性门/独立恢复门），并确认 S 第 1 题已正确区分「某次运行的绝对地址」与「模块名 + RVA」、S 第 6 题命中数不再写成必然上升、H/N/Q/S 绝对地址口径统一。DS 按闭环顺序收尾：days.json 的 day50-53 由 in-progress 改为 done 并追加正式学习日志（核心结论：不记地址、记「当场唯一、跨版本不变」的字节；用户证据：V1/V2 行为对照 1050 vs 1125、16 字节 AOB 双版本唯一命中且偏移 +12C7E8、重启前后绝对地址变化、x64dbg 两版 RslDay50ScoreAward 反汇编差异含 imul ...,4B 与 ret 相差 0x11；失败路径：CE「可写」过滤器导致首次 0 命中、绝对地址只作带标签实操证据；理论映射与闭环结果）→ node build.js 输出 39 文章单元、第一阶段 30/30、第二阶段 23/30（块 6/8）、总体 53/60 → 闭环验证通过（day50-53=done、恰好一个六项入口、小目录 k1-k10 双向、index.html 含 2026-09-10 日志、无 Day 54-57 页面）→ 只暂存 SESSION_PROGRESS.md / days.json / index.html 三文件提交 8c18a45 并推送（9d54034..8c18a45）→ 线上 Pages 核对通过（HTTP 200、显示 53/60、Day 50-53 页面与 2026-09-10 新日志均可见，未出现 Day 54-57 页面）。t_phase_f 标记完成，plan 24/36→25/36，进度 53/60，当前课程转 Day 54-57，教学阶段 DS 理论前置。未提前展开或完成 Day 54-57。
 - <!-- at:2026-09-10T23:44:23+08:00 --> Sol 第四次八门审核仍未通过，只剩 3 组句子级一致性问题（覆盖门/证据门/可复核门/失败门通过；讲透门/复习门/一致性门/独立恢复门不通过）：①S 第 1 题把「某次运行的绝对地址」与「模块基址 + RVA」混成同一种东西——DS 已把题目改为「为什么不能把某次运行看到的 0x7FF… 绝对地址，当成长期稳定的定位笔记」，答案改为「某次运行的绝对地址只对应当次加载；同一份二进制可以记录『模块名 + RVA』，不同启动时用本次模块基址重新计算；换构建或换版本仍须复核。绝对地址本身可以作为带版本和当次运行标签的实操证据保留，但不能当稳定定位值用」②S 第 6 题仍把「命中数可能增加」写成必然上升——已改为「放多了约束变少，命中数不会减少、并且可能增加；一旦出现多个命中，唯一性就被破坏」，与 G 节一致③N 对照表与 Q 分析者视角的「绝对地址不能写进笔记」与正文保留的三组绝对地址实操证据冲突——已统一为「不能当作可重复使用的稳定定位值，只能作为带版本、进程和当次运行标签的实操证据保留」。Sol 第四次指定的四个语义点中，PE 字段先辨认、候选特征两道关、AOB 失败先排环境再 Diff 三项通过，「可能变化不得写成必然变化」因 S 第 6 题未完全通过，本轮已补齐。node build.js 仍输出 39 文章单元、30/30 · 19/30（块 5/8）· 49/60；20 项复验全 PASS（32 条历任禁词命中数全为 0）；git diff --check 退出码 0、git status 仍只有 SESSION_PROGRESS.md / days.json / index.html、build.js 未修改、四个冻结产物未变动；未标记 done、未提交、未推送、未启动全站翻新。
 - <!-- at:2026-09-10T23:34:50+08:00 --> Sol 第三次八门审核未通过：结构、用户证据、复习结构、证据分层与老师式表达均已合格，未通过原因是「旧口径字符串命中数为 0 只能证明原句被替换，不能证明同一错误含义消失」——全文语义复核发现 6 处同义绝对化残留。DS 完成句子级收口（10 个句位，未增章节、未重写文章）：①S 第 2 题「凡是值真的变了的，都属记账信息噪音，与功能无关」→「不能只凭『值变了』就判定为噪音：只有确认变化落在 TimeDateStamp、RSDS/PDB 等不解释功能变化的记账字段时，才先排除；入口点、标志和目录位置等 PE 字段可能影响程序行为，仍要继续分析」②O 表「Diff 红成一片」行改为「先确认变化对应哪个具体字段；只有确认是记账信息时才排除，功能相关字段不能直接划掉」，D 节「记账区直接划掉」→「已确认属于记账字段的变化可以先排除」③G 节「写死→下个版本就作废」→「到新版本时更容易失效」；「?? 越多命中数会上升」→「匹配条件越宽，命中数不会减少、并且可能增加；一旦出现多个命中，唯一性就被破坏」④I 节指针链开头→「数据本身的地址在重新加载后可能变化，不能把某次绝对地址当成稳定值」⑤J 节与 S 第 9 题的「偏移就会动／就会变」→「换一种改动方式（新增常量、调整结构或更换编译选项）偏移就可能变化，不能把本次两版相同当成跨版本保证」⑥Q 节「短常量是天然的稳定锚点」→「可以成为候选锚点，但仍必须分别通过当前版本唯一性检查和新旧版本稳定性检查」；分析者流程→「扫不到时先排除错进程、错范围、过滤器和尚未加载/未解包，确认字节确实变化后再回 Diff 附近重挑锚点」。Sol 同时要求第四次复验不再只扩大禁词表，而直接核对四个意思：PE 字段变化先辨认字段含义、「可能变化」不得写成「必然变化」、候选特征仍须过唯一性与稳定性两道关、AOB 失败先排环境与扫描条件再决定 Diff——已按此四点设置语义化检查并全部通过。node build.js 仍输出 39 文章单元、30/30 · 19/30（块 5/8）· 49/60；21 项语义复验全 PASS（30 条历任禁词命中数全为 0）；git diff --check 退出码 0、git status 仍只有 SESSION_PROGRESS.md / days.json / index.html、build.js 未修改、四个冻结产物未变动；未标记 done、未提交、未推送、未启动全站翻新。
