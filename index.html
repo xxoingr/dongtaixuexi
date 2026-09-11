@@ -920,7 +920,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <p><strong>忘了先看哪里</strong>：先背「整数→RCX 家族、浮点→XMM 家族、第 5 参→栈、整数回 RAX、浮点回 XMM0」，再想 Debug 和 Release 是不是同一份结果</p>
 <p><strong>前后关联</strong>：为 Day 35-38 C++ 对象模型（成员偏移、vtable）和 Day 42-45 游戏数学（矩阵、World-to-Screen 的浮点/XMM）铺路；Day 11 的 x64 汇编与调用约定在这里深化</p>
 
-</section><section class="sec"><h3>学习地图</h3>
+</section><section class="sec lesson-toc"><h3>本课知识点小目录</h3><p>本块共 <b>4</b> 个知识点，点条目可直接跳到正文对应章节：</p><ul><li><a href="#day31-34-k1">1. Windows x64 调用约定：整数走 RCX/RDX/R8/R9、浮点走 XMM0–XMM3、第 5 个参数起上栈</a></li><li><a href="#day31-34-k2">2. SSE 与 AVX：addss 一次 1 个、addps 一次 4 个、vaddps ymm 一次 8 个</a></li><li><a href="#day31-34-k3">3. 编译器优化识别：Debug 19 条 vs Release 3 条，优化只改算式与条数、不改结果</a></li><li><a href="#day31-34-k4">4. ReverseStrikeLab 应用：在真实游戏代码里认出同一套机制（校准 Lab 与靶场证据分开写）</a></li></ul></section><section class="sec"><h3>学习地图</h3>
 <p>本块按四个核心概念推进，建议顺序：先 A（调用约定）打地基，再 B（SSE/AVX）扩宽度，然后 C（优化识别）练眼力，最后 D（靶场应用）落到真实代码。</p>
 <ol>
 <li><b>A. Windows x64 调用约定</b>——参数与返回值走哪条通道。</li>
@@ -929,7 +929,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <li><b>D. ReverseStrikeLab 应用</b>——在真实靶场代码里认出前三点。</li>
 </ol>
 
-</section><section class="sec"><h3>A. Windows x64 调用约定</h3>
+</section><section class="sec"><h3 id="day31-34-k1">A. Windows x64 调用约定</h3>
 <p><b>核心结论</b>：调用约定规定了「参数放哪、结果放哪、栈怎么用」。Windows x64 下，整数和浮点走两条不同的「座位」通道。</p>
 <p><b>整数参数通道</b>：前 4 个整数/指针参数依次进 <code>RCX</code>、<code>RDX</code>、<code>R8</code>、<code>R9</code>；更多参数进栈。</p>
 <p><b>浮点参数通道</b>：前 4 个浮点参数依次进 <code>XMM0</code>、<code>XMM1</code>、<code>XMM2</code>、<code>XMM3</code>；更多参数进栈。Windows x64 前四个参数按参数序号占位：第 n 个参数若为整数/指针，使用对应通用寄存器；若为浮点，使用对应 XMMn。不同类型不会分别向前压缩计数。</p>
@@ -940,7 +940,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <p><b>用户实测证据</b>：<code>Day31IntegerFive(1,2,3,4,17)</code> 返回 <code>RAX=0x73=115</code>；第 5 参 17 在调用方 <code>[rsp+20h]</code>、被调方 <code>[rsp+28h]</code>。<code>Day32FloatFive(1.25,2.5,3,4,8)</code> 返回 <code>XMM0=41960000=18.75</code>，第 5 参 8.0 在栈。</p>
 <p><b>适用范围与边界</b>：以上是 <b>Windows/MSVC x64</b> 的规则，不是所有 64 位平台的统一规则。System V AMD64（Linux 用）前 6 个参数进寄存器，规则不同，本块只作一句对照、不展开。</p>
 
-</section><section class="sec"><h3>B. SSE 与 AVX</h3>
+</section><section class="sec"><h3 id="day31-34-k2">B. SSE 与 AVX</h3>
 <p><b>核心结论</b>：SSE/AVX 用更宽的寄存器「一次并行处理多个浮点数」，是标量运算之外的另一条并行通道。</p>
 <p><b>scalar 与 packed</b>：<code>addss</code>（scalar，一次 1 个数）与 <code>addps</code>（packed，一次 4 个数）只差一个字母，含义完全不同。scalar 只动最低那格，packed 把整条寄存器的几格一起算。</p>
 <p><b>寄存器宽度</b>：SSE 用 128 位的 <code>XMM</code>（4 个 float）；AVX 用 256 位的 <code>YMM</code>（8 个 float）。AVX 指令带 <code>v</code> 前缀（VEX 编码），如 <code>vaddps ymm</code>。</p>
@@ -948,7 +948,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <p><b>最易混点</b>：把 <code>addss</code>（1 个）当成 <code>addps</code>（4 个）；把「写 32 位寄存器会清高 32 位」和「写内存 dword 只动 4 字节」两者混淆。</p>
 <p><b>适用范围与边界</b>：VEX/v 前缀只解释到「本块识别指令类型」所需的程度，不展开完整编码；SSE/AVX 是 x86 系扩展，其他指令集架构不适用。</p>
 
-</section><section class="sec"><h3>C. 编译器优化识别</h3>
+</section><section class="sec"><h3 id="day31-34-k3">C. 编译器优化识别</h3>
 <p><b>核心结论</b>：Debug 和 Release 的指令可以长得完全不同，但<b>结果必须相同</b>。逆向要习惯「优化后的非直译代码」。</p>
 <p><b>Debug 为什么接近源码步骤</b>：不优化，每句源码基本对应若干条直译指令，变量都落在内存里，好调试、但啰嗦。</p>
 <p><b>Release 为什么短</b>：删除无用计算、把表达式折叠成常量、用 <code>lea</code> 一条指令同时完成「乘法+加法+移位」等复合寻址，所以指令条数骤减。</p>
@@ -956,7 +956,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <p><b>用户实测证据</b>：<code>Day34OptimizationProbe</code> 的 Debug 版 19 条指令、Release 版 3 条（<code>lea eax,[rcx+rcx*4]</code> → <code>lea eax,[rax*2+0x32]</code> → <code>ret</code>），结果都是 190。</p>
 <p><b>适用范围与边界</b>：不同编译器、版本、优化开关可能产生不同指令形态，<b>不能背固定形态</b>，只能掌握「优化保结果、改结构」的规律。</p>
 
-</section><section class="sec"><h3>D. ReverseStrikeLab 应用</h3>
+</section><section class="sec"><h3 id="day31-34-k4">D. ReverseStrikeLab 应用</h3>
 <p><b>核心结论</b>：专用校准 Lab 负责干净取证，靶场负责「在真实游戏代码里认出同一套机制」。两段证据不能混写。</p>
 <p><b>RslUpdatePlayerMovement</b>：由 <code>StepGame</code> 每帧调用，<code>deltaSeconds</code> 经 XMM2 传入（<code>3D088889=0.0333</code>），内部有 <code>mulss/sqrtss/comiss/divss</code> 与多处条件分支——这是「浮点参数通道 + 并行/标量浮点运算」在真实移动代码里的样子。</p>
 <p><b>RslApplyDamage</b>：用整数参数 + 条件分支 + RAX 返回，护甲规则 <code>min(armor, scaled/2)</code>——这是「整数通道 + 分支 + 返回值」在伤害结算里的样子，<code>--self-test</code> 全 PASS。</p>
@@ -1003,13 +1003,13 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <li>靶场里 RslUpdatePlayerMovement 是浮点通道、RslApplyDamage 是整数通道。</li>
 </ol>
 
-</section><section class="sec self-check"><h3>自测题与简短答案</h3>
+</section><section class="sec self-check"><h3>自测题与简短答案</h3><p>先自己答一遍，再对照答案；每题对应小目录里的一个知识点。</p>
 <ol>
 <li><b>为什么整数第 1 参数看 RCX，而浮点第 1 参数看 XMM0？</b>——整数和浮点走两条独立通道，各自按序排座：整数第 1 个进 RCX，浮点第 1 个进 XMM0。</li>
 <li><b>为什么调用方写 [rsp+20h]，被调方可能读 [rsp+28h]？</b>——call 把返回地址压栈让 RSP 再减 8，所以同一位置在被调方视角偏移多了 8。</li>
 <li><b>addss 与 addps 的关键区别是什么？</b>——scalar 一次 1 个数、packed 一次 4 个数，只差一个字母。</li>
 <li><b>Release 指令更少是否代表计算结果可以不同？</b>——不可以。优化只改算法与指令条数，结果必须一致。</li>
-<li><b>看到 vaddps ymm 时，能推断它大概率在处理什么类型的数据？</b>——一批（8 个）float 的并行浮点运算，常见于游戏向量/矩阵计算。</li>
+<li><b>看到 vaddps ymm 时，能推断它大概率在处理什么类型的数据？</b>——一批（8 个）float 的并行浮点运算，常见于游戏向量/矩阵计算。</li><li><b>专用校准 Lab（Day31_34X64OptimizationLab）与 ReverseStrikeLab 的证据为什么要分开写？</b>——校准 Lab 用干净可控的输入取证「机制本身长什么样」，靶场验证「同一套机制在真实游戏代码里怎么出现」；两者证据等级和适用场景不同，混写会把「人造观察」当成「真实程序结论」。</li>
 </ol>
 
 </section><section class="sec"><h3>实验环境和版本边界</h3>
@@ -1039,7 +1039,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <p><strong>忘了先看哪里</strong>：先背「vptr→vtable→函数地址」和「vptr−8→指针→RVA→类型名」两条链，再想 vector 的 begin/end 差值代表什么</p>
 <p><strong>前后关联</strong>：承接 Day 31-34 的 x64 调用约定（this 走 RCX）；为 Day 42-45 游戏数学（对象字段偏移应用）和 Day 46-49 调试器进阶（恢复对象结构）铺路</p>
 
-</section><section class="sec"><h3>学习地图</h3>
+</section><section class="sec lesson-toc"><h3>本课知识点小目录</h3><p>本块共 <b>6</b> 个知识点，点条目可直接跳到正文对应章节：</p><ul><li><a href="#day35-38-k1">1. this 与对象布局：隐藏的第 0 参数（本课环境走 RCX），字段偏移 ≠ 对象总大小</a></li><li><a href="#day35-38-k2">2. vptr/vtable 与虚调用：对象开头存 vptr，调用时按槽位偏移取函数地址</a></li><li><a href="#day35-38-k3">3. RTTI：vtable 前的定位槽 → RVA → 类型名，不能靠「虚函数地址减固定值」找</a></li><li><a href="#day35-38-k4">4. vector 三指针：begin/end/capacity，相减得到的是字节数</a></li><li><a href="#day35-38-k5">5. string SSO：短串就地存、长串外存，靠长度与对象内外地址交叉判断</a></li><li><a href="#day35-38-k6">6. ReverseStrikeLab 真实结构：PlayerState / BotState / WeaponDefinition</a></li></ul></section><section class="sec"><h3>学习地图</h3>
 <p>本块按六个核心概念推进：A（this/布局）打地基 → B（vptr/vtable）看多态 → C（RTTI）认类型 → D（vector）E（string）看容器 → F（靶场真实结构）落应用。</p>
 <ol>
 <li><b>A. this 与对象布局</b>——对象的隐藏参数和内存长相。</li>
@@ -1050,7 +1050,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <li><b>F. ReverseStrikeLab 真实结构</b>——靶场对象布局应用。</li>
 </ol>
 
-</section><section class="sec"><h3>A. this 与对象布局</h3>
+</section><section class="sec"><h3 id="day35-38-k1">A. this 与对象布局</h3>
 <p><b>核心结论</b>：非静态成员函数有一个隐藏的第 0 参数 <code>this</code>，指向对象本身；<code>this->field</code> 落到机器上就是 <code>[this+偏移]</code>。</p>
 <p><b>this 落在哪</b>：本课 Windows/MSVC x64 环境下，<code>this</code> 走 <code>RCX</code>（普通非静态成员调用的第一个参数位）。这是当前 ABI 环境事实，不是跨平台绝对规则。</p>
 <p><b>字段偏移 vs 对象总大小</b>：字段偏移是「从哪开始」，对象总大小是「到哪结束」。最后一个字段从 +20 开始，但要覆盖它自身 4 字节，所以对象总大小是 24，不是 20。</p>
@@ -1058,27 +1058,27 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <p><b>用户实测证据</b>：Day35Boss 对象 24 字节；vptr 偏移 0，objectId 偏移 8，health 偏移 12，armor 偏移 16，phase 偏移 20（attach 读内存 + --day35-38-evidence 输出一致）。</p>
 <p><b>适用范围与边界</b>：「this 永远在 RCX」必须限定为本课 Windows/MSVC x64 普通非静态成员调用环境，不能写成跨平台绝对规则。</p>
 
-</section><section class="sec"><h3>B. vptr/vtable 与虚调用</h3>
+</section><section class="sec"><h3 id="day35-38-k2">B. vptr/vtable 与虚调用</h3>
 <p><b>核心结论</b>：多态在机器层就是「对象开头存 vptr，vptr 指向 vtable，vtable 里装各虚函数地址」。</p>
 <p><b>三段式执行链</b>：对象开头读 vptr（<code>mov rax,[rcx]</code>）→ vptr 指向 vtable → 按槽位偏移取虚函数地址（<code>jmp [rax+偏移]</code>）→ 间接 call/jmp。</p>
 <p><b>几个明确关系</b>：vptr 是对象里的一个指针字段；vptr 保存的值就是 vtable 地址；vtable 各槽位保存虚函数地址。三者不是一个东西，是「字段→表→表项」的关系。</p>
 <p><b>用户实测证据</b>：对象开头 8 字节反拼 = vptr = 0x7FF7E15AA060；vtable 开头两槽位 = Role / Threat 两个虚函数地址；虚调用结果 88。</p>
 <p><b>最易混点与边界</b>：vptr 的值就是 vtable 地址（同一个数），不是「vptr 减偏移得到 vtable」。ASLR 下绝对地址会变，稳定的是「关系与槽位」，不是某次地址——<code>0x7FF7E15AA060</code> 是当次 ASLR 会话值，不能照抄。</p>
 
-</section><section class="sec"><h3>C. RTTI</h3>
+</section><section class="sec"><h3 id="day35-38-k3">C. RTTI</h3>
 <p><b>核心结论</b>：RTTI（运行时类型信息）让程序在运行时知道自己是什么类型，逆向靠它读类型名认对象真身。</p>
 <p><b>完整定位链</b>：vtable 前的定位槽（<code>vptr−8</code>）→ Complete Object Locator → 读 RVA 偏移 → TypeDescriptor → 类型名字符串。</p>
 <p><b>用户实测证据</b>：vptr−8 槽读出 Complete Object Locator → 读 RVA 偏移 → TypeDescriptor → 类型名 <code>.?AVDay35Boss@day35_38@@</code>（内存 ASCII 直接可见）。</p>
 <p><b>最易混点与边界</b>：RTTI 是「vptr−8 读指针再跳」两级跳，不是「虚函数地址减某值直接到类型名」。「RTTI 挨着 vtable」只是便于复习的概括，正式定位必须走指针/RVA 链。当前证据属于 MSVC x64 ABI，不同编译器 ABI 不能直接套用。</p>
 
-</section><section class="sec"><h3>D. vector</h3>
+</section><section class="sec"><h3 id="day35-38-k4">D. vector</h3>
 <p><b>核心结论</b>：vector 是三个连续指针槽——begin、end、capacity。</p>
 <p><b>三个指针的含义</b>：begin=首元素地址；end=最后一个元素的<b>下一格</b>地址；capacity=已分配缓冲区的末尾地址。</p>
 <p><b>换算公式</b>：元素数 size=(end−begin)/sizeof(T)；容量 capacity=(capacity−begin)/sizeof(T)。end−begin 得到的是<b>字节数</b>，要除以元素大小才是元素个数。</p>
 <p><b>用户实测证据</b>：vector 三指针 begin/end/capacity 连续排布，end−begin=64 字节=2 元素×32 字节。</p>
 <p><b>边界</b>：Debug STL 可能存在额外调试状态（迭代器调试信息），不能把当前槽位偏移写成永恒常量。</p>
 
-</section><section class="sec"><h3>E. string SSO</h3>
+</section><section class="sec"><h3 id="day35-38-k5">E. string SSO</h3>
 <p><b>核心结论</b>：string 短串就地存（SSO，小字符串优化）、长串外存。</p>
 <p><b>短串为什么就地</b>：字符串很短时，直接存在对象自身的缓冲区里，内存里能直接看到字符内容。</p>
 <p><b>长串为什么外存</b>：字符串太长、超过就地容量时，对象里主要只看到一个指向外部堆缓冲区的指针，字符内容在别处。</p>
@@ -1086,7 +1086,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <p><b>用户实测证据</b>：短串 displayName "P1" 就地、长串 weapon.name 外存。</p>
 <p><b>边界</b>：SSO 阈值和具体布局属于当前 STL 实现事实，不是 C++ 标准固定值。</p>
 
-</section><section class="sec"><h3>F. ReverseStrikeLab 真实结构</h3>
+</section><section class="sec"><h3 id="day35-38-k6">F. ReverseStrikeLab 真实结构</h3>
 <p><b>核心结论</b>：专用校准类（Day35Actor/Day35Boss）负责干净取证，靶场真实结构（PlayerState/BotState/WeaponDefinition）负责应用识别，两者不能混——不要把校准类伪装成游戏真实类。</p>
 <p><b>用户实测证据</b>：Release 下 PlayerState=128、displayName 偏移 56、weapons 偏移 88；BotState=152（内嵌 PlayerState）；WeaponDefinition=64。这些是当次构建布局事实，随版本变化。</p>
 
@@ -1131,14 +1131,14 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <li>vector = begin/end/capacity 三指针；string 短串就地、长串外存。</li>
 </ol>
 
-</section><section class="sec self-check"><h3>自测题与简短答案</h3>
+</section><section class="sec self-check"><h3>自测题与简短答案</h3><p>先自己答一遍，再对照答案；每题对应小目录里的一个知识点。</p>
 <ol>
 <li><b>字段偏移 20 为什么不代表对象总大小也是 20？</b>——偏移是「从哪开始」，最后一个字段还要覆盖自身 4 字节，总大小是「到哪结束」，所以是 24。</li>
 <li><b>vptr 与 vtable 是同一个东西吗？它们是什么关系？</b>——不是。vptr 是对象里的指针字段，它保存的值就是 vtable 地址；vtable 是那张表，槽位存虚函数地址。</li>
 <li><b>虚调用为什么会出现 [rcx] 后再 [rax+槽位偏移]？</b>——[rcx] 读对象开头的 vptr，[rax+偏移] 从 vtable 按槽位取虚函数地址，两次间接寻址。</li>
 <li><b>RTTI 为什么不能从虚函数地址直接减固定值找到？</b>——RTTI 和虚函数地址之间隔着定位槽、Complete Object Locator、RVA 偏移等，不是固定偏移关系，要按指针/RVA 链走。</li>
 <li><b>vector 的 end-begin 为什么是字节数，如何换算元素数？</b>——end、begin 是指针，相减是地址差（字节数），要除以 sizeof(T) 才是元素个数。</li>
-<li><b>短 string 与长 string 的主要存储区别是什么？</b>——短串字符直接存在对象内部（就地），长串对象里主要存指向外部堆缓冲区的指针。</li>
+<li><b>短 string 与长 string 的主要存储区别是什么？</b>——短串字符直接存在对象内部（就地），长串对象里主要存指向外部堆缓冲区的指针。</li><li><b>为什么不能把校准类（Day35Actor/Day35Boss）的观察结果直接当成游戏真实结构？</b>——校准类是为了干净展示 vptr/vtable/RTTI 与容器布局而造的最小对象；真实靶场结构（PlayerState/BotState/WeaponDefinition）有自己的字段和大小，两块证据要分开记录，混用会把课堂模型当成实测结论。</li>
 </ol>
 
 </section><section class="sec"><h3>实验环境和版本边界</h3>
@@ -1169,7 +1169,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <p><strong>忘了先看哪里</strong>：先背「异常先 VEH 后 SEH、x86 串链 x64 查表、TLS 回调先于 main」这三句，再想栈展开是不是逐层清理</p>
 <p><strong>前后关联</strong>：承接 Day 14 的 VEH/SEH 基础与 Day 18 的 TLS 回调；为 Day 46-49 调试器进阶（异常/展开在调试器里的呈现）和 Day 54-57 多线程（TLS 每线程副本、线程安全）铺路</p>
 
-</section><section class="sec"><h3>学习地图</h3>
+</section><section class="sec lesson-toc"><h3>本课知识点小目录</h3><p>本块共 <b>6</b> 个知识点，点条目可直接跳到正文对应章节：</p><ul><li><a href="#day39-41-k1">1. 架构总览：Win32/x86 用栈上 Prev+Handler 链，x64 改查 .pdata 表</a></li><li><a href="#day39-41-k2">2. Win32 SEH 经典链：FS:[0] 链头，Prev + Handler 逐层往外找接手</a></li><li><a href="#day39-41-k3">3. VEH 两条真实路径：CONTINUE_SEARCH 放行给 SEH / CONTINUE_EXECUTION 跳过 SEH</a></li><li><a href="#day39-41-k4">4. x64 表驱动展开：RUNTIME_FUNCTION → unwind 数据，查表逐层精确回卷</a></li><li><a href="#day39-41-k5">5. TLS 与 Loader：每线程一份私有数据 + 在 main 之前就跑的 TLS 回调</a></li><li><a href="#day39-41-k6">6. ReverseStrikeLab 应用识别：在真实靶场变体里重复识别同类机制</a></li></ul></section><section class="sec"><h3>学习地图</h3>
 <p>本块先做架构总览（x86 与 x64 分家），再按四条主线推进：Win32 SEH 链 → VEH 两条路径 → x64 表驱动展开 → TLS/Loader，最后落到靶场变体识别。</p>
 <ol>
 <li><b>架构总览</b>——Win32 与 x64 先分家。</li>
@@ -1180,7 +1180,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <li><b>ReverseStrikeLab 应用识别</b>——靶场变体里的同类机制。</li>
 </ol>
 
-</section><section class="sec"><h3>架构总览：Win32 与 x64 先分家</h3>
+</section><section class="sec"><h3 id="day39-41-k1">架构总览：Win32 与 x64 先分家</h3>
 <div class="table-wrap"><table>
 <tr><th></th><th>Win32/x86</th><th>x64</th></tr>
 <tr><td>链头/入口</td><td>FS:[0]</td><td>PE Exception Directory</td></tr>
@@ -1190,33 +1190,33 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 </table></div>
 <p><b>必须明确</b>：本块的「Prev+Handler 链」是 Win32 校准证据；x64 不使用编译器生成的经典栈上 Prev 链，不能在 x64 里伪造或寻找同样的链。</p>
 
-</section><section class="sec"><h3>Win32 SEH 经典链</h3>
+</section><section class="sec"><h3 id="day39-41-k2">Win32 SEH 经典链</h3>
 <p><b>核心结论</b>：SEH（Structured Exception Handling）让系统在异常跨层往下冲时，能「找到谁接手」并安全交接。在本课 MSVC Win32/x86 中需要注册异常处理信息的受保护函数/作用域，编译器会在栈帧里放一张「异常注册记录」，只有两个字段：<b>Prev</b>（上一张牌的地址）和 <b>Handler</b>（处理函数的地址）。</p>
 <p><b>执行链</b>：异常发生 → 从当前记录开始询问 → 沿 Prev 向外一层层找 → 找到处理者 → 再执行展开和清理。一张牌里的 Handler 通常是 <code>__except_handler4</code>——MSVC 编译器为你的 <code>__try/__except</code> 自动挂上的处理函数，不是你手写的。</p>
 <p><b>用户实测证据</b>：断在 <code>Day39_41SehChainCheckpoint</code>；FS:[0] 指向当前记录；第一个 DWORD 是 Prev、第二个 DWORD 是 Handler；用户顺 Prev 继续读取下一层（第一张 Prev=010FFAE0/Handler=00CA20B0，第二张 Prev=010FFD0C/Handler=00CA20B0）；后台/运行输出 chain_depth=5；x32dbg 无参数直接打开后断点可命中。</p>
 <p><b>最易混点与边界</b>：Handler 是「处理函数地址」不是「判断能否处理」；Prev 是「上一张牌地址」不是「上一个函数」。</p>
 
-</section><section class="sec"><h3>VEH 两条真实路径</h3>
+</section><section class="sec"><h3 id="day39-41-k3">VEH 两条真实路径</h3>
 <p><b>核心结论</b>：VEH（Vectored Exception Handler）是整个进程门口的总台，异常发生时<b>先于 SEH 被叫到</b>，按注册顺序逐个问名单里的处理者。</p>
 <p><b>路径一：VEH 放行给 SEH</b>：自定义异常 E0394101 → first-chance exception → Day39_41VehHandler 先命中 → VEH 返回 CONTINUE_SEARCH → SEH filter 后命中 → VEH_BEFORE_SEH=PASS。</p>
 <p><b>路径二：VEH 已处理</b>：自定义异常 E0394102 → VEH 命中 → 返回 CONTINUE_EXECUTION → SEH 命中次数为 0 → VEH_HANDLED_SKIPS_SEH=PASS。</p>
 <p><b>关键区分</b>：调试器的 first-chance 停点发生在 VEH 之前——用户在 kernelbase/RaiseException 停住后继续 F9，才进入 Day39_41VehHandler。「调试器先看到异常」与「程序内部 VEH 先于 SEH」是两个不同层级，不能混淆。</p>
 <p><b>用户实测证据</b>：断住 Day39_41VehHandler，读 RCX → EXCEPTION_POINTERS → ExceptionRecord，异常码 0xE0394101（源码 kFallbackCode）。</p>
 
-</section><section class="sec"><h3>x64 表驱动展开</h3>
+</section><section class="sec"><h3 id="day39-41-k4">x64 表驱动展开</h3>
 <p><b>核心结论</b>：x64 不靠栈上 Prev 链，而是编译器<b>编译时</b>把「每个函数出异常该怎么展开」写进文件里的表，运行时查表精确回卷。</p>
 <p><b>执行链</b>：当前 RIP → PE Exception Directory → .pdata 中对应 RUNTIME_FUNCTION → BeginAddress/EndAddress/UnwindData → unwind/handler 数据 → __C_specific_handler → 回卷 Leaf/Middle → 到达外层处理者。</p>
 <p><b>实测证据</b>：Day39_41UnwindLeaf、Day39_41UnwindMiddle 两层 __finally 按 Leaf→Middle 顺序清理，X64_UNWIND_CLEANUP=PASS；dumpbin /unwindinfo 可见 UHANDLER；__C_specific_handler 存在；PE Exception Directory 与 .pdata 存在。带 __finally 的函数的展开规则挂了 __C_specific_handler，不带 __try 的普通函数为 0。</p>
 <p><b>重要边界</b>：当前构建确认存在 .pdata；unwind/handler 数据可能位于只读 .rdata 等区域。文档常把相关展开数据统称为 .xdata，但<b>不得声称当前 EXE 必然有一个独立命名为 .xdata 的节</b>，除非本次 PE 节表实际观察到了它。也不把「清理顺序 PASS」单独当作表结构证据，必须与 PE/unwind 表项交叉说明。</p>
 
-</section><section class="sec"><h3>TLS 与 Loader</h3>
+</section><section class="sec"><h3 id="day39-41-k5">TLS 与 Loader</h3>
 <p><b>核心结论</b>：TLS（Thread Local Storage）本意是「每个线程一份、互不共享的私人数据」；它顺带能登记一个「在 main 之前就被加载器调用」的回调。</p>
 <p><b>1. TLS 回调先于 main</b>：用户实际断点顺序 Day39_41TlsCallback → 程序入口 → main；运行输出 <code>[loader] TLS callback before main</code>、<code>TLS_CALLBACK_BEFORE_MAIN=PASS</code>。</p>
 <p><b>2. 每线程 TLS 副本</b>：主线程与工作线程 TLS 地址不同；工作线程修改自己的 TLS 值后，主线程值不变；输出 <code>TLS_PER_THREAD=PASS</code>。</p>
 <p><b>Loader 顺序</b>：映射模块 → 解析导入 → TLS 回调 → 入口/main。</p>
 <p><b>边界</b>：这是本课自建用户态 EXE 的实测加载行为。TLS 回调可用于正常初始化，也可能被保护/恶意代码用于早期检查，但不把它写成「TLS 天生等于反调试」。</p>
 
-</section><section class="sec"><h3>ReverseStrikeLab 应用识别</h3>
+</section><section class="sec"><h3 id="day39-41-k6">ReverseStrikeLab 应用识别</h3>
 <p><b>核心结论</b>：在真实靶场变体里重复识别同类机制，证明这些不是只在最小 Lab 里造的玩具。</p>
 <p><b>用户入口</b>：<code>ReverseStrikeLabDay39_41.exe</code> 无参数直接进入证据模式。锚点：RslDay39TlsCallback、RslDay39VehHandler、RslDay39UnwindLeaf。输出：TLS_CALLBACK_BEFORE_MAIN=PASS、VEH_BEFORE_SEH=PASS、X64_UNWIND_CLEANUP=PASS、RSL_DAY39_VARIANT=PASS。</p>
 <p><b>关系说明</b>：ReverseStrikeLab V1 仍是普通游戏基线；Day39Variant=true 生成独立变体；变体不是另一个新课程项目，而是长期靶场的当课观察版本；校准 Lab 先取得干净证据，靶场变体再做应用识别。</p>
@@ -1251,7 +1251,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <li>TLS 回调在 main 之前先跑；TLS 变量每线程一份副本。</li>
 </ol>
 
-</section><section class="sec self-check"><h3>自测题与简短答案</h3>
+</section><section class="sec self-check"><h3>自测题与简短答案</h3><p>先自己答一遍，再对照答案；每题对应小目录里的一个知识点。</p>
 <ol>
 <li><b>为什么 Win32 的 FS:[0] Prev 链不能拿来解释 x64？</b>——因为 x64 不再使用 Win32/x86 那种栈上 Prev 链；.pdata 提供 RUNTIME_FUNCTION 索引，再定位 unwind/handler 数据。相关数据常统称 .xdata，但当前构建未证明存在独立命名的 .xdata 节。</li>
 <li><b>VEH 返回 CONTINUE_SEARCH 后，下一步可能发生什么？</b>——名单里下一个 VEH 处理者继续看；全都不接才轮到 SEH。</li>
@@ -1292,7 +1292,7 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <p><strong>忘了先看哪里</strong>：先背「世界→View→Projection→÷w→NDC→viewport→像素」这条链，再想每步把点变成什么空间。</p>
 <p><strong>前后关联</strong>：接 Day 31-34 的浮点/XMM 与 RslWorldToScreenProbe 矩阵乘法，为 Day 46-49 调试器进阶与 Day 50-53 特征码定位（自己找矩阵地址）铺路。</p>
 
-</section><section class="sec"><h3>学习地图</h3>
+</section><section class="sec lesson-toc"><h3>本课知识点小目录</h3><p>本块共 <b>8</b> 个知识点，点条目可直接跳到正文对应章节：</p><ul><li><a href="#day42-45-k1">1. 向量、方向与坐标系：位置就是三个 float，差向量同时带方向与距离</a></li><li><a href="#day42-45-k2">2. 齐次坐标与 4×4 矩阵：点补个 1，平移才有地方放</a></li><li><a href="#day42-45-k3">3. ViewMatrix：把世界反向搬到相机眼前，不是「移动相机」</a></li><li><a href="#day42-45-k4">4. ProjectionMatrix：把相机空间压进裁剪空间，并把深度装进 w</a></li><li><a href="#day42-45-k5">5. 透视除法与 viewport：÷w 得 NDC，再映射一次才是屏幕像素</a></li><li><a href="#day42-45-k6">6. World-to-Screen 全链：World → View → Projection → ÷w → viewport</a></li><li><a href="#day42-45-k7">7. ReverseStrikeLab 图形实操：自写链与 raylib 参考链画同一个框</a></li><li><a href="#day42-45-k8">8. x64dbg 内存取证：断在证据检查点，按偏移读出整条链</a></li></ul></section><section class="sec"><h3>学习地图</h3>
 <p>本块按「从数据到像素」的顺序推进：先认清五种坐标空间，再逐个拆 View、Projection、透视除法与 viewport，最后落到靶场图形与 x64dbg 取证。</p>
 <ol>
 <li><b>认清五种空间</b>——World / Camera / Clip / NDC / Screen 各是什么。</li>
@@ -1302,37 +1302,37 @@ HookDll 注入 explorer、VS、WeChat 等十几个进程
 <li><b>绿框与黄十字验证全链</b>——自写链与 raylib 参考重合。</li>
 </ol>
 
-</section><section class="sec"><h3>A. 向量、方向与坐标系</h3>
+</section><section class="sec"><h3 id="day42-45-k1">A. 向量、方向与坐标系</h3>
 <p><b>核心结论</b>：3D 里的位置就是一个向量——三个 float、12 字节。Vector3 的 (x,y,z) 是「从世界原点出发沿三根轴各走多远」。</p>
 <p><b>差向量</b>：「敌人位置 - 玩家位置」得到一段同时带方向与长度的向量——方向是「敌人在我哪边」，长度是「敌我相距多远」。这是后面「把世界搬到相机眼前」的第一手原料。</p>
 <p><b>坐标系约定</b>：Unity 是 y-up、Unreal 是 z-up，可作为两个例子，但<b>不能只凭「哪根轴朝上」就断定另外两根的分工，更不能说「两个引擎轴完全相反」</b>。要真正确定一个引擎的坐标，还得核对 handedness（左手/右手系）、forward（前向轴）和矩阵存储约定。逆向读坐标前必须先确认引擎，否则同一个 (x,y,z) 含义完全不同。</p>
 <p><b>用户实测</b>：本课 raylib 场景里，相机 position=(0,1.65,5)、敌人世界坐标=(0,1.65,0)——这是 raylib 的约定（y 朝上），不代表 Unity/Unreal。</p>
 
-</section><section class="sec"><h3>B. 齐次坐标与 4×4 矩阵</h3>
+</section><section class="sec"><h3 id="day42-45-k2">B. 齐次坐标与 4×4 矩阵</h3>
 <p><b>核心结论</b>：矩阵是 4×4、16 个 float、64 字节；矩阵乘向量时，每个输出分量是「矩阵的一行」与「齐次向量 (x,y,z,1)」做一次点积。</p>
 <p><b>为什么点要扩成 (x,y,z,1)</b>：普通 3×3 矩阵只能表达旋转和缩放，装不下平移。把点扩成 (x,y,z,1)、矩阵扩成 4×4，平移就能用「第 4 列」来表达，旋转/缩放用左上 3×3。这就是「齐次坐标」——多出来的那个 1 让「平移」也能参与同一次矩阵乘法。</p>
 <p><b>本课约定的位置</b>：raylib 6.0 的 Matrix 是 column-major、OpenGL-style、right-handed；按文章展示的行形式，平移项显示在第 4 列。但<b>这不是跨引擎绝对规律</b>——换成行向量写法、转置显示或其他引擎约定，原始 16 个 float 可能看起来像平移在最后一行。所以「矩阵连乘时离点近的先作用」也只是本课列向量写法下的阅读方式。逆向必须先确认存储与乘法约定。</p>
 <p><b>原始内存顺序 vs 文章显示顺序</b>：内存里 16 个 float 是线性排开的 m0..m15；文章把它摆成 4 行，是在按约定的行列顺序「解读」，不是内存里真的分了行。</p>
 
-</section><section class="sec"><h3>C. ViewMatrix</h3>
+</section><section class="sec"><h3 id="day42-45-k3">C. ViewMatrix</h3>
 <p><b>核心结论</b>：View 矩阵的输入是世界坐标，输出是相机空间坐标；它的本质不是「移动相机」，而是<b>把整个世界反向搬到以相机为原点、以相机朝向为轴的空间</b>。</p>
 <p><b>本次未旋转的特殊值</b>：本课相机 position=(0,1.65,5)、target=(0,1.65,0)、up=(0,1,0)，相机没有额外旋转、坐标轴与世界轴对齐，所以 View 的平移项恰好表现为 (0,-1.65,-5)——等于相机位置逐项取反。</p>
 <p><b>一般带旋转的情况</b>：相机一旦旋转，View 的平移项要结合 right/up/forward 三根相机轴与相机位置做点积，<b>不能只把 xyz 逐项取反</b>。看到「最后一列 = 相机位置取反」只能当作本次特殊情况，不能当通用规律。</p>
 <p><b>用户实测</b>：A/D 转相机时，只有 ViewMatrix 变、ProjectionMatrix 不变；变的是表示朝向的左上 3×3，且左右转头（yaw）只动 x/z 相关的行、y 行与末尾 1 不动——这正好是「旋转动朝向、平移与高度不动」的直接证据。</p>
 
-</section><section class="sec"><h3>D. ProjectionMatrix</h3>
+</section><section class="sec"><h3 id="day42-45-k4">D. ProjectionMatrix</h3>
 <p><b>核心结论</b>：Projection 矩阵把相机空间坐标压进裁剪空间，同时把深度装进 w。它生成的是<b>裁剪空间，不是最终像素</b>。</p>
 <p><b>本课参数</b>：vertical FOV=60°、分辨率 1280×720、aspect=16/9、near/far clipping。由这些算出的矩阵对角线上有两个关键系数：<b>f = 1/tan(30°) = 1.73205</b>（竖直方向缩放），横向系数 <b>f/aspect = 0.974279</b>。用户亲手在 ProjectionMatrix 里读到了这两个数。</p>
 <p><b>透视压缩与 clip.w</b>：透视投影把远处的范围压缩进近处的画面，靠的就是把深度写入 clip.w；near/far 决定压缩的区间。不要只把这一步理解为「套画框」——它同时完成了「生成裁剪空间」和「藏好深度 w」两件事。</p>
 
-</section><section class="sec"><h3>E. 透视除法与 viewport</h3>
+</section><section class="sec"><h3 id="day42-45-k5">E. 透视除法与 viewport</h3>
 <p><b>核心结论</b>：÷w 之后得到的是 <b>NDC（Normalized Device Coordinates，规范化设备坐标）</b>，还不是像素；还要再做一次 viewport 映射才是屏幕像素。</p>
 <p><b>执行链</b>：clip(x,y,z,w) → ÷w → NDC(x,y,z) → viewport 映射 → 屏幕像素。</p>
 <p><b>本课公式</b>：<code>screenX = (ndcX + 1) / 2 × width</code>；<code>screenY = (1 - ndcY) / 2 × height</code>。screenY 里的反转来自屏幕坐标原点在左上方（而 NDC 的 y 轴向上）。</p>
 <p><b>三类结果要分清</b>：w≤0 → 相机后方或不可投影；w&gt;0 但 screen 超出窗口 → 在相机前方但画面外；screen 在窗口内 → 可以画框。本课 RslWorldToScreenProbe 在 w≤0.0001 时把目标判为「相机后方或不可投影」。</p>
 <p><b>用户实测</b>：敌人世界坐标 (0,1.65,0) 走完整条链，最终屏幕坐标=(640,360)，正是 1280×720 的正中心——敌人站在视野正前方、相机平视，首尾呼应，证明链跑通。</p>
 
-</section><section class="sec"><h3>F. World-to-Screen 全链数据流</h3>
+</section><section class="sec"><h3 id="day42-45-k6">F. World-to-Screen 全链数据流</h3>
 <p>把前面几步串成一条完整数据流：</p>
 <pre><code>World (x,y,z)
   → ×ViewMatrix
@@ -1386,12 +1386,12 @@ Screen = (640,360)                                           [A 用户读到 640
 <tr><td>Screen</td><td>2 个 float(像素)</td><td>viewport 映射</td><td>像素，原点左上</td><td>画框</td><td>忘 y 轴翻转</td></tr>
 </table></div>
 
-</section><section class="sec"><h3>H. ReverseStrikeLab 图形实操</h3>
+</section><section class="sec"><h3 id="day42-45-k7">H. ReverseStrikeLab 图形实操</h3>
 <p><b>核心结论</b>：用图形窗口把整条链可视化，证明结论来自同一套实际运行逻辑，不是脱离底层的动画。</p>
 <p><b>画面构成</b>：红色目标是自建世界对象；绿色框由 <b>RslWorldToScreenProbe</b> 计算（自写完整 World-to-Screen 链）；黄色十字由 <b>raylib GetWorldToScreenEx</b> 计算（参考链）。两者读取同一套相机和敌人坐标，不是两套互不相关的动画。</p>
 <p><b>动态验证</b>：目标或相机移动时，两张矩阵、屏幕坐标、绿色框逐帧刷新；绿框与黄十字正常情况下重合。用户亲手观察：转相机时只有 ViewMatrix 变、ProjectionMatrix 不变（镜头参数没变），与理论一致。</p>
 
-</section><section class="sec"><h3>I. x64dbg 内存取证</h3>
+</section><section class="sec"><h3 id="day42-45-k8">I. x64dbg 内存取证</h3>
 <p><b>核心结论</b>：断在 <code>RslDay42_45EvidenceCheckpoint</code>，RCX 指向当帧证据结构（总大小 288 字节），按偏移读出整条链的每一步。</p>
 <p><b>偏移表（本次 MSVC Debug/Release 构建实测，不是商业引擎固定偏移）</b>：</p>
 <ul>
@@ -1438,7 +1438,7 @@ Screen = (640,360)                                           [A 用户读到 640
 <li>矩阵是引擎每帧动态数据，真实逆向要自己找地址。</li>
 </ol>
 
-</section><section class="sec self-check"><h3>N. 自测题与简短答案</h3>
+</section><section class="sec self-check"><h3>N. 自测题与简短答案</h3><p>先自己答一遍，再对照答案；每题对应小目录里的一个知识点。</p>
 <ol>
 <li><b>World、Camera、Clip、NDC、Screen 各是什么？</b>——World 是实体世界坐标；Camera 是以相机为原点的坐标；Clip 是投影后的四元 (x,y,z,w)；NDC 是 ÷w 后约 -1..1 的规范化坐标；Screen 是 viewport 映射后的像素坐标。</li>
 <li><b>为什么 Vector3 要临时扩成 (x,y,z,1)？</b>——3×3 只能装旋转/缩放，扩成齐次坐标才能用第 4 列表达平移。</li>
@@ -1447,7 +1447,7 @@ Screen = (640,360)                                           [A 用户读到 640
 <li><b>÷w 后为什么还不是像素？</b>——÷w 得到 NDC（约 -1..1），还要做 viewport 映射（screenX=(ndcX+1)/2×width，screenY=(1-ndcY)/2×height）才是像素。</li>
 <li><b>w≤0 与 screen 超出窗口有什么区别？</b>——w≤0 是相机后方或不可投影；w&gt;0 但 screen 超出窗口是「在相机前方但画面外」。两者都画不了，但位置关系不同。</li>
 <li><b>绿色框与黄色十字重合分别证明什么、不证明什么？</b>——证明自写 RslWorldToScreenProbe 与 raylib 参考链用同一输入算出同一结果；不证明这套偏移能照搬到商业引擎。</li>
-<li><b>为什么真实逆向不能照抄 RCX+44 等偏移？</b>——这些偏移是本次 MSVC Debug/Release 构建的结构体布局事实，商业引擎的对象布局、矩阵存储位置必须逐版本验证。</li>
+<li><b>为什么真实逆向不能照抄 RCX+44 等偏移？</b>——这些偏移是本次 MSVC Debug/Release 构建的结构体布局事实，商业引擎的对象布局、矩阵存储位置必须逐版本验证。</li><li><b>World-to-Screen 的完整顺序是什么？哪一步错了会全盘皆错？</b>——World → ×ViewMatrix → ×ProjectionMatrix → ÷w → viewport 映射 → 屏幕像素。View 与 Projection 的乘法顺序不能颠倒，颠倒了等于把相机空间当世界空间算，后面每一步都对不上。</li>
 </ol>
 
 </section><section class="sec"><h3>O. 实验环境、版本边界与官方资料</h3>
@@ -1479,7 +1479,7 @@ Screen = (640,360)                                           [A 用户读到 640
 <p><strong>忘了先看哪里</strong>：先背「Trace=脚印、Dump=快照、脚本=流水线、检查点=站牌」，再想三个检查点各自的 RCX/RDX 含义。</p>
 <p><strong>前后关联</strong>：承接 Day 42-45（同一帧矩阵/坐标取证靠人肉读数）与 Day 35-38（对象结构=读数据的账本）；为 Day 50-53 版本 Diff/特征码/CE 进阶铺路（自动取证的可重复性正是一切对比与回归的基础）。</p>
 
-</section><section class="sec"><h3>学习地图</h3>
+</section><section class="sec lesson-toc"><h3>本课知识点小目录</h3><p>本块共 <b>7</b> 个知识点，点条目可直接跳到正文对应章节：</p><ul><li><a href="#day46-49-k1">1. Trace：调试器的记录员（选择性记录 + 命令断点不停程序）</a></li><li><a href="#day46-49-k2">2. Dump：内存的照相机（瞬时快照 + 必须配结构账本才读得懂）</a></li><li><a href="#day46-49-k3">3. 自动化脚本：把 bp → run → 记录 + Dump → run 串成流水线</a></li><li><a href="#day46-49-k4">4. 检查点：按导出名稳定定位的固定站牌</a></li><li><a href="#day46-49-k5">5. Day46Evidence 结构账本：100 字节里每个偏移是什么</a></li><li><a href="#day46-49-k6">6. 执行顺序与触发时机：断点是路障，要等执行经过才拦</a></li><li><a href="#day46-49-k7">7. x64dbg 实操取证：按导出名下断、按事件触发命中</a></li></ul></section><section class="sec"><h3>学习地图</h3>
 <p>本块按「先懂概念、再上手工具、最后串成流程」推进，共四小课：</p>
 <ol>
 <li><b>第 1/4 小课（Day 46）Trace</b>——记录员：选择性记录 + 命令断点（不暂停、只记录）。</li>
@@ -1488,26 +1488,26 @@ Screen = (640,360)                                           [A 用户读到 640
 <li><b>第 4/4 小课（Day 49）串起来</b>——取证五步：定目标→定位→选记录范围→选快照范围→核对。</li>
 </ol>
 
-</section><section class="sec"><h3>A. Trace：调试器的「记录员」</h3>
+</section><section class="sec"><h3 id="day46-49-k1">A. Trace：调试器的「记录员」</h3>
 <p><b>核心结论</b>：Trace 把程序运行中<b>关键事件按顺序记下来</b>，生成一条可回看的脚印时间线。它和「人肉下断点看寄存器」的区别是：不用预先想好盯哪个寄存器、不用自己记一串数据。</p>
 <p><b>为什么必须「选择性」</b>：程序一秒执行几百万条指令，全记会慢到没法用、数据多到没法看。所以要先指定范围/条件（只记录某模块的调用、某函数的参数、满足条件的时刻）——像记录员被要求「只记射门和扑救」。</p>
 <p><b>实现机制：命令断点（Log 断点）</b>：普通断点命中后<b>暂停</b>；命令断点命中后<b>只执行一条指定命令（最常见是记录 log）就继续</b>，程序不停。多个这样的记录点沿关键路径排开，就是 Trace 的机械实现——它只是普通断点的「不拦人」版本。</p>
 <p><b>用户实测证据</b>：图形窗口左侧 4 条确定性记录：#0 phase=START hp=100 ammo=30 Flags=0x01；#1 phase=LIVE hp=100 ammo=29 Flags=0x02；#2 phase=LIVE hp=72 ammo=29 Flags=0x04；#3 phase=RESULT hp=72 ammo=29 Flags=0x08。时间顺序里的变化（开火掉弹药/中弹掉血/flags 位逐位累积）全部记在同一张流水账里。</p>
 
-</section><section class="sec"><h3>B. Dump：内存的「照相机」</h3>
+</section><section class="sec"><h3 id="day46-49-k2">B. Dump：内存的「照相机」</h3>
 <p><b>核心结论</b>：Dump 把<b>某一时刻</b>的一段内存<b>按原样</b>拷到文件里——字节对字节，一个不多一个不少。Trace 管时间段，Dump 管瞬间。</p>
 <p><b>原始字节 ≠ 人话</b>：Dump 文件里不会写「这是血量 100」，只有光秃秃的字节。要读懂必须靠<b>账本</b>：偏移（从哪开始）、大小（占几字节）、字节序（小端低位在前）。同一段字节，账本不同答案完全不同。</p>
 <p><b>时机与范围</b>：程序一直在跑、内存一直在变，必须<b>停稳了再拍</b>（配断点/检查点）；范围按目的选——整进程（大而全）/单模块（中等）/一小段数据（小而准）。时机错=证据过期，范围错=不够用或拖慢操作。</p>
 <p><b>用户实测证据</b>：图形窗口按 D 后导出 %TEMP%\ReverseStrikeLab_Day46_49.dump，文件大小<b>正好 100 字节</b>（资源管理器属性核实）；右侧 LIVE memory evidence 面板显示 evidence@（ASLR 地址，每次运行变）、size=100 bytes、magic=0x34364C52、version=1、records=4、checksum=0x710B0072 (VALID)。程序启动时也会自动写一次 Dump（所以窗口一打开就显示 DUMP WRITTEN，不一定要按 D）。</p>
 
-</section><section class="sec"><h3>C. 自动化脚本：调试器的「流水线」</h3>
+</section><section class="sec"><h3 id="day46-49-k3">C. 自动化脚本：调试器的「流水线」</h3>
 <p><b>核心结论</b>：脚本 = 把一条条调试器命令按顺序写进文本文件，一次加载、按顺序自动执行——把「手动点的每个按钮」提前录下来回放。</p>
 <p><b>典型取证流程</b>：bp（下断点=先定位在哪停）→ run（运行到命中）→ 记录 + Dump（采集现场）→ run（继续下一站）→ 下一检查点……跑完一遍，同时拿到「时间线 + 快照集」。</p>
 <p><b>顺序纪律</b>：先定位后采集、采集完再继续，顺序不能乱。到检查点那一刻「记录」和「Dump」都是对同一现场做采集，谁先谁后不严格；真正不能换的是「先下断再跑」「先采集再继续」。</p>
 <p><b>为什么要它</b>：手动操作步骤多、容易漏、每次重来；脚本可重复、不漏步、还能原样发给别人复现——这也是本课程所有后台验收都靠脚本的原因。注意：脚本不会思考，它严格按你写的顺序执行，所以写脚本前必须先把人肉流程跑通、确认每一步。</p>
 <p><b>本块自动化证据</b>：Sol 已在后台用 x64dbg 自动脚本（verify\day46_49_breakpoint_check.txt）真实命中三个检查点并通过全部断言（见「实操证据汇总」），这是「脚本一次跑完、断言自动核对」的后台演示。</p>
 
-</section><section class="sec"><h3>D. 检查点：固定站牌</h3>
+</section><section class="sec"><h3 id="day46-49-k4">D. 检查点：固定站牌</h3>
 <p><b>核心结论</b>：检查点（Checkpoint）= 程序里一个<b>稳定的、调试器能按名字找到</b>的位置，脚本每到一站就「记录+拍快照+继续」。</p>
 <p><b>为什么用导出名/符号而不是写死地址</b>：地址被 ASLR 随机化、重编译后也会变（Day 21 的教训：不能硬记地址/服务号，优先用导出名定位）；导出名/符号永远不变，按名找人，取证才稳定可重复。</p>
 <p><b>本块三个检查点</b>（均从源码 future_labs.cpp 导出）：</p>
@@ -1517,7 +1517,7 @@ Screen = (640,360)                                           [A 用户读到 640
 <li><b>RslDay46AutomationCheckpoint</b>：<b>RCX=最终证据结构</b>——4 条记录全部生成完之后的完整 100 字节结构。</li>
 </ul>
 
-</section><section class="sec"><h3>E. Day46Evidence 结构账本（100 字节）</h3>
+</section><section class="sec"><h3 id="day46-49-k5">E. Day46Evidence 结构账本（100 字节）</h3>
 <p><b>核心结论</b>：这块 100 字节结构就是「账本」的实物——知道每个偏移是什么，读内存才有意义。</p>
 <div class="table-wrap"><table>
 <tr><th>偏移</th><th>字段</th><th>大小</th><th>含义</th></tr>
@@ -1531,13 +1531,13 @@ Screen = (640,360)                                           [A 用户读到 640
 <p><b>用户实测核对</b>：RslDay46TraceCheckpoint 停住后命令 dump rcx，内存开头 8 字节显示为十进制无符号字节 <code>82 76 54 52 | 01 00 00 00</code>。换算成十六进制：<code>52 4C 36 34 | 01 00 00 00</code>——正好是 <b>magic=0x34364C52 的小端字节序 + version=1</b>。账本第一行核对成功：偏移 0 是 magic、偏移 4 是 version，一个不多一个不少。</p>
 <p><b>小端序回顾</b>：0x34364C52 的四个字节按地址从低到高存成 52 4C 36 34（低地址存低位字节）；读的时候「从后往前拼」得到 0x34364C52。Day 28 存档分析（40 E2 01 00=123456）同一规则。</p>
 
-</section><section class="sec"><h3>F. 执行顺序与触发时机</h3>
+</section><section class="sec"><h3 id="day46-49-k6">F. 执行顺序与触发时机</h3>
 <p><b>核心结论</b>：检查点<b>只在特定事件路径上被调用</b>，不是一直在触发——断点只是路障，要等车（执行）经过才拦。</p>
 <p><b>源码执行顺序</b>（future_labs.cpp）：EmitDay46Trace()：for index 0..3 { 设 activeRecord=index；RslDay46TraceCheckpoint(&evidence, index) } → RslDay46AutomationCheckpoint(&evidence) → WriteDay46Dump()：RslDay46DumpCheckpoint(&evidence, sizeof(evidence)) → 打开窗口 → 窗口循环里：按 SPACE 时 activeRecord=(activeRecord+1)%4 并再次调用 RslDay46TraceCheckpoint；按 D 时再走 WriteDay46Dump。</p>
 <p><b>两个触发时机</b>：①程序启动生成 4 条记录时（Trace 连续 4 次→Automation 1 次→Dump 1 次，都在窗口打开之前）；②窗口循环里按 SPACE（触发 TraceCheckpoint）/按 D（触发 DumpCheckpoint）。所以「为什么要按空格才会停」——程序平时在「画帧→等按键」的循环里转圈，那圈里没有检查点代码；按 SPACE 才让程序走「切换记录」路径经过检查点。</p>
 <p><b>最易混点：地址顺序 ≠ 执行顺序</b>：反汇编窗口里 Automation 的地址排在 Dump 下面，但执行顺序是 Trace×4→Automation→Dump（Automation 在 Dump 之前）。地址是链接布局，执行顺序看调用链（call graph）。</p>
 
-</section><section class="sec"><h3>G. x64dbg 实操取证记录</h3>
+</section><section class="sec"><h3 id="day46-49-k7">G. x64dbg 实操取证记录</h3>
 <p><b>使用 Debug 产物</b>：C:\Users\Administrator\Desktop\学习\Dll1\x64\Debug\ReverseStrikeLabDay46_49.exe（无参数直接进 lab，可断）；Release 产物只作图形窗口用户入口。</p>
 <p><b>断点设置</b>：在命令框输入 bp RslDay46TraceCheckpoint（导出名可直接解析）；断点窗口（Alt+B）可见地址/模块/启用状态/命中数。断点地址 00007FF76715A000（当次 Debug ASLR 会话值）对应模块基址 00007FF767150000 的 RVA 0xA000；RslDay46DumpCheckpoint 在 RVA 0xA050、RslDay46AutomationCheckpoint 在 RVA 0xA0A0。这些 RVA 是<b>当次构建实测值</b>，重编译会变，定位永远用导出名。</p>
 <p><b>用户亲手读数（三检查点全命中）</b>：</p>
@@ -1598,7 +1598,7 @@ Screen = (640,360)                                           [A 用户读到 640
 <li>地址会变（ASLR/重编译），导出名/符号不变——一切定位用名字。</li>
 </ol>
 
-</section><section class="sec self-check"><h3>M. 自测题与简短答案</h3>
+</section><section class="sec self-check"><h3>M. 自测题与简短答案</h3><p>先自己答一遍，再对照答案；每题对应小目录里的一个知识点。</p>
 <ol>
 <li><b>Trace 和「单步执行」有什么区别？</b>——单步是每步指令停下看；Trace 是让调试器按条件连续记录事件与字段变化，得到一条时间线，不打断程序。</li>
 <li><b>为什么 Trace 要有「选择性」？</b>——全记会让程序慢到无法使用、数据多到没法看，只记录指定范围/条件才有价值。</li>
@@ -1609,7 +1609,7 @@ Screen = (640,360)                                           [A 用户读到 640
 <li><b>为什么检查点用导出名定位而不是写死地址？</b>——ASLR 与重编译都会改变地址，导出名/符号稳定不变，按名定位才可重复。</li>
 <li><b>反汇编里 Automation 在 Dump 下面，为什么执行却先 Automation？</b>——地址顺序是链接布局，执行顺序看调用链：EmitDay46Trace（Trace×4→Automation）→ WriteDay46Dump（Dump）。</li>
 <li><b>内存里 52 4C 36 34 为什么对应 magic=0x34364C52？</b>——小端序：低地址存低位字节，读取时从后往前拼。</li>
-<li><b>checksum 是地址吗？VALID 说明什么？</b>——不是地址，是「按固定规则对内容算出的总数」；VALID=本次重算与本子上的数一致=内容没被改过（只改导出文件不影响程序内存里的原件）。</li>
+<li><b>checksum 是地址吗？VALID 说明什么？</b>——不是地址，是「按固定规则对内容算出的总数」；VALID=本次重算与本子上的数一致=内容没被改过（只改导出文件不影响程序内存里的原件）。</li><li><b>自动化脚本里「先定位、后采集、采集完再继续」为什么不能乱？</b>——顺序乱了会在没停稳或没命中的情况下采集：没定位就没有可信的现场，没停稳内存还在变，采到的是过期数据；顺序固定才能保证「时间线 + 快照集」对得上。</li><li><b>按 F9 之后程序跑到窗口、断点一直没停，一般是什么原因？怎么处理？</b>——检查点只在特定事件路径上被调用，程序平时在画帧、等按键的循环里转，不经过检查点代码；放行后在窗口按 SPACE/D 触发事件才会命中。若按了键还不命中，先点一下图形窗口把焦点从调试器拿回来。</li>
 </ol>
 
 </section><section class="sec"><h3>N. 实验环境、版本边界与官方资料</h3>
